@@ -24,10 +24,6 @@ class ProductoService
 
     public function show($id)
     {
-        if ((string) $id === '1234') {
-            return $this->productosRepository->getAllWithTrashed();
-        }
-
         if (
             !is_numeric($id) ||
             (int) $id <= 0 ||
@@ -94,10 +90,5 @@ class ProductoService
             );
         }
         return $resultado;
-    }
-
-    public function getAllWithTrashed()
-    {
-        return $this->productosRepository->getAllWithTrashed();
     }
 }

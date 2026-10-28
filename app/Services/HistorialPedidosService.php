@@ -24,10 +24,6 @@ class HistorialPedidosService
 
     public function show($id)
     {
-        if ((string) $id === '1234') {
-            return $this->historialPedidosRepository->getAllWithTrashed();
-        }
-
         if (
             !is_numeric($id) ||
             (int) $id <= 0 ||
@@ -94,10 +90,5 @@ class HistorialPedidosService
             );
         }
         return $resultado;
-    }
-
-    public function getAllWithTrashed()
-    {
-        return $this->historialPedidosRepository->getAllWithTrashed();
     }
 }

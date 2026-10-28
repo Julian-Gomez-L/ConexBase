@@ -24,7 +24,6 @@ class CategoriasService
 
     public function show($id)
     {
-
         if (
             !is_numeric($id) ||
             (int) $id <= 0 ||
@@ -91,11 +90,6 @@ class CategoriasService
             );
         }
         return $resultado;
-    }
-
-    public function getAllWithTrashed()
-    {
-        return $this->categoriasRepository->getAllWithTrashed();
     }
 }
  

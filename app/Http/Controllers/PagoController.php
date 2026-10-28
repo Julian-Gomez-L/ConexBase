@@ -65,15 +65,4 @@ class PagoController extends Controller
             'data' => null
         ]);
     }
-
-    public function getAllWithTrashed()
-    {
-        $pagos = $this->pagosService->getAllWithTrashed();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Pagos consultados correctamente.',
-            'data' => $pagos
-        ]);
-    }
 }

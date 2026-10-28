@@ -24,10 +24,6 @@ class ClientesService
 
     public function show($id)
     {
-        if ((string) $id === '1234') {
-            return $this->clientesRepository->getAllWithTrashed();
-        }
-
         if (
             !is_numeric($id) ||
             (int) $id <= 0 ||
@@ -94,10 +90,5 @@ class ClientesService
             );
         }
         return $resultado;
-    }
-
-    public function getAllWithTrashed()
-    {
-        return $this->clientesRepository->getAllWithTrashed();
     }
 }

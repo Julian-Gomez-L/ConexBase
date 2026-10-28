@@ -24,10 +24,6 @@ class PedidosService
 
     public function show($id)
     {
-        if ((string) $id === '1234') {
-            return $this->pedidosRepository->getAllWithTrashed();
-        }
-
         if (
             !is_numeric($id) ||
             (int) $id <= 0 ||
@@ -94,10 +90,5 @@ class PedidosService
             );
         }
         return $resultado;
-    }
-
-    public function getAllWithTrashed()
-    {
-        return $this->pedidosRepository->getAllWithTrashed();
     }
 }

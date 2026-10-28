@@ -24,10 +24,6 @@ class ProduccionService
 
     public function show($id)
     {
-        if ((string) $id === '1234') {
-            return $this->produccionRepository->getAllWithTrashed();
-        }
-
         if (
             !is_numeric($id) ||
             (int) $id <= 0 ||
@@ -94,10 +90,5 @@ class ProduccionService
             );
         }
         return $resultado;
-    }
-
-    public function getAllWithTrashed()
-    {
-        return $this->produccionRepository->getAllWithTrashed();
     }
 }

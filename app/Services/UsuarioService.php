@@ -24,10 +24,6 @@ class UsuarioService
 
     public function show($id)
     {
-        if ((string) $id === '1234') {
-            return $this->usuarioRepository->getAllWithTrashed();
-        }
-
         if (
             !is_numeric($id) ||
             (int) $id <= 0 ||
@@ -94,10 +90,5 @@ class UsuarioService
             );
         }
         return $resultado;
-    }
-
-    public function getAllWithTrashed()
-    {
-        return $this->usuarioRepository->getAllWithTrashed();
     }
 }
