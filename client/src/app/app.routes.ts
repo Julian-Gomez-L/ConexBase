@@ -39,8 +39,9 @@ export const routes: Routes = [
       {
         path: 'crear-pedido',
         canMatch: [rolesPermitidos('vendedor')],
-        loadComponent: enConstruccion,
-        data: { titulo: 'Crear Pedido' },
+        title: 'Crear Pedido · ConexBase',
+        loadComponent: () =>
+          import('@app/pages/crear-pedido/crear-pedido.component').then((m) => m.CrearPedidoComponent),
       },
       {
         path: 'mis-pedidos',

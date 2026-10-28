@@ -187,7 +187,8 @@ Permisos por rol: cualquier usuario autenticado puede **consultar** (listar y ve
 
 | Recurso | Crear | Modificar | Eliminar |
 |---|---|---|---|
-| Roles, usuarios, categorías, productos, historial de pedidos | Administrador | Administrador | Administrador |
+| Roles, usuarios, categorías, productos | Administrador | Administrador | Administrador |
+| Historial de pedidos | Administrador, Vendedor, Confirmador, Encargado de Producción | Administrador | Administrador |
 | Clientes, detalle de pedidos | Administrador, Vendedor | Administrador, Vendedor | Administrador |
 | Pedidos | Administrador, Vendedor | Administrador, Vendedor, Confirmador | Administrador |
 | Pagos | Administrador, Vendedor | Administrador | Administrador |

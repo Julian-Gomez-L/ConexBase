@@ -57,7 +57,7 @@ Route::middleware('auth.token')->group(function () {
         Route::apiResource('usuarios', UsuarioController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('categorias', CategoriaController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('productos', ProductoController::class)->only(['store', 'update', 'destroy']);
-        Route::apiResource('historial-pedidos', HistorialPedidosController::class)->only(['store', 'update', 'destroy']);
+        Route::apiResource('historial-pedidos', HistorialPedidosController::class)->only(['update', 'destroy']);
 
         Route::apiResource('clientes', ClienteController::class)->only(['destroy']);
         Route::apiResource('pedidos', PedidoController::class)->only(['destroy']);
@@ -84,6 +84,11 @@ Route::middleware('auth.token')->group(function () {
     Route::middleware(Roles::middleware(Roles::ADMIN, Roles::PRODUCCION))->group(function () {
         Route::apiResource('producciones', ProduccionController::class)->only(['store', 'update']);
         Route::apiResource('trabajos-tapiceros', TrabajosTapicerosController::class)->only(['store']);
+    });
+
+    // ── Historial: lo registra quien cambia el estado de un pedido ──
+    Route::middleware(Roles::middleware(Roles::ADMIN, Roles::VENDEDOR, Roles::CONFIRMADOR, Roles::PRODUCCION))->group(function () {
+        Route::apiResource('historial-pedidos', HistorialPedidosController::class)->only(['store']);
     });
 
     // ── Tapicería: el tapicero reporta avance de sus trabajos ──
