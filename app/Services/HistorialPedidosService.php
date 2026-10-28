@@ -3,92 +3,21 @@
 namespace App\Services;
 
 use App\Interfaces\HistorialPedidosInterface;
-use App\Exceptions\ResourceNotFoundException;
-use App\Exceptions\InvalidIdException;
 
-class HistorialPedidosService
+class HistorialPedidosService extends BaseService
 {
-    public function __construct(private HistorialPedidosInterface $historialPedidosRepository)
+    public function __construct(HistorialPedidosInterface $repository)
     {
+        parent::__construct($repository);
     }
 
-    public function list()
+    protected function codigo(): string
     {
-        return $this->historialPedidosRepository->getAll();
+        return 'HISTORIAL_PEDIDOS';
     }
 
-    public function store(array $data)
+    protected function sustantivo(): string
     {
-        return $this->historialPedidosRepository->create($data);
-    }
-
-    public function show($id)
-    {
-        if (
-            !is_numeric($id) ||
-            (int) $id <= 0 ||
-            (string) (int) $id !== (string) $id
-        ) {
-            throw new InvalidIdException(
-                'INVALID_ID',
-                'El identificador del historial de pedidos no es válido.'
-            );
-        }
-
-        $id = (int) $id;
-
-        $historialPedido = $this->historialPedidosRepository->getById($id);
-
-        if (!$historialPedido) {
-            throw new ResourceNotFoundException(
-                'HISTORIAL_PEDIDOS_NOT_FOUND',
-                'El historial de pedidos no existe.'
-            );
-        }
-        return $historialPedido;
-    }
-
-    public function update(array $data, $id)
-    {
-        if (!is_numeric($id) || (int) $id <= 0) {
-            throw new InvalidIdException(
-                'INVALID_ID',
-                'El identificador del historial de pedidos no es válido.'
-            );
-        }
-
-        $id = (int) $id;
-
-        $resultado = $this->historialPedidosRepository->update($data, $id);
-
-        if (!$resultado) {
-            throw new ResourceNotFoundException(
-                'HISTORIAL_PEDIDOS_NOT_FOUND',
-                'El historial de pedidos no existe y no puede ser actualizado.'
-            );
-        }
-        return $resultado;
-    }
-
-    public function destroy($id)
-    {
-        if (!is_numeric($id) || (int) $id <= 0) {
-            throw new InvalidIdException(
-                'INVALID_ID',
-                'El identificador del historial de pedidos no es válido.'
-            );
-        }
-
-        $id = (int) $id;
-
-        $resultado = $this->historialPedidosRepository->delete($id);
-
-        if (!$resultado) {
-            throw new ResourceNotFoundException(
-                'HISTORIAL_PEDIDOS_NOT_FOUND',
-                'El historial de pedidos no existe y no puede ser eliminado.'
-            );
-        }
-        return $resultado;
+        return 'historial de pedidos';
     }
 }

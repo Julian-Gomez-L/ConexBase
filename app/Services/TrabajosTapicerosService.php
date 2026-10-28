@@ -3,92 +3,21 @@
 namespace App\Services;
 
 use App\Interfaces\TrabajosTapicerosInterface;
-use App\Exceptions\ResourceNotFoundException;
-use App\Exceptions\InvalidIdException;
 
-class TrabajosTapicerosService
+class TrabajosTapicerosService extends BaseService
 {
-    public function __construct(private TrabajosTapicerosInterface $trabajosTapicerosRepository)
+    public function __construct(TrabajosTapicerosInterface $repository)
     {
+        parent::__construct($repository);
     }
 
-    public function list()
+    protected function codigo(): string
     {
-        return $this->trabajosTapicerosRepository->getAll();
+        return 'TRABAJO';
     }
 
-    public function store(array $data)
+    protected function sustantivo(): string
     {
-        return $this->trabajosTapicerosRepository->create($data);
-    }
-
-    public function show($id)
-    {
-        if (
-            !is_numeric($id) ||
-            (int) $id <= 0 ||
-            (string) (int) $id !== (string) $id
-        ) {
-            throw new InvalidIdException(
-                'INVALID_ID',
-                'El identificador del trabajo no es válido.'
-            );
-        }
-
-        $id = (int) $id;
-
-        $trabajo = $this->trabajosTapicerosRepository->getById($id);
-
-        if (!$trabajo) {
-            throw new ResourceNotFoundException(
-                'TRABAJO_NOT_FOUND',
-                'El trabajo no existe.'
-            );
-        }
-        return $trabajo;
-    }
-
-    public function update(array $data, $id)
-    {
-        if (!is_numeric($id) || (int) $id <= 0) {
-            throw new InvalidIdException(
-                'INVALID_ID',
-                'El identificador del trabajo no es válido.'
-            );
-        }
-
-        $id = (int) $id;
-
-        $resultado = $this->trabajosTapicerosRepository->update($data, $id);
-
-        if (!$resultado) {
-            throw new ResourceNotFoundException(
-                'TRABAJO_NOT_FOUND',
-                'El trabajo no existe y no puede ser actualizado.'
-            );
-        }
-        return $resultado;
-    }
-
-    public function destroy($id)
-    {
-        if (!is_numeric($id) || (int) $id <= 0) {
-            throw new InvalidIdException(
-                'INVALID_ID',
-                'El identificador del trabajo no es válido.'
-            );
-        }
-
-        $id = (int) $id;
-
-        $resultado = $this->trabajosTapicerosRepository->delete($id);
-
-        if (!$resultado) {
-            throw new ResourceNotFoundException(
-                'TRABAJO_NOT_FOUND',
-                'El trabajo no existe y no puede ser eliminado.'
-            );
-        }
-        return $resultado;
+        return 'trabajo';
     }
 }

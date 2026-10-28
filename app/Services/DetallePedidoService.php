@@ -3,92 +3,21 @@
 namespace App\Services;
 
 use App\Interfaces\DetallePedidoInterface;
-use App\Exceptions\ResourceNotFoundException;
-use App\Exceptions\InvalidIdException;
 
-class DetallePedidoService
+class DetallePedidoService extends BaseService
 {
-    public function __construct(private DetallePedidoInterface $detallePedidoRepository)
+    public function __construct(DetallePedidoInterface $repository)
     {
+        parent::__construct($repository);
     }
 
-    public function list()
+    protected function codigo(): string
     {
-        return $this->detallePedidoRepository->getAll();
+        return 'DETALLE_PEDIDO';
     }
 
-    public function store(array $data)
+    protected function sustantivo(): string
     {
-        return $this->detallePedidoRepository->create($data);
-    }
-
-    public function show($id)
-    {
-        if (
-            !is_numeric($id) ||
-            (int) $id <= 0 ||
-            (string) (int) $id !== (string) $id
-        ) {
-            throw new InvalidIdException(
-                'INVALID_ID',
-                'El identificador del detalle del pedido no es válido.'
-            );
-        }
-
-        $id = (int) $id;
-
-        $detallePedido = $this->detallePedidoRepository->getById($id);
-
-        if (!$detallePedido) {
-            throw new ResourceNotFoundException(
-                'DETALLE_PEDIDO_NOT_FOUND',
-                'El detalle del pedido no existe.'
-            );
-        }
-        return $detallePedido;
-    }
-
-    public function update(array $data, $id)
-    {
-        if (!is_numeric($id) || (int) $id <= 0) {
-            throw new InvalidIdException(
-                'INVALID_ID',
-                'El identificador del detalle del pedido no es válido.'
-            );
-        }
-
-        $id = (int) $id;
-
-        $resultado = $this->detallePedidoRepository->update($data, $id);
-
-        if (!$resultado) {
-            throw new ResourceNotFoundException(
-                'DETALLE_PEDIDO_NOT_FOUND',
-                'El detalle del pedido no existe y no puede ser actualizado.'
-            );
-        }
-        return $resultado;
-    }
-
-    public function destroy($id)
-    {
-        if (!is_numeric($id) || (int) $id <= 0) {
-            throw new InvalidIdException(
-                'INVALID_ID',
-                'El identificador del detalle del pedido no es válido.'
-            );
-        }
-
-        $id = (int) $id;
-
-        $resultado = $this->detallePedidoRepository->delete($id);
-
-        if (!$resultado) {
-            throw new ResourceNotFoundException(
-                'DETALLE_PEDIDO_NOT_FOUND',
-                'El detalle del pedido no existe y no puede ser eliminado.'
-            );
-        }
-        return $resultado;
+        return 'detalle del pedido';
     }
 }

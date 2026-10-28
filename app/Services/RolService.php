@@ -3,92 +3,21 @@
 namespace App\Services;
 
 use App\Interfaces\RolInterface;
-use App\Exceptions\ResourceNotFoundException;
-use App\Exceptions\InvalidIdException;
 
-class RolService
+class RolService extends BaseService
 {
-    public function __construct(private RolInterface $rolRepository)
+    public function __construct(RolInterface $repository)
     {
+        parent::__construct($repository);
     }
 
-    public function list()
+    protected function codigo(): string
     {
-        return $this->rolRepository->getAll();
+        return 'ROL';
     }
 
-    public function store(array $data)
+    protected function sustantivo(): string
     {
-        return $this->rolRepository->create($data);
-    }
-
-    public function show($id)
-    {
-        if (
-            !is_numeric($id) ||
-            (int) $id <= 0 ||
-            (string) (int) $id !== (string) $id
-        ) {
-            throw new InvalidIdException(
-                'INVALID_ID',
-                'El identificador del rol no es válido.'
-            );
-        }
-
-        $id = (int) $id;
-
-        $rol = $this->rolRepository->getById($id);
-
-        if (!$rol) {
-            throw new ResourceNotFoundException(
-                'ROL_NOT_FOUND',
-                'El rol no existe.'
-            );
-        }
-        return $rol;
-    }
-
-   public function update(array $data, $id)
-    {
-        if (!is_numeric($id) || (int) $id <= 0) {
-            throw new InvalidIdException(
-                'INVALID_ID',
-                'El identificador del rol no es válido.'
-            );
-        }
-
-        $id = (int) $id;
-
-        $resultado = $this->rolRepository->update($data, $id);
-
-        if (!$resultado) {
-            throw new ResourceNotFoundException(
-                'ROL_NOT_FOUND',
-                'El rol no existe y no puede ser actualizado.'
-            );
-        }
-        return $resultado;
-    }
-
-    public function destroy($id)
-    {
-        if (!is_numeric($id) || (int) $id <= 0) {
-            throw new InvalidIdException(
-                'INVALID_ID',
-                'El identificador del rol no es válido.'
-            );
-        }
-
-        $id = (int) $id;
-
-        $resultado = $this->rolRepository->delete($id);
-
-        if (!$resultado) {
-            throw new ResourceNotFoundException(
-                'ROL_NOT_FOUND',
-                'El rol no existe y no puede ser eliminado.'
-            );
-        }
-        return $resultado;
+        return 'rol';
     }
 }
