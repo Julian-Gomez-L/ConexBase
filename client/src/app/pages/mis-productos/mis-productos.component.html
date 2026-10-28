@@ -1,0 +1,157 @@
+<div class="space-y-6 max-w-4xl">
+  <app-page-header titulo="Mis Productos" subtitulo="Los trabajos de tapicería que tienes asignados" />
+
+  @if (aviso(); as a) {
+    <p
+      role="status"
+      class="text-sm rounded-lg px-4 py-3 border"
+      [class]="
+        a.tipo === 'ok'
+          ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20'
+          : 'text-red-400 bg-red-500/10 border-red-500/20'
+      "
+    >
+      {{ a.texto }}
+    </p>
+  }
+
+  @if (cargando() && !datos()) {
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6" aria-hidden="true">
+      @for (n of [1, 2, 3]; track n) {
+        <div class="bg-card border border-border rounded-lg h-32 animate-pulse"></div>
+      }
+    </div>
+    <div class="bg-card border border-border rounded-lg h-72 animate-pulse" aria-hidden="true"></div>
+  } @else if (error(); as e) {
+    <div class="bg-card border border-border rounded-lg p-12 text-center" role="alert">
+      <p class="text-red-400 mb-4">{{ e.message }}</p>
+      <button
+        type="button"
+        (click)="cargar()"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90"
+      >
+        <svg lucideRefreshCw class="w-4 h-4" aria-hidden="true"></svg>
+        Reintentar
+      </button>
+    </div>
+  } @else if (datos(); as d) {
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <app-stat-card etiqueta="En proceso" [valor]="d.resumen.enProceso" [icono]="iconoTijeras" variante="alerta" />
+      <app-stat-card etiqueta="Por empezar" [valor]="d.resumen.porEmpezar" [icono]="iconoReloj" />
+      <app-stat-card
+        etiqueta="Terminados este mes"
+        [valor]="d.resumen.terminadosEsteMes"
+        [icono]="iconoCheck"
+        variante="exito"
+      />
+    </div>
+
+    <!-- Activos -->
+    <section class="space-y-3" aria-labelledby="activos">
+      <h2 id="activos" class="text-lg font-semibold">Por hacer</h2>
+      @for (m of d.activos; track m.trabajo.id) {
+        <article
+          class="bg-card border rounded-lg p-6 space-y-5"
+          [class]="m.estado === 'en proceso' ? 'border-cyan-500/35' : 'border-border'"
+        >
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 class="text-xl font-semibold">{{ m.trabajo.descripcion }}</h3>
+              <p class="text-sm text-muted-foreground mt-1">
+                Pedido <span class="font-mono">{{ m.pedidoCodigo }}</span> · {{ m.cliente }}
+              </p>
+            </div>
+            <app-estado-badge [estado]="m.trabajo.estado" />
+          </div>
+
+          <dl class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+            <div>
+              <dt class="text-xs text-muted-foreground mb-1">Producto</dt>
+              <dd>{{ m.cantidad }} × {{ m.producto }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-muted-foreground mb-1">Asignado el</dt>
+              <dd>{{ fecha(m.inicio) }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-muted-foreground mb-1">Asignado por</dt>
+              <dd>{{ m.asignadoPor }}</dd>
+            </div>
+          </dl>
+
+          <div class="space-y-2">
+            <label [for]="'obs-' + m.trabajo.id" class="block text-sm font-medium">Observaciones</label>
+            <textarea
+              [id]="'obs-' + m.trabajo.id"
+              rows="2"
+              [value]="observacion(m)"
+              (input)="alEscribir(m, $event)"
+              placeholder="Indicaciones de producción o novedades del trabajo (ej.: falta espuma)"
+              class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary/50"
+            ></textarea>
+          </div>
+
+          <div class="flex flex-wrap justify-end gap-3">
+            @if (cambio(m)) {
+              <button
+                type="button"
+                (click)="guardarObservacion(m)"
+                [disabled]="guardandoId() !== null"
+                class="min-h-12 px-5 border border-primary/35 text-primary rounded-lg font-medium hover:bg-primary/10 disabled:opacity-50"
+              >
+                Guardar observación
+              </button>
+            }
+            @if (m.estado === 'pendiente') {
+              <button
+                type="button"
+                (click)="empezar(m)"
+                [disabled]="guardandoId() !== null"
+                class="min-h-12 px-6 inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
+              >
+                <svg lucidePlay class="w-4 h-4" aria-hidden="true"></svg>
+                {{ guardandoId() === m.trabajo.id ? 'Guardando…' : 'Empezar trabajo' }}
+              </button>
+            } @else {
+              <button
+                type="button"
+                (click)="terminar(m)"
+                [disabled]="guardandoId() !== null"
+                class="min-h-12 px-6 inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
+              >
+                <svg lucideCheck class="w-5 h-5" aria-hidden="true"></svg>
+                {{ guardandoId() === m.trabajo.id ? 'Guardando…' : 'Marcar como terminado' }}
+              </button>
+            }
+          </div>
+        </article>
+      } @empty {
+        <div class="bg-card border border-dashed border-border rounded-lg p-10 text-center text-muted-foreground">
+          <svg lucideScissors class="w-12 h-12 mx-auto mb-3 opacity-30" aria-hidden="true"></svg>
+          <p>No tienes trabajos pendientes. Cuando Producción te asigne uno, aparecerá aquí.</p>
+        </div>
+      }
+    </section>
+
+    <!-- Terminados -->
+    @if (d.terminados.length) {
+      <section class="space-y-3" aria-labelledby="terminados">
+        <h2 id="terminados" class="text-lg font-semibold">Terminados</h2>
+        <ul class="space-y-2">
+          @for (m of d.terminados; track m.trabajo.id) {
+            <li class="bg-card border border-border rounded-lg px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p class="font-medium">{{ m.trabajo.descripcion }}</p>
+                <p class="text-xs text-muted-foreground">
+                  <span class="font-mono">{{ m.pedidoCodigo }}</span> · {{ m.cliente }} · del {{ fecha(m.inicio) }} al
+                  {{ fecha(m.fin) }}
+                </p>
+              </div>
+              <app-estado-badge [estado]="m.trabajo.estado" />
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+</div>

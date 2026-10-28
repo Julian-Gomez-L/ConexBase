@@ -133,8 +133,9 @@ export const routes: Routes = [
       {
         path: 'tapicero',
         canMatch: [rolesPermitidos('tapicero')],
-        loadComponent: enConstruccion,
-        data: { titulo: 'Mis Productos' },
+        title: 'Mis Productos · ConexBase',
+        loadComponent: () =>
+          import('@app/pages/mis-productos/mis-productos.component').then((m) => m.MisProductosComponent),
       },
 
       { path: '**', redirectTo: '' },
