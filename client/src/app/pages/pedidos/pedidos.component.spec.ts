@@ -32,9 +32,10 @@ describe('PedidosComponent (con API simulada)', () => {
     http.expectOne(`${api}/detalle-pedidos`).flush(ok(DATOS.detalles));
     http.expectOne(`${api}/productos`).flush(ok(DATOS.productos));
     http.expectOne(`${api}/pagos`).flush(ok(DATOS.pagos));
+    http.expectOne(`${api}/historial-pedidos`).flush(ok([]));
   };
 
-  it('pide los 6 recursos en paralelo y pinta los pedidos', async () => {
+  it('pide los 7 recursos en paralelo y pinta los pedidos', async () => {
     const fixture = TestBed.createComponent(PedidosComponent);
     fixture.componentRef.setInput('titulo', 'Ventas');
     fixture.detectChanges();

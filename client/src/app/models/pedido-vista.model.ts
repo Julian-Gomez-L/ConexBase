@@ -1,4 +1,4 @@
-import { Cliente, DetallePedido, Pago, Pedido, Producto, Usuario } from '@app/models';
+import { Cliente, DetallePedido, HistorialPedido, Pago, Pedido, Producto, Usuario } from '@app/models';
 import { aNumero } from '@app/utils/format';
 
 /** Línea de un pedido lista para mostrar (detalle + nombre del producto). */
@@ -7,6 +7,15 @@ export interface ItemVista {
   nombre: string;
   cantidad: number;
   subtotal: number;
+}
+
+/** Un pago (abono) del pedido, listo para mostrar. */
+export interface AbonoVista {
+  monto: number;
+  metodo: string;
+  comprobante: string | null;
+  /** YYYY-MM-DD */
+  fecha: string;
 }
 
 /**
@@ -19,6 +28,8 @@ export interface PedidoVista {
   estado: string;
   /** ID del asesor que creó el pedido (pedidos.usuario_id). */
   usuarioId: number;
+  /** pedidos.cliente_id (aunque el cliente ya no exista). */
+  clienteId: number;
   total: number;
   pagado: number;
   saldo: number;
@@ -26,6 +37,9 @@ export interface PedidoVista {
   cliente: Cliente | null;
   asesor: Usuario | null;
   items: ItemVista[];
+  abonos: AbonoVista[];
+  /** Motivo y fecha del último rechazo (si el pedido está Rechazado). */
+  rechazo: { motivo: string; fecha: Date } | null;
 }
 
 export interface DatosPedidos {
@@ -35,7 +49,12 @@ export interface DatosPedidos {
   detalles: DetallePedido[];
   productos: Producto[];
   pagos: Pago[];
+  /** Opcional: si se envía, se completa `rechazo` con el motivo registrado. */
+  historial?: HistorialPedido[];
 }
+
+/** "2026-10-27 10:00:00" (DATETIME de MySQL) → Date en hora local. */
+export const fechaMysql = (valor: string): Date => new Date(valor.replace(' ', 'T'));
 
 /** Agrupa una lista en un Map por clave (equivale a Map.groupBy, que aún no está en el `lib` del proyecto). */
 function agruparPor<T, K>(items: T[], clave: (item: T) => K): Map<K, T[]> {
@@ -61,6 +80,17 @@ export function construirVistas(d: DatosPedidos): PedidoVista[] {
   const detallesPorPedido = agruparPor(d.detalles, (x) => x.pedido_id);
   const pagosPorPedido = agruparPor(d.pagos, (x) => x.pedido_id);
 
+  // Último rechazo de cada pedido (el historial guarda el motivo en `observacion`)
+  const rechazos = new Map<number, { motivo: string; fecha: Date }>();
+  for (const h of d.historial ?? []) {
+    if ((h.estado_nuevo ?? '').toLowerCase() !== 'rechazado') continue;
+    const fecha = fechaMysql(h.fecha);
+    const previo = rechazos.get(h.pedido_id);
+    if (!previo || fecha >= previo.fecha) {
+      rechazos.set(h.pedido_id, { motivo: h.observacion ?? '', fecha });
+    }
+  }
+
   return d.pedidos
     .map((p): PedidoVista => {
       const total = aNumero(p.total);
@@ -73,6 +103,7 @@ export function construirVistas(d: DatosPedidos): PedidoVista[] {
         codigo: codigoPedido(p.id),
         estado: p.estado,
         usuarioId: p.usuario_id,
+        clienteId: p.cliente_id,
         total,
         pagado,
         saldo: Math.max(total - pagado, 0),
@@ -85,6 +116,13 @@ export function construirVistas(d: DatosPedidos): PedidoVista[] {
           cantidad: det.cantidad,
           subtotal: aNumero(det.subtotal),
         })),
+        abonos: (pagosPorPedido.get(p.id) ?? []).map((pago) => ({
+          monto: aNumero(pago.monto),
+          metodo: pago.metodo,
+          comprobante: pago.comprobante,
+          fecha: pago.fecha_pago,
+        })),
+        rechazo: p.estado.toLowerCase() === 'rechazado' ? (rechazos.get(p.id) ?? null) : null,
       };
     })
     .sort((a, b) => b.creadoEn.getTime() - a.creadoEn.getTime() || b.id - a.id);

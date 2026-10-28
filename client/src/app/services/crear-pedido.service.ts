@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { forkJoin, map, Observable, of, switchMap } from 'rxjs';
 import { Pedido } from '@app/models';
+import { ahoraMysql } from '@app/utils/fecha';
 import { AuthService } from '@app/services/auth.service';
 import {
   ClientesService,
@@ -41,13 +42,6 @@ export interface NuevoPedido {
 
 /** Estado con el que nace todo pedido (lo revisa luego el Confirmador). */
 export const ESTADO_INICIAL = 'Pendiente';
-
-/** "2026-10-28 14:05:00" en hora local (formato DATETIME de MySQL). */
-function ahoraMysql(): string {
-  const d = new Date();
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
-}
 
 /**
  * Registra un pedido completo usando el CRUD de la API, en este orden:

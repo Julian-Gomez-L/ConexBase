@@ -10,6 +10,7 @@ const ESTILOS: Record<string, string> = {
   finalizada: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
   entregado: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
   cancelado: 'bg-red-500/20 text-red-300 border-red-500/30',
+  rechazado: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
 };
 const POR_DEFECTO = 'bg-secondary text-muted-foreground border-border';
 

@@ -8,6 +8,7 @@ const pedido = (id: number, estado: string, total: number, usuarioId = 2): Pedid
   codigo: `RM-${id}`,
   estado,
   usuarioId,
+  clienteId: 1,
   total,
   pagado: 0,
   saldo: total,
@@ -15,6 +16,8 @@ const pedido = (id: number, estado: string, total: number, usuarioId = 2): Pedid
   cliente: null,
   asesor: null,
   items: [],
+  abonos: [],
+  rechazo: null,
 });
 
 const entrega = (pedidoId: number, fecha: string): HistorialPedido => ({

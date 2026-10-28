@@ -105,8 +105,9 @@ export const routes: Routes = [
       {
         path: 'confirmacion',
         canMatch: [rolesPermitidos('administrador', 'confirmador')],
-        loadComponent: enConstruccion,
-        data: { titulo: 'Confirmación' },
+        title: 'Confirmación · ConexBase',
+        loadComponent: () =>
+          import('@app/pages/confirmacion/confirmacion.component').then((m) => m.ConfirmacionComponent),
       },
       {
         path: 'fabricacion',

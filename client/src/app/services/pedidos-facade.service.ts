@@ -3,6 +3,7 @@ import { forkJoin, map, Observable } from 'rxjs';
 import {
   ClientesService,
   DetallePedidosService,
+  HistorialPedidosService,
   PagosService,
   PedidosService,
   ProductosService,
@@ -11,8 +12,8 @@ import {
 import { construirVistas, PedidoVista } from '@app/models/pedido-vista.model';
 
 /**
- * Fachada: junta 6 recursos de la API en UNA sola llamada para la pantalla.
- * Las 6 peticiones salen en paralelo (forkJoin), no una tras otra.
+ * Fachada: junta 7 recursos de la API en UNA sola llamada para la pantalla.
+ * Las 7 peticiones salen en paralelo (forkJoin), no una tras otra.
  *
  * Mejora futura en el backend: `GET /pedidos?with=cliente,detallePedidos.producto,pagos`
  * (Eloquent `with()`) y esta fachada se reduce a una sola petición.
@@ -25,6 +26,7 @@ export class PedidosFacadeService {
   private readonly detalles = inject(DetallePedidosService);
   private readonly productos = inject(ProductosService);
   private readonly pagos = inject(PagosService);
+  private readonly historial = inject(HistorialPedidosService);
 
   listarVista(): Observable<PedidoVista[]> {
     return forkJoin({
@@ -34,6 +36,7 @@ export class PedidosFacadeService {
       detalles: this.detalles.listar(),
       productos: this.productos.listar(),
       pagos: this.pagos.listar(),
+      historial: this.historial.listar(),
     }).pipe(map(construirVistas));
   }
 }

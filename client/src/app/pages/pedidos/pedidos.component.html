@@ -123,6 +123,13 @@
               </div>
             </div>
 
+            @if (pedido.rechazo; as r) {
+              <div class="mb-4 bg-orange-500/10 border border-orange-500/30 rounded-lg px-4 py-3 text-sm">
+                <p class="text-xs font-medium text-orange-300 mb-1">Motivo del rechazo</p>
+                <p>{{ r.motivo }}</p>
+              </div>
+            }
+
             @if (pedido.cliente; as cliente) {
               <div
                 class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground"
