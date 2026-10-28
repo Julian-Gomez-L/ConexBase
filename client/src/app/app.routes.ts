@@ -57,8 +57,11 @@ export const routes: Routes = [
       {
         path: 'mis-comisiones',
         canMatch: [rolesPermitidos('vendedor')],
-        loadComponent: enConstruccion,
-        data: { titulo: 'Mis Comisiones' },
+        title: 'Mis Comisiones · ConexBase',
+        loadComponent: () =>
+          import('@app/pages/mis-comisiones/mis-comisiones.component').then(
+            (m) => m.MisComisionesComponent,
+          ),
       },
       {
         path: 'ventas-confirmadas',

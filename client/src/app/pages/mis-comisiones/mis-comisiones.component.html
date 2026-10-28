@@ -1,0 +1,152 @@
+<div class="space-y-6">
+  <app-page-header
+    titulo="Mis Comisiones"
+    [subtitulo]="porcentaje + ' sobre el total de cada pedido entregado'"
+  />
+
+  @if (cargando()) {
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6" aria-hidden="true">
+      @for (n of [1, 2, 3, 4]; track n) {
+        <div class="bg-card border border-border rounded-lg p-6 h-36 animate-pulse"></div>
+      }
+    </div>
+    <div class="bg-card border border-border rounded-lg h-64 animate-pulse" aria-hidden="true"></div>
+  } @else if (error(); as e) {
+    <div class="bg-card border border-border rounded-lg p-12 text-center" role="alert">
+      <p class="text-red-400 mb-4">{{ e.message }}</p>
+      <button
+        type="button"
+        (click)="cargar()"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90"
+      >
+        <svg lucideRefreshCw class="w-4 h-4" aria-hidden="true"></svg>
+        Reintentar
+      </button>
+    </div>
+  } @else if (resumen(); as r) {
+    <!-- Métricas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <app-stat-card
+        etiqueta="Comisión ganada"
+        [valor]="tarjetas().ganado"
+        [icono]="iconoDinero"
+        [detalle]="'Sobre ' + tarjetas().ventas + ' en ventas'"
+      />
+      <app-stat-card
+        etiqueta="Ganado este mes"
+        [valor]="tarjetas().esteMes"
+        [icono]="iconoCalendario"
+        variante="exito"
+      />
+      <app-stat-card
+        etiqueta="Por ganar"
+        [valor]="tarjetas().porGanar"
+        [icono]="iconoReloj"
+        variante="alerta"
+        [detalle]="tarjetas().enCurso + (tarjetas().enCurso === 1 ? ' pedido en curso' : ' pedidos en curso')"
+      />
+      <app-stat-card
+        etiqueta="Pedidos entregados"
+        [valor]="tarjetas().entregados"
+        [icono]="iconoPaquete"
+      />
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+      <!-- Por mes -->
+      <section class="bg-card border border-border rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-border bg-secondary">
+          <h2 class="text-lg font-semibold">Por mes</h2>
+        </div>
+        @if (r.meses.length) {
+          <ul class="divide-y divide-border">
+            @for (mes of r.meses; track mes.clave) {
+              <li class="px-6 py-4 flex items-center justify-between gap-4">
+                <div>
+                  <p class="font-medium">{{ mes.etiqueta }}</p>
+                  <p class="text-xs text-muted-foreground">
+                    {{ mes.pedidos }} {{ mes.pedidos === 1 ? 'pedido' : 'pedidos' }} ·
+                    {{ formatearCOP(mes.ventas) }}
+                  </p>
+                </div>
+                <p class="text-lg font-semibold text-primary tabular-nums">
+                  {{ formatearCOP(mes.comision) }}
+                </p>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="px-6 py-10 text-center text-sm text-muted-foreground">
+            Aún no tienes pedidos entregados.
+          </p>
+        }
+      </section>
+
+      <!-- Detalle -->
+      <section class="xl:col-span-2 bg-card border border-border rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-border bg-secondary">
+          <h2 class="text-lg font-semibold">Detalle por pedido</h2>
+        </div>
+
+        @if (r.ganadas.length || r.porGanar.length) {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="text-xs text-muted-foreground">
+                <tr class="border-b border-border">
+                  <th class="text-left font-medium px-6 py-3">Pedido</th>
+                  <th class="text-left font-medium px-4 py-3">Estado</th>
+                  <th class="text-left font-medium px-4 py-3 hidden md:table-cell">Fecha</th>
+                  <th class="text-right font-medium px-4 py-3">Total</th>
+                  <th class="text-right font-medium px-6 py-3">Comisión</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                @for (c of r.ganadas; track c.pedido.id) {
+                  <tr>
+                    <td class="px-6 py-3">
+                      <p class="font-medium">{{ c.pedido.cliente?.nombre }}</p>
+                      <p class="text-xs text-muted-foreground font-mono">{{ c.pedido.codigo }}</p>
+                    </td>
+                    <td class="px-4 py-3"><app-estado-badge [estado]="c.pedido.estado" /></td>
+                    <td class="px-4 py-3 text-muted-foreground hidden md:table-cell">
+                      Entregado el {{ fecha(c.fecha) }}
+                    </td>
+                    <td class="px-4 py-3 text-right tabular-nums">{{ formatearCOP(c.pedido.total) }}</td>
+                    <td class="px-6 py-3 text-right font-semibold text-primary tabular-nums">
+                      {{ formatearCOP(c.comision) }}
+                    </td>
+                  </tr>
+                }
+                @for (c of r.porGanar; track c.pedido.id) {
+                  <tr class="text-muted-foreground">
+                    <td class="px-6 py-3">
+                      <p class="font-medium text-foreground">{{ c.pedido.cliente?.nombre }}</p>
+                      <p class="text-xs font-mono">{{ c.pedido.codigo }}</p>
+                    </td>
+                    <td class="px-4 py-3"><app-estado-badge [estado]="c.pedido.estado" /></td>
+                    <td class="px-4 py-3 hidden md:table-cell">Creado el {{ fecha(c.fecha) }}</td>
+                    <td class="px-4 py-3 text-right tabular-nums">{{ formatearCOP(c.pedido.total) }}</td>
+                    <td class="px-6 py-3 text-right tabular-nums">
+                      {{ formatearCOP(c.comision) }}
+                      <span class="block text-xs">por ganar</span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="p-12 text-center text-muted-foreground">
+            <svg lucideCircleDollarSign class="w-16 h-16 mx-auto mb-4 opacity-30" aria-hidden="true"></svg>
+            <p>Cuando tus pedidos se confirmen y entreguen, verás aquí tus comisiones.</p>
+          </div>
+        }
+      </section>
+    </div>
+
+    <p class="text-xs text-muted-foreground">
+      La comisión se gana cuando el pedido se entrega. Los pedidos pendientes, cancelados o
+      rechazados no generan comisión.
+    </p>
+  }
+</div>
