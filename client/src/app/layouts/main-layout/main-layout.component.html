@@ -46,7 +46,7 @@
             routerLinkActive="is-active bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary"
             [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
             (click)="alNavegar()"
-            class="group flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-sidebar-accent"
+            class="group flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 [&:not(.is-active)]:hover:bg-sidebar-accent"
           >
             <svg [lucideIcon]="item.icon" class="w-5 h-5" aria-hidden="true"></svg>
             <span class="font-medium">{{ item.label }}</span>
