@@ -1,0 +1,89 @@
+<div class="space-y-6">
+  <app-page-header
+    titulo="Panel General"
+    subtitulo="Monitorea tu producción de colchones y bases en tiempo real"
+  />
+
+  @if (error(); as e) {
+    <p
+      role="alert"
+      class="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3"
+    >
+      {{ e.message }}
+    </p>
+  }
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <app-stat-card
+      etiqueta="Total Pedidos"
+      [valor]="cargando() ? '…' : stats().total"
+      [icono]="iconoPaquete"
+    />
+    <app-stat-card
+      etiqueta="En Producción"
+      [valor]="cargando() ? '…' : stats().enProduccion"
+      [icono]="iconoReloj"
+      variante="alerta"
+      detalle="Fabricación activa"
+    />
+    <app-stat-card
+      etiqueta="Entregados"
+      [valor]="cargando() ? '…' : stats().entregados"
+      [icono]="iconoTendencia"
+      variante="exito"
+    />
+    <app-stat-card
+      etiqueta="Ingresos Totales"
+      [valor]="cargando() ? '…' : stats().ingresos"
+      [icono]="iconoDinero"
+      detalle="COP"
+    />
+  </div>
+
+  <!-- Pipeline: barras en CSS puro (sin librerías de gráficos) -->
+  <section class="bg-card border border-border rounded-lg p-6">
+    <h2 class="text-xl font-semibold mb-6">Pipeline de Producción</h2>
+    @if (pipeline().length) {
+      <div class="flex items-end gap-6 h-64" role="img" aria-label="Cantidad de pedidos por estado">
+        @for (barra of pipeline(); track barra.estado) {
+          <div class="flex-1 flex flex-col items-center justify-end h-full gap-2">
+            <span class="text-sm font-semibold text-primary">{{ barra.cantidad }}</span>
+            <div
+              class="w-full max-w-24 bg-primary rounded-t-lg transition-all"
+              [style.height.%]="barra.porcentaje * 0.8"
+            ></div>
+            <span class="text-xs text-muted-foreground text-center">{{ barra.estado }}</span>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="text-muted-foreground text-sm">
+        {{ cargando() ? 'Cargando…' : 'Aún no hay pedidos.' }}
+      </p>
+    }
+  </section>
+
+  <section class="bg-card border border-border rounded-lg overflow-hidden">
+    <div class="px-6 py-4 border-b border-border bg-secondary">
+      <h2 class="text-xl font-semibold">Pedidos recientes</h2>
+    </div>
+    <div class="divide-y divide-border">
+      @for (p of recientes(); track p.id) {
+        <div
+          class="px-6 py-4 flex items-center justify-between gap-4 hover:bg-secondary/30 transition-colors"
+        >
+          <div>
+            <p class="font-medium">{{ p.cliente?.nombre ?? 'Cliente' }}</p>
+            <p class="text-sm text-muted-foreground font-mono">{{ p.codigo }}</p>
+          </div>
+          <app-estado-badge [estado]="p.estado" />
+          <p class="font-semibold text-primary">{{ formatearCOP(p.total) }}</p>
+        </div>
+      } @empty {
+        <p class="p-6 text-sm text-muted-foreground">
+          {{ cargando() ? 'Cargando…' : 'Sin pedidos recientes.' }}
+        </p>
+      }
+    </div>
+  </section>
+</div>

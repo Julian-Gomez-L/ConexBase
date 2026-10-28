@@ -1,0 +1,35 @@
+import { describe, expect, it } from 'vitest';
+import { DATOS } from '@app/testing/datos-prueba';
+import { codigoPedido, construirVistas } from './pedido-vista.model';
+
+describe('construirVistas', () => {
+  it('une pedido + cliente + asesor + productos + pagos', () => {
+    const vistas = construirVistas(DATOS);
+    const p1 = vistas.find((v) => v.id === 1)!;
+
+    expect(p1.codigo).toBe('RM-00001');
+    expect(p1.cliente?.nombre).toBe('Pedro Ramirez');
+    expect(p1.asesor?.nombre).toBe('Juan');
+    expect(p1.items).toEqual([
+      { productoId: 7, nombre: 'Sofa 3 puestos', cantidad: 2, subtotal: 300000 },
+    ]);
+    expect(p1.total).toBe(300000);
+    expect(p1.pagado).toBeCloseTo(150000.5);
+    expect(p1.saldo).toBeCloseTo(149999.5);
+  });
+
+  it('ordena del más reciente al más antiguo', () => {
+    expect(construirVistas(DATOS).map((v) => v.id)).toEqual([2, 1]);
+  });
+
+  it('tolera relaciones faltantes sin romper', () => {
+    const vistas = construirVistas({ ...DATOS, clientes: [], detalles: [], pagos: [] });
+    expect(vistas[0].cliente).toBeNull();
+    expect(vistas[0].items).toEqual([]);
+    expect(vistas[0].saldo).toBe(vistas[0].total);
+  });
+
+  it('formatea el código con ceros a la izquierda', () => {
+    expect(codigoPedido(42)).toBe('RM-00042');
+  });
+});

@@ -1,0 +1,367 @@
+name: Pagos
+description: |-
+
+  Gestión de los pagos asociados a los pedidos.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/pagos
+    metadata:
+      custom: []
+      groupName: Pagos
+      groupDescription: |-
+
+        Gestión de los pagos asociados a los pedidos.
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"success":"Los pagos se listaron correctamente","data":[{"id":1,"pedido_id":1,"usuario_id":2,"monto":"2000000.00","metodo":"Transferencia","fecha_pago":"2026-09-01","comprobante":"COMP-0001","deleted_at":null,"created_at":"2026-09-19T15:18:31.000000Z","updated_at":"2026-09-19T15:18:31.000000Z"},{"id":2,"pedido_id":2,"usuario_id":2,"monto":"650000.00","metodo":"Efectivo","fecha_pago":"2026-09-02","comprobante":"COMP-0002","deleted_at":null,"created_at":"2026-09-19T15:18:31.000000Z","updated_at":"2026-09-19T15:18:31.000000Z"},{"id":3,"pedido_id":3,"usuario_id":2,"monto":"1550000.00","metodo":"Transferencia","fecha_pago":"2026-09-03","comprobante":"COMP-0003","deleted_at":null,"created_at":"2026-09-19T15:18:31.000000Z","updated_at":"2026-09-19T15:18:31.000000Z"},{"id":4,"pedido_id":2,"usuario_id":1,"monto":"39.00","metodo":"architecto","fecha_pago":"2026-09-19","comprobante":"architecto","deleted_at":null,"created_at":"2026-09-19T15:44:07.000000Z","updated_at":"2026-09-19T15:44:07.000000Z"}]}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/pagos
+    metadata:
+      custom: []
+      groupName: Pagos
+      groupDescription: |-
+
+        Gestión de los pagos asociados a los pedidos.
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      pedido_id:
+        custom: []
+        name: pedido_id
+        description: 'Must match an existing stored value.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      usuario_id:
+        custom: []
+        name: usuario_id
+        description: 'Must match an existing stored value.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      monto:
+        custom: []
+        name: monto
+        description: 'Must be at least 0.'
+        required: true
+        example: 39
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      metodo:
+        custom: []
+        name: metodo
+        description: ''
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      fecha_pago:
+        custom: []
+        name: fecha_pago
+        description: 'Must be a valid date.'
+        required: true
+        example: '2026-09-19T15:48:36'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      comprobante:
+        custom: []
+        name: comprobante
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      pedido_id: architecto
+      usuario_id: architecto
+      monto: 39
+      metodo: architecto
+      fecha_pago: '2026-09-19T15:48:36'
+      comprobante: architecto
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/pagos/{id}'
+    metadata:
+      custom: []
+      groupName: Pagos
+      groupDescription: |-
+
+        Gestión de los pagos asociados a los pedidos.
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the pago.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"success":true,"message":"Pago consultado correctamente.","data":{"id":1,"pedido_id":1,"usuario_id":2,"monto":"2000000.00","metodo":"Transferencia","fecha_pago":"2026-09-01","comprobante":"COMP-0001","deleted_at":null,"created_at":"2026-09-19T15:18:31.000000Z","updated_at":"2026-09-19T15:18:31.000000Z"}}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/pagos/{id}'
+    metadata:
+      custom: []
+      groupName: Pagos
+      groupDescription: |-
+
+        Gestión de los pagos asociados a los pedidos.
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the pago.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      pedido_id:
+        custom: []
+        name: pedido_id
+        description: 'Must match an existing stored value.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      usuario_id:
+        custom: []
+        name: usuario_id
+        description: 'Must match an existing stored value.'
+        required: false
+        example: null
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      monto:
+        custom: []
+        name: monto
+        description: 'Must be at least 0.'
+        required: false
+        example: 27
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      metodo:
+        custom: []
+        name: metodo
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      fecha_pago:
+        custom: []
+        name: fecha_pago
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-09-19T15:48:36'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      comprobante:
+        custom: []
+        name: comprobante
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      monto: 27
+      metodo: architecto
+      fecha_pago: '2026-09-19T15:48:36'
+      comprobante: architecto
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/pagos/{id}'
+    metadata:
+      custom: []
+      groupName: Pagos
+      groupDescription: |-
+
+        Gestión de los pagos asociados a los pedidos.
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the pago.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null

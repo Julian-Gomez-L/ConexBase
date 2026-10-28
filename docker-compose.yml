@@ -1,0 +1,81 @@
+# ConexBase · entorno local completo (API + base de datos + frontend)
+#   docker compose up --build
+#   Frontend:   http://localhost:4200
+#   API:        http://localhost:8000/api
+#   phpMyAdmin: http://localhost:8881  (servidor: db · usuario: root · clave: 1234)
+services:
+  # API Laravel. docker/entrypoint.sh crea .env, genera la clave, migra y siembra datos de prueba.
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: container_laravel
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+      - vendor:/var/www/html/vendor
+    working_dir: /var/www/html
+    command: sh docker/entrypoint.sh
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - red_db
+
+  # Frontend Angular (carpeta client/). El proxy reenvía /api hacia el servicio "app".
+  client:
+    image: node:22-alpine
+    container_name: container_angular
+    working_dir: /app
+    ports:
+      - "4200:4200"
+    environment:
+      API_PROXY_TARGET: http://app:8000
+    volumes:
+      - ./client:/app
+      - client_node_modules:/app/node_modules
+    command: sh -c "npm install --no-audit --no-fund && npm start -- --host 0.0.0.0 --poll 2000"
+    depends_on:
+      - app
+    networks:
+      - red_db
+
+  db:
+    image: mysql:latest
+    container_name: container_mysql
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: ConexBase
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p1234"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - red_db
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: container_phpmyadmin
+    ports:
+      - "8881:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      - db
+    networks:
+      - red_db
+
+networks:
+  red_db:
+
+volumes:
+  mysql_data:
+  vendor:
+  client_node_modules:
