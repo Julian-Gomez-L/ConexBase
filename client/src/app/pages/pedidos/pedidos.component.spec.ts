@@ -76,6 +76,18 @@ describe('PedidosComponent (con API simulada)', () => {
     expect(texto).toContain('No hay pedidos para mostrar');
   });
 
+  it('con estadosIncluidos muestra solo los pedidos en esos estados (sin importar tildes)', async () => {
+    const fixture = TestBed.createComponent(PedidosComponent);
+    fixture.componentRef.setInput('estadosIncluidos', ['Confirmado', 'En produccion']);
+    fixture.detectChanges();
+    responder();
+    await fixture.whenStable();
+
+    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(texto).not.toContain('RM-00001'); // Pendiente
+    expect(texto).toContain('RM-00002'); // En producción
+  });
+
   it('muestra el error normalizado y permite reintentar', async () => {
     const fixture = TestBed.createComponent(PedidosComponent);
     fixture.detectChanges();

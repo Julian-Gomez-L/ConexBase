@@ -63,8 +63,14 @@ export const routes: Routes = [
       {
         path: 'ventas-confirmadas',
         canMatch: [rolesPermitidos('vendedor')],
-        loadComponent: enConstruccion,
-        data: { titulo: 'Ventas Confirmadas' },
+        title: 'Ventas Confirmadas · ConexBase',
+        loadComponent: pedidosLista,
+        data: {
+          alcance: 'propios',
+          titulo: 'Ventas Confirmadas',
+          descripcion: 'Tus pedidos aprobados por confirmación, en fabricación o entregados',
+          estadosIncluidos: ['Confirmado', 'En producción', 'Finalizado', 'Entregado'],
+        },
       },
 
       // ── Compartidas ─────────────────────────────────────────────────

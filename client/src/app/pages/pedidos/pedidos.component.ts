@@ -36,6 +36,7 @@ import { PedidoVista } from '@app/models/pedido-vista.model';
  * Se reutiliza en varias rutas cambiando `data` en app.routes.ts:
  *   - alcance 'propios' → solo los pedidos del asesor que inició sesión
  *   - alcance 'todos'   → todos los pedidos (administración)
+ *   - estadosIncluidos  → limita a ciertos estados (ej. Ventas Confirmadas)
  */
 @Component({
   selector: 'app-pedidos',
@@ -57,6 +58,8 @@ export class PedidosComponent implements OnInit {
   readonly titulo = input('Pedidos');
   readonly descripcion = input('');
   readonly alcance = input<'propios' | 'todos'>('todos');
+  /** Si se indica, solo se muestran pedidos en estos estados (ej. Ventas Confirmadas). */
+  readonly estadosIncluidos = input<string[] | null>(null);
 
   private readonly facade = inject(PedidosFacadeService);
   private readonly auth = inject(AuthService);
@@ -71,9 +74,13 @@ export class PedidosComponent implements OnInit {
 
   // Derivados (se recalculan solos cuando cambia alguna señal)
   private readonly base = computed(() => {
-    if (this.alcance() === 'todos') return this.pedidos();
     const yo = this.auth.sesion()?.usuarioId;
-    return this.pedidos().filter((p) => p.usuarioId === yo);
+    const incluidos = this.estadosIncluidos()?.map(normalizarEstado);
+    return this.pedidos().filter(
+      (p) =>
+        (this.alcance() === 'todos' || p.usuarioId === yo) &&
+        (!incluidos || incluidos.includes(normalizarEstado(p.estado))),
+    );
   });
 
   protected readonly estados = computed(() =>
