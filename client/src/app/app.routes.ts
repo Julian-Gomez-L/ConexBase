@@ -80,14 +80,14 @@ export const routes: Routes = [
       {
         path: 'consolidado',
         canMatch: [rolesPermitidos('administrador', 'vendedor', 'confirmador', 'produccion')],
-        loadComponent: enConstruccion,
-        data: { titulo: 'Consolidado' },
+        title: 'Consolidado · ConexBase',
+        loadComponent: () => import('@app/pages/consolidado/consolidado.component').then((m) => m.ConsolidadoComponent),
       },
       {
         path: 'pedidos-del-dia',
         canMatch: [rolesPermitidos('administrador', 'vendedor', 'confirmador', 'produccion')],
-        loadComponent: enConstruccion,
-        data: { titulo: 'Pedidos del Día' },
+        title: 'Pedidos del Día · ConexBase',
+        loadComponent: () => import('@app/pages/pedidos-del-dia/pedidos-del-dia.component').then((m) => m.PedidosDelDiaComponent),
       },
 
       // ── Administración / confirmación / fabricación ─────────────────

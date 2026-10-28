@@ -9,7 +9,7 @@ import {
   ProductosService,
   UsuariosService,
 } from '@app/services/api';
-import { construirVistas, PedidoVista } from '@app/models/pedido-vista.model';
+import { construirVistas, DatosPedidos, PedidoVista } from '@app/models/pedido-vista.model';
 
 /**
  * Fachada: junta 7 recursos de la API en UNA sola llamada para la pantalla.
@@ -29,6 +29,11 @@ export class PedidosFacadeService {
   private readonly historial = inject(HistorialPedidosService);
 
   listarVista(): Observable<PedidoVista[]> {
+    return this.listarConDatos().pipe(map((r) => r.vistas));
+  }
+
+  /** Las vistas y, además, los datos crudos (historial, usuarios…) para reportes. */
+  listarConDatos(): Observable<{ vistas: PedidoVista[]; datos: Required<DatosPedidos> }> {
     return forkJoin({
       pedidos: this.pedidos.listar(),
       clientes: this.clientes.listar(),
@@ -37,6 +42,6 @@ export class PedidosFacadeService {
       productos: this.productos.listar(),
       pagos: this.pagos.listar(),
       historial: this.historial.listar(),
-    }).pipe(map(construirVistas));
+    }).pipe(map((datos) => ({ vistas: construirVistas(datos), datos })));
   }
 }

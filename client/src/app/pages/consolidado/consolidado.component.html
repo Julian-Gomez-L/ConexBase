@@ -1,0 +1,176 @@
+<div class="space-y-6">
+  <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+    <app-page-header
+      titulo="Consolidado"
+      [subtitulo]="soloPropios ? 'Tus ventas, recaudo y productos de un periodo' : 'Ventas, recaudo y productos de un periodo'"
+    />
+    <div class="flex flex-wrap items-end gap-3">
+      <label class="flex flex-col gap-1.5 text-xs text-muted-foreground">
+        Desde
+        <input
+          type="date"
+          [value]="desde()"
+          [max]="hoy"
+          (change)="alCambiarFecha('desde', $event)"
+          class="h-11 px-3 bg-card border border-border rounded-lg text-sm text-foreground [color-scheme:dark]"
+        />
+      </label>
+      <label class="flex flex-col gap-1.5 text-xs text-muted-foreground">
+        Hasta
+        <input
+          type="date"
+          [value]="hasta()"
+          [max]="hoy"
+          (change)="alCambiarFecha('hasta', $event)"
+          class="h-11 px-3 bg-card border border-border rounded-lg text-sm text-foreground [color-scheme:dark]"
+        />
+      </label>
+      <button
+        type="button"
+        (click)="exportarCsv()"
+        [disabled]="cargando() || !datos().registrados"
+        class="h-11 inline-flex items-center gap-2 px-4 border border-primary/35 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 disabled:opacity-40"
+      >
+        <svg lucideDownload class="w-4 h-4" aria-hidden="true"></svg>
+        Exportar CSV
+      </button>
+    </div>
+  </div>
+
+  @if (error(); as e) {
+    <div class="bg-card border border-border rounded-lg p-12 text-center" role="alert">
+      <p class="text-red-400 mb-4">{{ e.message }}</p>
+      <button
+        type="button"
+        (click)="cargar()"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90"
+      >
+        <svg lucideRefreshCw class="w-4 h-4" aria-hidden="true"></svg>
+        Reintentar
+      </button>
+    </div>
+  } @else if (cargando()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6" aria-hidden="true">
+      @for (n of [1, 2, 3, 4]; track n) {
+        <div class="bg-card border border-border rounded-lg h-32 animate-pulse"></div>
+      }
+    </div>
+  } @else {
+    @let d = datos();
+    <!-- Métricas -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div class="bg-card border border-border rounded-lg p-6">
+        <p class="text-3xl font-semibold mb-1">{{ d.activos }}</p>
+        <p class="text-sm text-muted-foreground">Pedidos activos</p>
+        <p class="text-xs text-muted-foreground mt-2">De {{ d.registrados }} registrados</p>
+      </div>
+      <div class="bg-card border border-border rounded-lg p-6">
+        <p class="text-3xl font-semibold text-primary mb-1 tabular-nums">{{ formatearCOP(d.valorVendido) }}</p>
+        <p class="text-sm text-muted-foreground">Valor vendido</p>
+        <p class="text-xs text-muted-foreground mt-2">Sin cancelados ni rechazados</p>
+      </div>
+      <div class="bg-card border border-border rounded-lg p-6">
+        <p class="text-3xl font-semibold text-emerald-400 mb-1 tabular-nums">{{ formatearCOP(d.recaudado) }}</p>
+        <p class="text-sm text-muted-foreground">Recaudado</p>
+        <p class="text-xs text-muted-foreground mt-2">{{ d.porcentajeRecaudado }} % del valor vendido</p>
+      </div>
+      <div class="bg-card border border-border rounded-lg p-6">
+        <p class="text-3xl font-semibold text-amber-400 mb-1 tabular-nums">{{ formatearCOP(d.saldo) }}</p>
+        <p class="text-sm text-muted-foreground">Saldo por cobrar</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+      <!-- Por estado -->
+      <section class="bg-card border border-border rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-border bg-secondary">
+          <h2 class="text-lg font-semibold">Pedidos por estado</h2>
+        </div>
+        <ul class="px-6 py-5 space-y-3.5 text-sm">
+          @for (fila of d.porEstado; track fila.estado) {
+            <li class="grid grid-cols-[7.5rem_minmax(0,1fr)_7rem] items-center gap-3">
+              <span>{{ fila.estado }}</span>
+              <span class="h-2.5 bg-secondary rounded-full overflow-hidden" aria-hidden="true">
+                <span class="block h-full rounded-full" [class]="colorEstado(fila.estado)" [style.width.%]="fila.porcentaje"></span>
+              </span>
+              <span class="text-right text-muted-foreground tabular-nums">
+                {{ fila.pedidos }}{{ fila.pedidos ? ' · ' + millones(fila.valor) : '' }}
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <!-- Productos -->
+      <section class="bg-card border border-border rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-border bg-secondary">
+          <h2 class="text-lg font-semibold">Productos más vendidos</h2>
+        </div>
+        @if (d.productos.length) {
+          <table class="w-full text-sm">
+            <thead class="text-xs text-muted-foreground text-left">
+              <tr>
+                <th class="font-medium px-6 py-3">Producto</th>
+                <th class="font-medium px-4 py-3 text-right">Unidades</th>
+                <th class="font-medium px-6 py-3 text-right">Valor</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border border-t border-border">
+              @for (fila of d.productos; track fila.producto) {
+                <tr>
+                  <td class="px-6 py-3">{{ fila.producto }}</td>
+                  <td class="px-4 py-3 text-right tabular-nums">{{ fila.unidades }}</td>
+                  <td class="px-6 py-3 text-right tabular-nums">{{ formatearCOP(fila.valor) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="px-6 py-10 text-center text-sm text-muted-foreground">No hay ventas en este periodo.</p>
+        }
+      </section>
+    </div>
+
+    <!-- Por asesor -->
+    <section class="bg-card border border-border rounded-lg overflow-hidden">
+      <div class="px-6 py-4 border-b border-border bg-secondary">
+        <h2 class="text-lg font-semibold">Ventas por asesor</h2>
+      </div>
+      @if (d.porAsesor.length) {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[640px]">
+            <thead class="text-xs text-muted-foreground text-left">
+              <tr>
+                <th class="font-medium px-6 py-3">Asesor</th>
+                <th class="font-medium px-4 py-3 text-right">Pedidos</th>
+                <th class="font-medium px-4 py-3 text-right">Vendido</th>
+                <th class="font-medium px-4 py-3 text-right">Recaudado</th>
+                <th class="font-medium px-6 py-3 text-right">Saldo</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border border-t border-border">
+              @for (fila of d.porAsesor; track fila.asesor) {
+                <tr>
+                  <td class="px-6 py-3.5 font-medium">{{ fila.asesor }}</td>
+                  <td class="px-4 py-3.5 text-right tabular-nums">{{ fila.pedidos }}</td>
+                  <td class="px-4 py-3.5 text-right tabular-nums">{{ formatearCOP(fila.vendido) }}</td>
+                  <td class="px-4 py-3.5 text-right tabular-nums">{{ formatearCOP(fila.recaudado) }}</td>
+                  <td class="px-6 py-3.5 text-right tabular-nums">{{ formatearCOP(fila.saldo) }}</td>
+                </tr>
+              }
+              <tr class="border-t border-primary/35 font-semibold">
+                <td class="px-6 py-3.5">Total</td>
+                <td class="px-4 py-3.5 text-right tabular-nums">{{ d.activos }}</td>
+                <td class="px-4 py-3.5 text-right tabular-nums text-primary">{{ formatearCOP(d.valorVendido) }}</td>
+                <td class="px-4 py-3.5 text-right tabular-nums">{{ formatearCOP(d.recaudado) }}</td>
+                <td class="px-6 py-3.5 text-right tabular-nums">{{ formatearCOP(d.saldo) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="px-6 py-10 text-center text-sm text-muted-foreground">No hay ventas en este periodo.</p>
+      }
+    </section>
+  }
+</div>
