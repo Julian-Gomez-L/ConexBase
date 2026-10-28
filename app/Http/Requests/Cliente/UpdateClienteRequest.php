@@ -14,13 +14,12 @@ class UpdateClienteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => ['sometimes', 'string', 'max:255'],
-            'apellido' => ['sometimes', 'string', 'max:255'],
             'documento' => ['sometimes', 'string', 'max:20', 'unique:clientes,documento,' . $this->route('cliente')],
-            'telefono' => ['nullable', 'string', 'max:20'],
-            'correo' => ['nullable', 'email', 'max:255', 'unique:clientes,correo,' . $this->route('cliente')],
-            'fecha_nacimiento' => ['nullable', 'date'],
+            'nombre'    => ['sometimes', 'string', 'max:150'],
+            'telefono'  => ['sometimes', 'string', 'max:20'],
+            'correo'    => ['sometimes', 'email', 'max:150', 'unique:clientes,correo,' . $this->route('cliente')],
             'direccion' => ['nullable', 'string', 'max:255'],
+            'estado'    => ['sometimes', 'boolean'],
         ];
     }
 

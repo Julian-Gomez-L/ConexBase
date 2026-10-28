@@ -14,10 +14,13 @@ class UpdateUsuarioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre'   => ['required', 'string', 'max:100'],
-            'correo'    => ['required', 'email'],
-            'password' => ['nullable', 'string', 'min:8'], // Es nullable para que no sea obligatorio cambiarla
-            'rol_id'   => ['required', 'integer', 'exists:roles,id'],
+            'documento' => ['sometimes', 'string', 'max:20', 'unique:usuarios,documento,' . $this->route('usuario')],
+            'nombre'    => ['sometimes', 'string', 'max:100'],
+            'apellido'  => ['sometimes', 'string', 'max:100'],
+            'correo'    => ['sometimes', 'email', 'max:150', 'unique:usuarios,correo,' . $this->route('usuario')],
+            'password'  => ['nullable', 'string', 'min:8'], // Es nullable para que no sea obligatorio cambiarla
+            'rol_id'    => ['sometimes', 'integer', 'exists:roles,id'],
+            'estado'    => ['sometimes', 'boolean'],
         ];
     }
 

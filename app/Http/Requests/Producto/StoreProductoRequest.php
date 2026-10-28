@@ -14,11 +14,11 @@ class StoreProductoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => ['required', 'string', 'max:255'],
-            'descripcion' => ['nullable', 'string'],
-            'precio' => ['required', 'numeric', 'min:0'],
-            'stock' => ['required', 'integer', 'min:0'],
+            'nombre'       => ['required', 'string', 'max:150'],
+            'descripcion'  => ['nullable', 'string'],
+            'precio'       => ['required', 'numeric', 'min:0'],
             'categoria_id' => ['required', 'integer', 'exists:categorias,id'],
+            'estado'       => ['sometimes', 'boolean'],
         ];
     }
 

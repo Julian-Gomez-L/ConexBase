@@ -14,11 +14,13 @@ class StoreUsuarioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Ajusta estos campos según tu migración de usuarios
-            'nombre'   => ['required', 'string', 'max:100'],
-            'correo'    => ['required', 'email', 'unique:usuarios,email'],
-            'password' => ['required', 'string', 'min:8'],
-            'rol_id'   => ['required', 'integer', 'exists:roles,id'],
+            'documento' => ['required', 'string', 'max:20', 'unique:usuarios,documento'],
+            'nombre'    => ['required', 'string', 'max:100'],
+            'apellido'  => ['required', 'string', 'max:100'],
+            'correo'    => ['required', 'email', 'max:150', 'unique:usuarios,correo'],
+            'password'  => ['required', 'string', 'min:8'],
+            'rol_id'    => ['required', 'integer', 'exists:roles,id'],
+            'estado'    => ['sometimes', 'boolean'],
         ];
     }
 

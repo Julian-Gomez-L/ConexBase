@@ -14,13 +14,12 @@ class StoreClienteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => ['required', 'string', 'max:255'],
-            'apellido' => ['required', 'string', 'max:255'],
             'documento' => ['required', 'string', 'max:20', 'unique:clientes,documento'],
-            'telefono' => ['nullable', 'string', 'max:20'],
-            'correo' => ['nullable', 'email', 'max:255', 'unique:clientes,correo'],
-            'fecha_nacimiento' => ['nullable', 'date'],
+            'nombre'    => ['required', 'string', 'max:150'],
+            'telefono'  => ['required', 'string', 'max:20'],
+            'correo'    => ['required', 'email', 'max:150', 'unique:clientes,correo'],
             'direccion' => ['nullable', 'string', 'max:255'],
+            'estado'    => ['sometimes', 'boolean'],
         ];
     }
 

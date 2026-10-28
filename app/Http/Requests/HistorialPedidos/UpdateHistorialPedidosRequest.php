@@ -16,13 +16,13 @@ class UpdateHistorialPedidosRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'fecha_inicio' => ['sometimes', 'date'],
-            'fecha_fin' => ['nullable', 'date'],
-            'estado' => ['sometimes', 'string'],
-            'observaciones' => ['nullable', 'string'],
-            'pedido_id' => ['sometimes', 'integer', 'exists:pedidos,id'],
-            'cliente_id' => ['sometimes', 'integer', 'exists:clientes,id'],
-            'usuario_id' => ['sometimes', 'integer', 'exists:usuarios,id'],
+            'pedido_id'       => ['sometimes', 'integer', 'exists:pedidos,id'],
+            'cliente_id'      => ['sometimes', 'integer', 'exists:clientes,id'],
+            'usuario_id'      => ['sometimes', 'integer', 'exists:usuarios,id'],
+            'estado_anterior' => ['nullable', 'string', 'max:50'],
+            'estado_nuevo'    => ['sometimes', 'string', 'max:50'],
+            'observacion'     => ['nullable', 'string'],
+            'fecha'           => ['sometimes', 'date'],
         ];
     }
 

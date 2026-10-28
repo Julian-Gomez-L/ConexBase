@@ -14,8 +14,9 @@ class StoreRolRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Ajusta "nombre" por el campo real de tu tabla roles
-            'nombre' => ['required', 'string', 'max:50', 'unique:roles,nombre'],
+            'nombre'      => ['required', 'string', 'max:50', 'unique:roles,nombre'],
+            'descripcion' => ['nullable', 'string', 'max:255'],
+            'estado'      => ['sometimes', 'boolean'],
         ];
     }
 

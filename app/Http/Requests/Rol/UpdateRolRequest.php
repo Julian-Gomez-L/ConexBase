@@ -14,7 +14,9 @@ class UpdateRolRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => ['required', 'string', 'max:50'],
+            'nombre'      => ['sometimes', 'string', 'max:50', 'unique:roles,nombre,' . $this->route('role')],
+            'descripcion' => ['nullable', 'string', 'max:255'],
+            'estado'      => ['sometimes', 'boolean'],
         ];
     }
 

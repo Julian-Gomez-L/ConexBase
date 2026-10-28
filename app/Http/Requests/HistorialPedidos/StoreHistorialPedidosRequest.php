@@ -15,12 +15,13 @@ class StoreHistorialPedidosRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pedido_id' => ['required', 'integer', 'exists:pedidos,id'],
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
-            'usuario_id' => ['required', 'integer', 'exists:usuarios,id'],
-            'estado' => ['required', 'string'],
-            'observaciones' => ['nullable', 'string'],
-            'fecha' => ['required', 'date'],
+            'pedido_id'       => ['required', 'integer', 'exists:pedidos,id'],
+            'cliente_id'      => ['required', 'integer', 'exists:clientes,id'],
+            'usuario_id'      => ['required', 'integer', 'exists:usuarios,id'],
+            'estado_anterior' => ['nullable', 'string', 'max:50'],
+            'estado_nuevo'    => ['required', 'string', 'max:50'],
+            'observacion'     => ['nullable', 'string'],
+            'fecha'           => ['required', 'date'],
         ];
     }
 
