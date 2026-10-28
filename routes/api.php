@@ -75,8 +75,8 @@ Route::middleware('auth.token')->group(function () {
         Route::apiResource('pedidos', PedidoController::class)->only(['store']);
     });
 
-    // ── Pedidos: el confirmador los aprueba/rechaza (cambia el estado) ──
-    Route::middleware(Roles::middleware(Roles::ADMIN, Roles::VENDEDOR, Roles::CONFIRMADOR))->group(function () {
+    // ── Pedidos: el confirmador los aprueba/rechaza y producción los avanza (cambian el estado) ──
+    Route::middleware(Roles::middleware(Roles::ADMIN, Roles::VENDEDOR, Roles::CONFIRMADOR, Roles::PRODUCCION))->group(function () {
         Route::apiResource('pedidos', PedidoController::class)->only(['update']);
     });
 

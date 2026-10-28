@@ -190,7 +190,7 @@ Permisos por rol: cualquier usuario autenticado puede **consultar** (listar y ve
 | Roles, usuarios, categorías, productos | Administrador | Administrador | Administrador |
 | Historial de pedidos | Administrador, Vendedor, Confirmador, Encargado de Producción | Administrador | Administrador |
 | Clientes, detalle de pedidos | Administrador, Vendedor | Administrador, Vendedor | Administrador |
-| Pedidos | Administrador, Vendedor | Administrador, Vendedor, Confirmador | Administrador |
+| Pedidos | Administrador, Vendedor | Administrador, Vendedor, Confirmador, Encargado de Producción | Administrador |
 | Pagos | Administrador, Vendedor | Administrador | Administrador |
 | Producciones | Administrador, Encargado de Producción | Administrador, Encargado de Producción | Administrador |
 | Trabajos de tapiceros | Administrador, Encargado de Producción | Administrador, Encargado de Producción, Tapicero | Administrador |

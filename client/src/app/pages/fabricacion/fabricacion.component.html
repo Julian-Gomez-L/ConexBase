@@ -1,0 +1,312 @@
+<div class="space-y-6">
+  <app-page-header
+    titulo="Fabricación"
+    subtitulo="Pedidos confirmados, en fabricación y listos para entregar"
+  />
+
+  @if (aviso(); as a) {
+    <p
+      role="status"
+      class="text-sm rounded-lg px-4 py-3 border"
+      [class]="
+        a.tipo === 'ok'
+          ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20'
+          : 'text-red-400 bg-red-500/10 border-red-500/20'
+      "
+    >
+      {{ a.texto }}
+    </p>
+  }
+
+  @if (cargando() && !tablero()) {
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6" aria-hidden="true">
+      @for (n of [1, 2, 3, 4]; track n) {
+        <div class="bg-card border border-border rounded-lg h-32 animate-pulse"></div>
+      }
+    </div>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6" aria-hidden="true">
+      @for (n of [1, 2, 3]; track n) {
+        <div class="bg-card border border-border rounded-lg h-64 animate-pulse"></div>
+      }
+    </div>
+  } @else if (error(); as e) {
+    <div class="bg-card border border-border rounded-lg p-12 text-center" role="alert">
+      <p class="text-red-400 mb-4">{{ e.message }}</p>
+      <button
+        type="button"
+        (click)="cargar()"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90"
+      >
+        <svg lucideRefreshCw class="w-4 h-4" aria-hidden="true"></svg>
+        Reintentar
+      </button>
+    </div>
+  } @else if (tablero(); as t) {
+    <!-- Métricas -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      <app-stat-card etiqueta="Por iniciar" [valor]="t.resumen.porIniciar" [icono]="iconoPaquete" />
+      <app-stat-card
+        etiqueta="En fabricación"
+        [valor]="t.resumen.enFabricacion"
+        [icono]="iconoFabrica"
+        variante="alerta"
+        [detalle]="t.resumen.productosEnFabricacion + (t.resumen.productosEnFabricacion === 1 ? ' producto' : ' productos')"
+      />
+      <app-stat-card etiqueta="Listos para entregar" [valor]="t.resumen.listos" [icono]="iconoReloj" />
+      <app-stat-card
+        etiqueta="Entregados este mes"
+        [valor]="t.resumen.entregadosEsteMes"
+        [icono]="iconoCheck"
+        variante="exito"
+      />
+    </div>
+
+    <!-- Tablero -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+      <!-- Por iniciar -->
+      <section class="space-y-3" aria-labelledby="col-iniciar">
+        <h2 id="col-iniciar" class="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          Por iniciar · {{ t.porIniciar.length }}
+        </h2>
+        @for (p of t.porIniciar; track p.pedido.id) {
+          <article class="bg-card border border-border rounded-lg p-5 space-y-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h3 class="font-semibold">{{ p.pedido.cliente?.nombre }}</h3>
+                <p class="text-xs text-muted-foreground">
+                  <span class="font-mono">{{ p.pedido.codigo }}</span> · confirmado el {{ fechaCorta(p.desde) }}
+                </p>
+              </div>
+              <app-estado-badge [estado]="p.pedido.estado" />
+            </div>
+            <ul class="text-sm space-y-0.5">
+              @for (item of p.pedido.items; track item.productoId) {
+                <li>{{ item.cantidad }} × {{ item.nombre }}</li>
+              }
+            </ul>
+            <p class="text-xs text-muted-foreground">
+              Entrega: {{ p.pedido.cliente?.direccion ?? 'sin dirección' }} · Asesor
+              {{ p.pedido.asesor?.nombre }} {{ p.pedido.asesor?.apellido }}
+            </p>
+            <button
+              type="button"
+              (click)="iniciar(p)"
+              [disabled]="guardando() !== null || !p.pedido.items.length"
+              class="w-full min-h-11 flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 disabled:opacity-50"
+            >
+              <svg lucidePlay class="w-4 h-4" aria-hidden="true"></svg>
+              {{ guardando() === 'pedido-' + p.pedido.id ? 'Iniciando…' : 'Iniciar producción' }}
+            </button>
+          </article>
+        } @empty {
+          <p class="border border-dashed border-border rounded-lg p-6 text-center text-sm text-muted-foreground">
+            No hay pedidos confirmados esperando.
+          </p>
+        }
+      </section>
+
+      <!-- En fabricación -->
+      <section class="space-y-3" aria-labelledby="col-fabricacion">
+        <h2 id="col-fabricacion" class="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          En fabricación · {{ t.enFabricacion.length }}
+        </h2>
+        @for (p of t.enFabricacion; track p.pedido.id) {
+          <article class="bg-card border border-cyan-500/30 rounded-lg p-5 space-y-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h3 class="font-semibold">{{ p.pedido.cliente?.nombre }}</h3>
+                <p class="text-xs text-muted-foreground">
+                  <span class="font-mono">{{ p.pedido.codigo }}</span> · desde el {{ fechaCorta(p.desde) }}
+                </p>
+              </div>
+              <app-estado-badge [estado]="p.pedido.estado" />
+            </div>
+
+            @for (pr of p.producciones; track pr.produccion.id) {
+              <div class="bg-background rounded-lg p-3 space-y-2">
+                <div class="flex justify-between gap-2 text-sm">
+                  <span class="font-medium">{{ pr.cantidad }} × {{ pr.producto }}</span>
+                  <span class="text-xs" [class]="colorProduccion(pr.produccion.estado)">{{ pr.produccion.estado }}</span>
+                </div>
+                @if (pr.produccion.observaciones) {
+                  <p class="text-xs text-muted-foreground">{{ pr.produccion.observaciones }}</p>
+                }
+                @for (tr of pr.trabajos; track tr.trabajo.id) {
+                  <p class="text-xs">
+                    Tapicero: {{ tr.tapicero }} ·
+                    <span [class]="colorProduccion(tr.trabajo.estado === 'Finalizado' ? 'Finalizada' : tr.trabajo.estado)">{{ tr.trabajo.estado }}</span>
+                  </p>
+                }
+
+                @if (avance(); as e) {
+                  @if (e.produccionId === pr.produccion.id) {
+                    <div class="border-t border-border pt-3 space-y-2">
+                      <label class="block text-xs font-medium" [for]="'estado-' + pr.produccion.id">Estado</label>
+                      <select
+                        [id]="'estado-' + pr.produccion.id"
+                        (change)="alCambiar('estado', $event)"
+                        class="w-full h-10 px-2 bg-input-background border border-border rounded-lg text-sm"
+                      >
+                        @for (estado of estadosProduccion; track estado) {
+                          <option [value]="estado" [selected]="estado === e.estado">{{ estado }}</option>
+                        }
+                      </select>
+                      <label class="block text-xs font-medium" [for]="'obs-' + pr.produccion.id">Observaciones</label>
+                      <input
+                        [id]="'obs-' + pr.produccion.id"
+                        [value]="e.observaciones"
+                        (input)="alCambiar('observaciones', $event)"
+                        class="w-full h-10 px-2 bg-input-background border border-border rounded-lg text-sm"
+                      />
+                      <div class="flex justify-end gap-2">
+                        <button type="button" (click)="cerrarEdicion()" class="min-h-10 px-3 border border-border rounded-lg text-sm">Cancelar</button>
+                        <button
+                          type="button"
+                          (click)="guardarAvance()"
+                          [disabled]="guardando() !== null"
+                          class="min-h-10 px-3 bg-primary text-primary-foreground rounded-lg text-sm font-semibold disabled:opacity-50"
+                        >
+                          Guardar
+                        </button>
+                      </div>
+                    </div>
+                  }
+                } @else if (asignacion(); as e) {
+                  @if (e.produccionId === pr.produccion.id) {
+                    <div class="border-t border-border pt-3 space-y-2">
+                      <label class="block text-xs font-medium" [for]="'tap-' + pr.produccion.id">Asignar tapicero</label>
+                      <select
+                        [id]="'tap-' + pr.produccion.id"
+                        (change)="alCambiar('tapiceroId', $event)"
+                        class="w-full h-10 px-2 bg-input-background border border-border rounded-lg text-sm"
+                      >
+                        <option value="" [selected]="e.tapiceroId === null">Selecciona un tapicero</option>
+                        @for (u of t.tapiceros; track u.id) {
+                          <option [value]="u.id" [selected]="u.id === e.tapiceroId">{{ u.nombre }} {{ u.apellido }}</option>
+                        }
+                      </select>
+                      <label class="block text-xs font-medium" [for]="'desc-' + pr.produccion.id">Trabajo a realizar</label>
+                      <input
+                        [id]="'desc-' + pr.produccion.id"
+                        [value]="e.descripcion"
+                        (input)="alCambiar('descripcion', $event)"
+                        class="w-full h-10 px-2 bg-input-background border border-border rounded-lg text-sm"
+                      />
+                      <div class="flex justify-end gap-2">
+                        <button type="button" (click)="cerrarEdicion()" class="min-h-10 px-3 border border-border rounded-lg text-sm">Cancelar</button>
+                        <button
+                          type="button"
+                          (click)="guardarAsignacion()"
+                          [disabled]="guardando() !== null"
+                          class="min-h-10 px-3 bg-primary text-primary-foreground rounded-lg text-sm font-semibold disabled:opacity-50"
+                        >
+                          Asignar
+                        </button>
+                      </div>
+                    </div>
+                  }
+                }
+
+                @if (edicion()?.produccionId !== pr.produccion.id) {
+                  <div class="flex flex-wrap gap-2 pt-1">
+                    <button
+                      type="button"
+                      (click)="abrirAvance(pr)"
+                      class="min-h-9 px-3 border border-primary/35 text-primary rounded-lg text-xs font-medium hover:bg-primary/10"
+                    >
+                      Registrar avance
+                    </button>
+                    @if (!pr.tapiceroActivo && !pr.terminada) {
+                      <button
+                        type="button"
+                        (click)="abrirAsignacion(pr)"
+                        class="min-h-9 px-3 inline-flex items-center gap-1.5 border border-border rounded-lg text-xs hover:bg-secondary"
+                      >
+                        <svg lucideUserPlus class="w-3.5 h-3.5" aria-hidden="true"></svg>
+                        Asignar tapicero
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            } @empty {
+              <p class="text-sm text-muted-foreground">Este pedido aún no tiene producciones registradas.</p>
+            }
+
+            <button
+              type="button"
+              (click)="finalizar(p)"
+              [disabled]="!p.listoParaFinalizar || guardando() !== null"
+              class="w-full min-h-11 flex items-center justify-center gap-2 rounded-lg text-sm font-semibold"
+              [class]="p.listoParaFinalizar ? 'bg-primary text-primary-foreground hover:opacity-90' : 'bg-secondary text-muted-foreground cursor-not-allowed'"
+            >
+              <svg lucideCheck class="w-4 h-4" aria-hidden="true"></svg>
+              {{ guardando() === 'pedido-' + p.pedido.id ? 'Guardando…' : 'Marcar finalizado' }}
+            </button>
+            @if (!p.listoParaFinalizar) {
+              <p class="text-xs text-muted-foreground -mt-2">Se puede finalizar cuando todas sus producciones estén terminadas.</p>
+            }
+          </article>
+        } @empty {
+          <p class="border border-dashed border-border rounded-lg p-6 text-center text-sm text-muted-foreground">
+            No hay pedidos en fabricación.
+          </p>
+        }
+      </section>
+
+      <!-- Listos para entregar -->
+      <section class="space-y-3" aria-labelledby="col-listos">
+        <h2 id="col-listos" class="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          Listos para entregar · {{ t.listos.length }}
+        </h2>
+        @for (p of t.listos; track p.pedido.id) {
+          <article class="bg-card border border-emerald-500/30 rounded-lg p-5 space-y-3">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h3 class="font-semibold">{{ p.pedido.cliente?.nombre }}</h3>
+                <p class="text-xs text-muted-foreground">
+                  <span class="font-mono">{{ p.pedido.codigo }}</span> · terminado el {{ fechaCorta(p.desde) }}
+                </p>
+              </div>
+              <app-estado-badge [estado]="p.pedido.estado" />
+            </div>
+            <p class="text-xs text-muted-foreground">Entrega: {{ p.pedido.cliente?.direccion ?? 'sin dirección' }} · {{ p.pedido.cliente?.telefono }}</p>
+            @if (p.pedido.saldo > 0) {
+              <p class="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                Saldo pendiente por cobrar: {{ formatearCOP(p.pedido.saldo) }}
+              </p>
+            }
+            <button
+              type="button"
+              (click)="entregar(p)"
+              [disabled]="guardando() !== null"
+              class="w-full min-h-11 flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 disabled:opacity-50"
+            >
+              <svg lucideTruck class="w-4 h-4" aria-hidden="true"></svg>
+              {{ guardando() === 'pedido-' + p.pedido.id ? 'Guardando…' : 'Marcar como entregado' }}
+            </button>
+          </article>
+        } @empty {
+          <p class="border border-dashed border-border rounded-lg p-6 text-center text-sm text-muted-foreground">
+            Ningún pedido terminado por ahora.<br />Al finalizar uno, aquí podrás marcarlo como entregado.
+          </p>
+        }
+
+        @if (t.entregadosRecientes.length) {
+          <h3 class="pt-3 text-xs font-semibold text-muted-foreground">Entregados recientemente</h3>
+          @for (p of t.entregadosRecientes; track p.pedido.id) {
+            <div class="bg-card border border-border rounded-lg px-4 py-3 flex items-center justify-between gap-3 text-sm">
+              <div>
+                <p class="font-medium">{{ p.pedido.cliente?.nombre }}</p>
+                <p class="text-xs text-muted-foreground">
+                  <span class="font-mono">{{ p.pedido.codigo }}</span> · {{ fechaCorta(p.desde) }}
+                </p>
+              </div>
+              <app-estado-badge [estado]="p.pedido.estado" />
+            </div>
+          }
+        }
+      </section>
+    </div>
+  }
+</div>

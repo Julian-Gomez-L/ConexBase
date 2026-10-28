@@ -112,8 +112,9 @@ export const routes: Routes = [
       {
         path: 'fabricacion',
         canMatch: [rolesPermitidos('administrador', 'produccion')],
-        loadComponent: enConstruccion,
-        data: { titulo: 'Fabricación' },
+        title: 'Fabricación · ConexBase',
+        loadComponent: () =>
+          import('@app/pages/fabricacion/fabricacion.component').then((m) => m.FabricacionComponent),
       },
       {
         path: 'comisiones-asesores',
