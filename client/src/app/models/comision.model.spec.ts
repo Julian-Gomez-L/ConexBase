@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { calcularComisiones } from './comision.model';
+import { calcularComisiones, comisionesPorAsesor } from './comision.model';
+import { Usuario } from './usuario.model';
 import { HistorialPedido } from './historial-pedido.model';
 import { PedidoVista } from './pedido-vista.model';
 
@@ -63,5 +64,35 @@ describe('calcularComisiones', () => {
       ['2026-09', 50_000],
     ]);
     expect(r.ganadoEsteMes).toBe(77_500);
+  });
+});
+
+describe('comisionesPorAsesor', () => {
+  const pedidos = [
+    pedido(1, 'Entregado', 1_550_000, 2),
+    pedido(2, 'Entregado', 1_000_000, 2),
+    pedido(3, 'En producción', 1_300_000, 2),
+    pedido(4, 'Confirmado', 1_800_000, 6),
+  ];
+  const historial = [entrega(1, '2026-10-05 11:00:00'), entrega(2, '2026-09-20 09:00:00')];
+  const asesores = [
+    { id: 6, nombre: 'Valentina', apellido: 'Suarez' },
+    { id: 2, nombre: 'Juan', apellido: 'Perez' },
+  ] as Usuario[];
+  const hoy = new Date('2026-10-28T12:00:00');
+
+  it('filtra lo ganado por el mes elegido y mantiene lo por ganar', () => {
+    const r = comisionesPorAsesor(pedidos, historial, asesores, 0.05, '2026-10', hoy);
+    expect(r.filas.map((f) => [f.asesor.nombre, f.entregados.length, f.comision, f.totalPorGanar])).toEqual([
+      ['Juan', 1, 77_500, 65_000],
+      ['Valentina', 0, 0, 90_000],
+    ]);
+    expect(r.totales).toEqual({ entregados: 1, ventas: 1_550_000, comision: 77_500, porGanar: 155_000, enCurso: 2 });
+  });
+
+  it('ofrece los meses con entregas más el actual', () => {
+    const r = comisionesPorAsesor(pedidos, historial, asesores, 0.05, '2026-09', hoy);
+    expect(r.meses.map((m) => m.clave)).toEqual(['2026-10', '2026-09']);
+    expect(r.filas.find((f) => f.asesor.id === 2)?.comision).toBe(50_000);
   });
 });

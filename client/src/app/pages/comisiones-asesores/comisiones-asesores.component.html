@@ -1,0 +1,150 @@
+<div class="space-y-6">
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    <app-page-header
+      titulo="Comisiones de Asesores"
+      [subtitulo]="porcentaje + ' sobre el total de cada pedido entregado'"
+    />
+    @if (resultado(); as r) {
+      <label class="flex flex-col gap-1.5 text-xs text-muted-foreground">
+        Mes de entrega
+        <select
+          (change)="alElegirMes($event)"
+          class="h-11 min-w-52 px-3 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+        >
+          @for (m of r.meses; track m.clave) {
+            <option [value]="m.clave" [selected]="m.clave === mes()">{{ m.etiqueta }}</option>
+          }
+        </select>
+      </label>
+    }
+  </div>
+
+  @if (cargando() && !resultado()) {
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6" aria-hidden="true">
+      @for (n of [1, 2, 3, 4]; track n) {
+        <div class="bg-card border border-border rounded-lg h-32 animate-pulse"></div>
+      }
+    </div>
+    <div class="bg-card border border-border rounded-lg h-64 animate-pulse" aria-hidden="true"></div>
+  } @else if (error(); as e) {
+    <div class="bg-card border border-border rounded-lg p-12 text-center" role="alert">
+      <p class="text-red-400 mb-4">{{ e.message }}</p>
+      <button
+        type="button"
+        (click)="cargar()"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90"
+      >
+        <svg lucideRefreshCw class="w-4 h-4" aria-hidden="true"></svg>
+        Reintentar
+      </button>
+    </div>
+  } @else if (resultado(); as r) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      <app-stat-card etiqueta="Comisiones del mes" [valor]="tarjetas().comision" [icono]="iconoDinero" />
+      <app-stat-card etiqueta="Ventas entregadas" [valor]="tarjetas().ventas" [icono]="iconoCalendario" variante="exito" />
+      <app-stat-card
+        etiqueta="Por ganar"
+        [valor]="tarjetas().porGanar"
+        [icono]="iconoReloj"
+        variante="alerta"
+        [detalle]="tarjetas().enCurso + (tarjetas().enCurso === 1 ? ' pedido en curso' : ' pedidos en curso')"
+      />
+      <app-stat-card etiqueta="Asesores con entregas" [valor]="tarjetas().asesores" [icono]="iconoUsuarios" />
+    </div>
+
+    <section class="bg-card border border-border rounded-lg overflow-hidden">
+      <div class="px-6 py-4 border-b border-border bg-secondary">
+        <h2 class="text-lg font-semibold">Por asesor</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm min-w-[720px]">
+          <thead class="text-xs text-muted-foreground">
+            <tr class="border-b border-border">
+              <th class="text-left font-medium px-6 py-3">Asesor</th>
+              <th class="text-right font-medium px-4 py-3">Entregados</th>
+              <th class="text-right font-medium px-4 py-3">Ventas entregadas</th>
+              <th class="text-right font-medium px-4 py-3">Comisión ganada</th>
+              <th class="text-right font-medium px-4 py-3">Por ganar</th>
+              <th class="px-6 py-3"><span class="sr-only">Detalle</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (f of r.filas; track f.asesor.id) {
+              <tr
+                class="border-b border-border"
+                [class]="abiertos().has(f.asesor.id) ? 'bg-primary/5' : ''"
+              >
+                <td class="px-6 py-3.5 font-medium">{{ f.asesor.nombre }} {{ f.asesor.apellido }}</td>
+                <td class="px-4 py-3.5 text-right tabular-nums">{{ f.entregados.length }}</td>
+                <td class="px-4 py-3.5 text-right tabular-nums">{{ formatearCOP(f.ventas) }}</td>
+                <td
+                  class="px-4 py-3.5 text-right tabular-nums"
+                  [class]="f.comision > 0 ? 'font-semibold text-primary' : ''"
+                >
+                  {{ formatearCOP(f.comision) }}
+                </td>
+                <td class="px-4 py-3.5 text-right tabular-nums text-muted-foreground">{{ formatearCOP(f.totalPorGanar) }}</td>
+                <td class="px-6 py-2 text-right">
+                  @if (f.entregados.length || f.porGanar.length) {
+                    <button
+                      type="button"
+                      (click)="alternar(f.asesor.id)"
+                      [attr.aria-expanded]="abiertos().has(f.asesor.id)"
+                      class="min-h-9 px-3 border rounded-lg text-xs"
+                      [class]="abiertos().has(f.asesor.id) ? 'border-primary/35 text-primary' : 'border-border hover:bg-secondary'"
+                    >
+                      {{ abiertos().has(f.asesor.id) ? 'Ocultar' : 'Ver detalle' }}
+                    </button>
+                  }
+                </td>
+              </tr>
+              @if (abiertos().has(f.asesor.id)) {
+                <tr class="border-b border-border bg-primary/5">
+                  <td colspan="6" class="px-6 pb-4">
+                    <ul class="bg-background rounded-lg divide-y divide-border text-xs">
+                      @for (c of f.entregados; track c.pedido.id) {
+                        <li class="grid grid-cols-[2fr_1.4fr_1fr_1fr] gap-3 px-4 py-2.5">
+                          <span><span class="font-mono">{{ c.pedido.codigo }}</span> · {{ c.pedido.cliente?.nombre }}</span>
+                          <span class="text-emerald-300">Entregado el {{ fechaCorta(c.fecha) }}</span>
+                          <span class="text-right tabular-nums">{{ formatearCOP(c.pedido.total) }}</span>
+                          <span class="text-right tabular-nums font-semibold text-primary">{{ formatearCOP(c.comision) }}</span>
+                        </li>
+                      }
+                      @for (c of f.porGanar; track c.pedido.id) {
+                        <li class="grid grid-cols-[2fr_1.4fr_1fr_1fr] gap-3 px-4 py-2.5 text-muted-foreground items-center">
+                          <span><span class="font-mono">{{ c.pedido.codigo }}</span> · {{ c.pedido.cliente?.nombre }}</span>
+                          <span><app-estado-badge [estado]="c.pedido.estado" /></span>
+                          <span class="text-right tabular-nums">{{ formatearCOP(c.pedido.total) }}</span>
+                          <span class="text-right tabular-nums">{{ formatearCOP(c.comision) }} por ganar</span>
+                        </li>
+                      }
+                    </ul>
+                  </td>
+                </tr>
+              }
+            } @empty {
+              <tr>
+                <td colspan="6" class="px-6 py-10 text-center text-muted-foreground">No hay asesores registrados.</td>
+              </tr>
+            }
+            @if (r.filas.length) {
+              <tr class="font-semibold border-t border-primary/35">
+                <td class="px-6 py-3.5">Total</td>
+                <td class="px-4 py-3.5 text-right tabular-nums">{{ r.totales.entregados }}</td>
+                <td class="px-4 py-3.5 text-right tabular-nums">{{ formatearCOP(r.totales.ventas) }}</td>
+                <td class="px-4 py-3.5 text-right tabular-nums text-primary">{{ formatearCOP(r.totales.comision) }}</td>
+                <td class="px-4 py-3.5 text-right tabular-nums">{{ formatearCOP(r.totales.porGanar) }}</td>
+                <td></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="text-xs text-muted-foreground">
+      La comisión se gana en el mes en que el pedido se entrega. Los pedidos pendientes, cancelados o
+      rechazados no generan comisión.
+    </p>
+  }
+</div>

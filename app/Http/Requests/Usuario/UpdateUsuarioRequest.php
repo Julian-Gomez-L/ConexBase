@@ -33,6 +33,12 @@ class UpdateUsuarioRequest extends FormRequest
             'correo.email'       => 'Debe ingresar un correo válido.',
             'password.min'      => 'La contraseña debe tener al menos 8 caracteres.',
             'rol_id.required'   => 'Debe asignar un rol al usuario.',
+            'correo.unique'      => 'Este correo ya está registrado.',
+            'documento.required' => 'El documento es obligatorio.',
+            'documento.unique'   => 'Ya existe un usuario con ese documento.',
+            'documento.max'      => 'El documento no puede tener más de 20 caracteres.',
+            'apellido.required'  => 'El apellido es obligatorio.',
+            'estado.boolean'     => 'El estado debe ser activo o inactivo.',
             'rol_id.exists'     => 'El rol seleccionado no es válido.',
         ];
     }

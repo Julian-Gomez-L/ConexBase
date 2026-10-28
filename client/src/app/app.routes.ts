@@ -4,8 +4,9 @@ import { authGuard, guestGuard, inicioPorRolGuard, rolesPermitidos } from '@app/
 /** Carga perezosa (lazy) de componentes: solo se descargan cuando se visita la ruta. */
 const pedidosLista = () =>
   import('@app/pages/pedidos/pedidos.component').then((m) => m.PedidosComponent);
-const enConstruccion = () =>
-  import('@app/components/en-construccion/en-construccion.component').then((m) => m.EnConstruccionComponent);
+// Para una pantalla nueva aún sin hacer, usa:
+//   loadComponent: () => import('@app/components/en-construccion/en-construccion.component')
+//     .then((m) => m.EnConstruccionComponent), data: { titulo: '…' }
 
 /**
  * Mapa de acceso (replica routes.tsx + DashboardLayout.tsx de la maqueta).
@@ -119,14 +120,14 @@ export const routes: Routes = [
       {
         path: 'comisiones-asesores',
         canMatch: [rolesPermitidos('administrador')],
-        loadComponent: enConstruccion,
-        data: { titulo: 'Comisiones de Asesores' },
+        title: 'Comisiones de Asesores · ConexBase',
+        loadComponent: () => import('@app/pages/comisiones-asesores/comisiones-asesores.component').then((m) => m.ComisionesAsesoresComponent),
       },
       {
         path: 'usuarios',
         canMatch: [rolesPermitidos('administrador')],
-        loadComponent: enConstruccion,
-        data: { titulo: 'Usuarios y Roles' },
+        title: 'Usuarios y Roles · ConexBase',
+        loadComponent: () => import('@app/pages/usuarios/usuarios.component').then((m) => m.UsuariosComponent),
       },
 
       // ── Tapicero ────────────────────────────────────────────────────

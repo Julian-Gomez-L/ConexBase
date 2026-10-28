@@ -35,6 +35,11 @@ class StoreUsuarioRequest extends FormRequest
             'password.required' => 'La contraseña es obligatoria.',
             'password.min'      => 'La contraseña debe tener al menos 8 caracteres.',
             'rol_id.required'   => 'Debe asignar un rol al usuario.',
+            'documento.required' => 'El documento es obligatorio.',
+            'documento.unique'   => 'Ya existe un usuario con ese documento.',
+            'documento.max'      => 'El documento no puede tener más de 20 caracteres.',
+            'apellido.required'  => 'El apellido es obligatorio.',
+            'estado.boolean'     => 'El estado debe ser activo o inactivo.',
             'rol_id.exists'     => 'El rol seleccionado no es válido.',
         ];
     }

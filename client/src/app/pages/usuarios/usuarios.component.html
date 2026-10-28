@@ -1,0 +1,271 @@
+<div class="space-y-6">
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    <app-page-header titulo="Usuarios y Roles" subtitulo="Quién usa el sistema y qué puede hacer" />
+    <div class="inline-flex self-start p-1 bg-card border border-border rounded-lg text-sm" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="pestana() === 'usuarios'"
+        (click)="pestana.set('usuarios')"
+        class="px-4 py-2 rounded-md transition-colors"
+        [class]="pestana() === 'usuarios' ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:text-foreground'"
+      >
+        Usuarios ({{ usuarios().length }})
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="pestana() === 'roles'"
+        (click)="pestana.set('roles')"
+        class="px-4 py-2 rounded-md transition-colors"
+        [class]="pestana() === 'roles' ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:text-foreground'"
+      >
+        Roles ({{ roles().length }})
+      </button>
+    </div>
+  </div>
+
+  @if (cargando() && !usuarios().length) {
+    <div class="bg-card border border-border rounded-lg h-80 animate-pulse" aria-hidden="true"></div>
+  } @else if (error(); as e) {
+    <div class="bg-card border border-border rounded-lg p-12 text-center" role="alert">
+      <p class="text-red-400 mb-4">{{ e.message }}</p>
+      <button
+        type="button"
+        (click)="cargar()"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90"
+      >
+        <svg lucideRefreshCw class="w-4 h-4" aria-hidden="true"></svg>
+        Reintentar
+      </button>
+    </div>
+  } @else if (pestana() === 'usuarios') {
+    <div class="flex flex-col xl:flex-row gap-6 items-start">
+      <!-- Tabla -->
+      <section class="w-full xl:flex-1 min-w-0 bg-card border border-border rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-border bg-secondary flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+          <label class="relative">
+            <span class="sr-only">Buscar usuario</span>
+            <svg lucideSearch class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true"></svg>
+            <input
+              type="search"
+              [value]="busqueda()"
+              (input)="alBuscar($event)"
+              placeholder="Buscar nombre, correo o documento"
+              class="w-full sm:w-72 pl-9 pr-3 py-2 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </label>
+          <label>
+            <span class="sr-only">Filtrar por rol</span>
+            <select
+              (change)="alFiltrarRol($event)"
+              class="w-full sm:w-52 px-3 py-2 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              <option value="">Todos los roles</option>
+              @for (r of roles(); track r.id) {
+                <option [value]="r.id" [selected]="filtroRol() === r.id">{{ r.nombre }}</option>
+              }
+            </select>
+          </label>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[640px]">
+            <thead class="text-xs text-muted-foreground">
+              <tr class="border-b border-border">
+                <th class="text-left font-medium px-6 py-3">Usuario</th>
+                <th class="text-left font-medium px-4 py-3">Documento</th>
+                <th class="text-left font-medium px-4 py-3">Rol</th>
+                <th class="text-left font-medium px-4 py-3">Estado</th>
+                <th class="text-right font-medium px-6 py-3">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border">
+              @for (u of visibles(); track u.id) {
+                <tr [class]="editando()?.id === u.id ? 'bg-primary/5' : ''">
+                  <td class="px-6 py-3">
+                    <p class="font-medium" [class.text-muted-foreground]="!estaActivo(u.estado)">
+                      {{ u.nombre }} {{ u.apellido }}
+                      @if (u.id === yo()) {
+                        <span class="text-xs text-primary font-normal">(tú)</span>
+                      }
+                    </p>
+                    <p class="text-xs text-muted-foreground">{{ u.correo }}</p>
+                  </td>
+                  <td class="px-4 py-3 tabular-nums">{{ u.documento }}</td>
+                  <td class="px-4 py-3">
+                    <span
+                      class="px-2.5 py-1 rounded-full text-xs whitespace-nowrap"
+                      [class]="rolDe(u) === 'Administrador' ? 'bg-primary/15 text-primary' : 'bg-secondary text-foreground'"
+                    >
+                      {{ rolDe(u) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3">
+                    @if (estaActivo(u.estado)) {
+                      <span class="text-emerald-300">Activo</span>
+                    } @else {
+                      <span class="text-muted-foreground">Inactivo</span>
+                    }
+                  </td>
+                  <td class="px-6 py-2 text-right">
+                    <button
+                      type="button"
+                      (click)="editar(u)"
+                      [attr.aria-label]="'Editar a ' + u.nombre + ' ' + u.apellido"
+                      class="w-9 h-9 inline-flex items-center justify-center border border-border rounded-lg hover:bg-secondary"
+                    >
+                      <svg lucidePencil class="w-4 h-4" aria-hidden="true"></svg>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="px-6 py-10 text-center text-muted-foreground">No hay usuarios que coincidan.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Formulario -->
+      <aside class="w-full xl:w-96 bg-card border border-border rounded-lg p-6 space-y-4">
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-lg font-semibold">{{ editando() ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+          @if (editando()) {
+            <button
+              type="button"
+              (click)="nuevo()"
+              class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+            >
+              <svg lucideUserPlus class="w-4 h-4" aria-hidden="true"></svg>
+              Crear otro
+            </button>
+          }
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4" novalidate>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="u-nombre" class="block text-sm font-medium mb-1.5">Nombre *</label>
+              <input
+                id="u-nombre"
+                formControlName="nombre"
+                class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                [class]="invalido('nombre') ? 'border-red-500/60' : 'border-border'"
+              />
+            </div>
+            <div>
+              <label for="u-apellido" class="block text-sm font-medium mb-1.5">Apellido *</label>
+              <input
+                id="u-apellido"
+                formControlName="apellido"
+                class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                [class]="invalido('apellido') ? 'border-red-500/60' : 'border-border'"
+              />
+            </div>
+          </div>
+          <div>
+            <label for="u-documento" class="block text-sm font-medium mb-1.5">Documento *</label>
+            <input
+              id="u-documento"
+              formControlName="documento"
+              inputmode="numeric"
+              class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              [class]="invalido('documento') ? 'border-red-500/60' : 'border-border'"
+            />
+          </div>
+          <div>
+            <label for="u-correo" class="block text-sm font-medium mb-1.5">Correo *</label>
+            <input
+              id="u-correo"
+              type="email"
+              formControlName="correo"
+              autocomplete="off"
+              class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              [class]="invalido('correo') ? 'border-red-500/60' : 'border-border'"
+            />
+          </div>
+          <div>
+            <label for="u-password" class="block text-sm font-medium mb-1.5">
+              {{ editando() ? 'Nueva contraseña' : 'Contraseña *' }}
+            </label>
+            <input
+              id="u-password"
+              type="password"
+              formControlName="password"
+              autocomplete="new-password"
+              [placeholder]="editando() ? 'Déjala vacía para no cambiarla' : 'Mínimo 8 caracteres'"
+              class="w-full h-10 px-3 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
+          <div>
+            <label for="u-rol" class="block text-sm font-medium mb-1.5">Rol *</label>
+            <select
+              id="u-rol"
+              formControlName="rolId"
+              class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              [class]="invalido('rolId') ? 'border-red-500/60' : 'border-border'"
+            >
+              <option [ngValue]="0" disabled>Selecciona un rol</option>
+              @for (r of roles(); track r.id) {
+                <option [ngValue]="r.id">{{ r.nombre }}</option>
+              }
+            </select>
+          </div>
+          <label class="flex items-center gap-2.5 text-sm">
+            <input type="checkbox" formControlName="activo" class="w-4 h-4 accent-[#d4af37]" />
+            Usuario activo (puede iniciar sesión)
+          </label>
+
+          @if (aviso(); as a) {
+            <p
+              [attr.role]="a.tipo === 'ok' ? 'status' : 'alert'"
+              class="text-sm rounded-lg px-4 py-3 border"
+              [class]="
+                a.tipo === 'ok'
+                  ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20'
+                  : 'text-red-400 bg-red-500/10 border-red-500/20'
+              "
+            >
+              {{ a.texto }}
+            </p>
+          }
+
+          <button
+            type="submit"
+            [disabled]="guardando()"
+            class="w-full min-h-11 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
+          >
+            {{ guardando() ? 'Guardando…' : editando() ? 'Guardar cambios' : 'Crear usuario' }}
+          </button>
+          <p class="text-xs text-muted-foreground">
+            Para quitarle el acceso a alguien, desactívalo en lugar de borrarlo: así se conservan sus
+            pedidos e historial.
+          </p>
+        </form>
+      </aside>
+    </div>
+  } @else {
+    <!-- Roles -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+      @for (item of resumenRoles(); track item.rol.id) {
+        <article class="bg-card border border-border rounded-lg p-6 space-y-2">
+          <h2 class="text-lg font-semibold">{{ item.rol.nombre }}</h2>
+          <p class="text-sm text-muted-foreground">{{ item.rol.descripcion ?? 'Sin descripción' }}</p>
+          <p class="text-sm pt-2">
+            <span class="text-2xl font-semibold text-primary">{{ item.activos }}</span>
+            {{ item.activos === 1 ? 'usuario activo' : 'usuarios activos' }}
+            @if (item.total > item.activos) {
+              <span class="text-muted-foreground">· {{ item.total - item.activos }} inactivo(s)</span>
+            }
+          </p>
+        </article>
+      }
+    </div>
+    <p class="text-xs text-muted-foreground">
+      Cada rol define el menú y los permisos de quien lo tiene. Para que un usuario cambie de funciones,
+      edita su rol en la pestaña Usuarios.
+    </p>
+  }
+</div>

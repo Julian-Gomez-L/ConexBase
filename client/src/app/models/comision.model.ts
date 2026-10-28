@@ -2,6 +2,7 @@ import { normalizarEstado } from '@app/components/estado-badge/estado-badge.comp
 import { ESTADO_COMISIONABLE, ESTADOS_EN_CURSO } from '@app/config/comisiones';
 import { HistorialPedido } from './historial-pedido.model';
 import { PedidoVista } from './pedido-vista.model';
+import { Usuario } from './usuario.model';
 
 export interface ComisionPedido {
   pedido: PedidoVista;
@@ -30,9 +31,9 @@ export interface ResumenComisiones {
   ganadoEsteMes: number;
 }
 
-const claveMes = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+export const claveMes = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
-function etiquetaMes(d: Date): string {
+export function etiquetaMes(d: Date): string {
   const texto = d.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
@@ -103,5 +104,73 @@ export function calcularComisiones(
     totalVentas: suma(ganadas, (c) => c.pedido.total),
     totalPorGanar: suma(porGanar, (c) => c.comision),
     ganadoEsteMes: porMes.get(claveMes(hoy))?.comision ?? 0,
+  };
+}
+
+export interface FilaAsesor {
+  asesor: Usuario;
+  /** Pedidos entregados en el mes elegido. */
+  entregados: ComisionPedido[];
+  ventas: number;
+  comision: number;
+  /** Pedidos en curso (no dependen del mes). */
+  porGanar: ComisionPedido[];
+  totalPorGanar: number;
+}
+
+export interface ComisionesAsesores {
+  filas: FilaAsesor[];
+  /** Meses con entregas, más el actual, del más reciente al más antiguo. */
+  meses: { clave: string; etiqueta: string }[];
+  totales: { entregados: number; ventas: number; comision: number; porGanar: number; enCurso: number };
+}
+
+/**
+ * Función PURA: comisiones de todos los asesores para un mes ("2026-10").
+ * Usa calcularComisiones para cada uno, así las cifras coinciden con las que
+ * cada asesor ve en "Mis Comisiones".
+ */
+export function comisionesPorAsesor(
+  pedidos: PedidoVista[],
+  historial: HistorialPedido[],
+  asesores: Usuario[],
+  tasa: number,
+  mes: string,
+  hoy = new Date(),
+): ComisionesAsesores {
+  const meses = new Map<string, string>([[claveMes(hoy), etiquetaMes(hoy)]]);
+
+  const filas = asesores.map((asesor): FilaAsesor => {
+    const r = calcularComisiones(pedidos, historial, asesor.id, tasa, hoy);
+    for (const m of r.meses) meses.set(m.clave, m.etiqueta);
+    const entregados = r.ganadas.filter((g) => claveMes(g.fecha) === mes);
+    return {
+      asesor,
+      entregados,
+      ventas: entregados.reduce((s, g) => s + g.pedido.total, 0),
+      comision: entregados.reduce((s, g) => s + g.comision, 0),
+      porGanar: r.porGanar,
+      totalPorGanar: r.totalPorGanar,
+    };
+  });
+
+  filas.sort(
+    (a, b) =>
+      b.comision - a.comision ||
+      b.totalPorGanar - a.totalPorGanar ||
+      `${a.asesor.nombre} ${a.asesor.apellido}`.localeCompare(`${b.asesor.nombre} ${b.asesor.apellido}`),
+  );
+
+  const suma = (campo: (f: FilaAsesor) => number) => filas.reduce((s, f) => s + campo(f), 0);
+  return {
+    filas,
+    meses: [...meses].map(([clave, etiqueta]) => ({ clave, etiqueta })).sort((a, b) => b.clave.localeCompare(a.clave)),
+    totales: {
+      entregados: suma((f) => f.entregados.length),
+      ventas: suma((f) => f.ventas),
+      comision: suma((f) => f.comision),
+      porGanar: suma((f) => f.totalPorGanar),
+      enCurso: suma((f) => f.porGanar.length),
+    },
   };
 }
