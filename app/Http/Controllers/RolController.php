@@ -19,10 +19,7 @@ class RolController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'success' => 'Se listaron correctamente',
-            'data'    => $this->rolService->list()
-        ]);
+        return $this->ok($this->rolService->list(), 'Los roles se listaron correctamente.');
     }
 
     /**
@@ -32,10 +29,7 @@ class RolController extends Controller
     {
         $registroInsertado = $this->rolService->store($datos->validated());
 
-        return response()->json([
-            'success'         => 'El rol se creó correctamente',
-            'datosInsertados' => $registroInsertado
-        ]);
+        return $this->creado($registroInsertado, 'El rol se creó correctamente.');
     }
 
     /**
@@ -45,11 +39,7 @@ class RolController extends Controller
     {
         $rol = $this->rolService->show($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Rol consultado correctamente.',
-            'data' => $rol
-        ]);
+        return $this->ok($rol, 'Rol consultado correctamente.');
     }
 
     /**
@@ -57,13 +47,7 @@ class RolController extends Controller
      */
     public function update(UpdateRolRequest $request, int $id)
     {
-        return response()->json([
-            'success' => 'El rol se actualizó correctamente',
-            'data' => $this->rolService->update(
-                $request->validated(),
-                $id
-            )
-        ]);
+        return $this->ok($this->rolService->update($request->validated(), $id), 'El rol se actualizó correctamente.');
     }
 
     /**
@@ -72,10 +56,6 @@ class RolController extends Controller
     public function destroy($id)
     {
         $this->rolService->destroy($id);
-        return response()->json([
-            'success' => true,
-            'message' => 'Rol eliminado correctamente.',
-            'data' => null
-        ]);
+        return $this->ok(null, 'Rol eliminado correctamente.');
     }
 }

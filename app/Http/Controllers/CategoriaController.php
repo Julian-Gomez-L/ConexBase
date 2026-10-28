@@ -19,10 +19,7 @@ class CategoriaController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'success' => 'Se listaron correctamente',
-            'data'    => $this->categoriaService->list()
-        ]);
+        return $this->ok($this->categoriaService->list(), 'Las categorías se listaron correctamente.');
     }
 
     /**
@@ -32,10 +29,7 @@ class CategoriaController extends Controller
     {
         $registroInsertado = $this->categoriaService->store($datos->validated());
 
-        return response()->json([
-            'success'         => 'La categoría se creó correctamente',
-            'datosInsertados' => $registroInsertado
-        ]);
+        return $this->creado($registroInsertado, 'La categoría se creó correctamente.');
     }
 
     /**
@@ -45,11 +39,7 @@ class CategoriaController extends Controller
     {
    $categoria = $this->categoriaService->show($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Categoría consultada correctamente.',
-            'data' => $categoria
-        ]);
+        return $this->ok($categoria, 'Categoría consultada correctamente.');
     }
 
     /**
@@ -57,23 +47,13 @@ class CategoriaController extends Controller
      */
     public function update(UpdateCategoriaRequest $request, int $id)
     {
-        return response()->json([
-            'success' => 'La categoría se actualizó correctamente',
-            'data' => $this->categoriaService->update(
-                $request->validated(),
-                $id
-            )
-        ]);
+        return $this->ok($this->categoriaService->update($request->validated(), $id), 'La categoría se actualizó correctamente.');
     }
 
     public function destroy($id)
     {
         $this->categoriaService->destroy($id);
-        return response()->json([
-            'success' => true,
-            'message' => 'Categoría eliminada correctamente.',
-            'data' => null
-        ]);
+        return $this->ok(null, 'Categoría eliminada correctamente.');
     }
 
     /**

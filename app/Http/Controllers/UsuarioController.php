@@ -19,10 +19,7 @@ class UsuarioController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'success' => 'Se listaron correctamente',
-            'data'    => $this->usuarioService->list()
-        ]);
+        return $this->ok($this->usuarioService->list(), 'Los usuarios se listaron correctamente.');
     }
 
     /**
@@ -32,10 +29,7 @@ class UsuarioController extends Controller
     {
         $registroInsertado = $this->usuarioService->store($datos->validated());
 
-        return response()->json([
-            'success'         => 'El usuario se creó correctamente',
-            'datosInsertados' => $registroInsertado
-        ]);
+        return $this->creado($registroInsertado, 'El usuario se creó correctamente.');
     }
 
     /**
@@ -45,11 +39,7 @@ class UsuarioController extends Controller
     {
         $usuario = $this->usuarioService->show($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Usuario consultado correctamente.',
-            'data' => $usuario
-        ]);
+        return $this->ok($usuario, 'Usuario consultado correctamente.');
     }
 
     /**
@@ -57,13 +47,7 @@ class UsuarioController extends Controller
      */
     public function update(UpdateUsuarioRequest $request, int $id)
     {
-        return response()->json([
-            'success' => 'El usuario se actualizó correctamente',
-            'data' => $this->usuarioService->update(
-                $request->validated(),
-                $id
-            )
-        ]);
+        return $this->ok($this->usuarioService->update($request->validated(), $id), 'El usuario se actualizó correctamente.');
     }
 
     /**
@@ -72,10 +56,6 @@ class UsuarioController extends Controller
     public function destroy($id)
     {
         $this->usuarioService->destroy($id);
-        return response()->json([
-            'success' => true,
-            'message' => 'Usuario eliminado correctamente.',
-            'data' => null
-        ]);
+        return $this->ok(null, 'Usuario eliminado correctamente.');
     }
 }

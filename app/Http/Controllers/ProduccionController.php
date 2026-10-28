@@ -19,10 +19,7 @@ class ProduccionController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'success' => 'Se listaron correctamente',
-            'data'  => $this->produccionService->list()
-        ]);
+        return $this->ok($this->produccionService->list(), 'Las producciones se listaron correctamente.');
     }
 
     /**
@@ -32,10 +29,7 @@ class ProduccionController extends Controller
     {
         $registroInsertado = $this->produccionService->store($datos->validated());
 
-        return response()->json([
-            'success' => 'La producción se creó correctamente',
-            'datosInsertados' => $registroInsertado
-        ]);
+        return $this->creado($registroInsertado, 'La producción se creó correctamente.');
     }
 
     /**
@@ -45,11 +39,7 @@ class ProduccionController extends Controller
     {
         $produccion = $this->produccionService->show($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Producción consultada correctamente.',
-            'data' => $produccion
-        ]);
+        return $this->ok($produccion, 'Producción consultada correctamente.');
     }
 
     /**
@@ -57,13 +47,7 @@ class ProduccionController extends Controller
      */
     public function update(UpdateProduccionRequest $request, int $id)
     {
-        return response()->json([
-            'success' => 'La producción se actualizó correctamente',
-            'data' => $this->produccionService->update(
-                $request->validated(),
-                $id
-            )
-        ]);
+        return $this->ok($this->produccionService->update($request->validated(), $id), 'La producción se actualizó correctamente.');
     }
 
     /**
@@ -72,10 +56,6 @@ class ProduccionController extends Controller
     public function destroy($id)
     {
         $this->produccionService->destroy($id);
-        return response()->json([
-            'success' => true,
-            'message' => 'Producción eliminada correctamente.',
-            'data' => null
-        ]);
+        return $this->ok(null, 'Producción eliminada correctamente.');
     }
 }

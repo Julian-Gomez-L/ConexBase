@@ -20,49 +20,29 @@ class PedidoController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'success' => 'Se listaron correctamente',
-            'data' => $this->pedidosService->list()
-        ]);
+        return $this->ok($this->pedidosService->list(), 'Los pedidos se listaron correctamente.');
     }
 
     public function store(StorePedidoRequest $request)
     {
-        return response()->json([
-            'success' => 'El pedido se creó correctamente',
-            'data' => $this->pedidosService->store($request->validated())
-        ]);
+        return $this->creado($this->pedidosService->store($request->validated()), 'El pedido se creó correctamente.');
     }
 
     public function show(int $id)
     {
         $pedido = $this->pedidosService->show($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Pedido consultado correctamente.',
-            'data' => $pedido
-        ]);
+        return $this->ok($pedido, 'Pedido consultado correctamente.');
     }
 
     public function update(UpdatePedidoRequest $request, int $id)
     {
-        return response()->json([
-            'success' => 'El pedido se actualizó correctamente',
-            'data' => $this->pedidosService->update(
-                $request->validated(),
-                $id
-            )
-        ]);
+        return $this->ok($this->pedidosService->update($request->validated(), $id), 'El pedido se actualizó correctamente.');
     }
 
     public function destroy($id)
     {
         $this->pedidosService->destroy($id);
-        return response()->json([
-            'success' => true,
-            'message' => 'Pedido eliminado correctamente.',
-            'data' => null
-        ]);
+        return $this->ok(null, 'Pedido eliminado correctamente.');
     }
 }

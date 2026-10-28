@@ -19,51 +19,29 @@ class DetallePedidoController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'success' => 'Los detalles de pedido se listaron correctamente',
-            'data' => $this->detallePedidoService->list()
-        ]);
+        return $this->ok($this->detallePedidoService->list(), 'Los detalles de pedido se listaron correctamente.');
     }
 
     public function store(StoreDetallePedidoRequest $request)
     {
-        return response()->json([
-            'success' => 'El detalle de pedido se creó correctamente',
-            'data' => $this->detallePedidoService->store(
-                $request->validated()
-            )
-        ]);
+        return $this->creado($this->detallePedidoService->store($request->validated()), 'El detalle de pedido se creó correctamente.');
     }
 
     public function show(int $id)
     {
         $detallePedido = $this->detallePedidoService->show($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Detalle de pedido consultado correctamente.',
-            'data' => $detallePedido
-        ]);
+        return $this->ok($detallePedido, 'Detalle de pedido consultado correctamente.');
     }
 
     public function update(UpdateDetallePedidoRequest $request, int $id)
     {
-        return response()->json([
-            'success' => 'El detalle de pedido se actualizó correctamente',
-            'data' => $this->detallePedidoService->update(
-                $request->validated(),
-                $id
-            )
-        ]);
+        return $this->ok($this->detallePedidoService->update($request->validated(), $id), 'El detalle de pedido se actualizó correctamente.');
     }
 
     public function destroy($id)
     {
         $this->detallePedidoService->destroy($id);
-        return response()->json([
-            'success' => true,
-            'message' => 'Detalle de pedido eliminado correctamente.',
-            'data' => null
-        ]);
+        return $this->ok(null, 'Detalle de pedido eliminado correctamente.');
     }
 }

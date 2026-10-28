@@ -10,6 +10,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Validation\ValidationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -51,6 +52,22 @@ return Application::configure(basePath: dirname(__DIR__))
                 'error' => $exception->errorCode,
                 'status' => $exception->status
             ], $exception->status);
+        });
+
+        // Errores de validación (Form Requests): mismo formato que el resto de errores,
+        // conservando `message` y `errors` (campo → mensajes) que lee el frontend.
+        $exceptions->render(function (ValidationException $exception, Request $request) {
+            if (!$request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $exception->getMessage(),
+                'error' => 'VALIDATION_ERROR',
+                'status' => 422,
+                'errors' => $exception->errors(),
+            ], 422);
         });
 
         $exceptions->render(function (ThrottleRequestsException $exception, Request $request) {

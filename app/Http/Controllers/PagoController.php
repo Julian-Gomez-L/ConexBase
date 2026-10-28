@@ -20,49 +20,29 @@ class PagoController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'success' => 'Los pagos se listaron correctamente',
-            'data' => $this->pagosService->list()
-        ]);
+        return $this->ok($this->pagosService->list(), 'Los pagos se listaron correctamente.');
     }
 
     public function store(StorePagoRequest $request)
     {
-        return response()->json([
-            'success' => 'El pago se creó correctamente',
-            'data' => $this->pagosService->store($request->validated())
-        ]);
+        return $this->creado($this->pagosService->store($request->validated()), 'El pago se creó correctamente.');
     }
 
     public function show($id)
     {
         $pago = $this->pagosService->show($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Pago consultado correctamente.',
-            'data' => $pago
-        ]);
+        return $this->ok($pago, 'Pago consultado correctamente.');
     }
 
     public function update(UpdatePagoRequest $request, int $id)
     {
-        return response()->json([
-            'success' => 'El pago se actualizó correctamente',
-            'data' => $this->pagosService->update(
-                $request->validated(),
-                $id
-            )
-        ]);
+        return $this->ok($this->pagosService->update($request->validated(), $id), 'El pago se actualizó correctamente.');
     }
 
     public function destroy($id)
     {
         $this->pagosService->destroy($id);
-        return response()->json([
-            'success' => true,
-            'message' => 'Pago eliminado correctamente.',
-            'data' => null
-        ]);
+        return $this->ok(null, 'Pago eliminado correctamente.');
     }
 }

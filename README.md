@@ -231,11 +231,12 @@ curl -X POST http://localhost:8000/api/pagos \
   }'
 ```
 
-Respuesta correcta:
+Respuesta correcta (HTTP 201). Todas las respuestas de éxito usan este mismo formato; al crear el código es 201 y en lo demás 200:
 
 ```json
 {
-  "success": "El pago se creó correctamente",
+  "success": true,
+  "message": "El pago se creó correctamente.",
   "data": { "id": 2, "pedido_id": 1, "monto": "150000.00" }
 }
 ```
@@ -246,7 +247,7 @@ Respuesta correcta:
 |---|---|---|
 | El registro no existe | 404 | `{"success": false, "message": "El pago no existe.", "error": "PAGO_NOT_FOUND", "status": 404}` |
 | El ID no es válido | 422 | `{"success": false, "message": "El identificador del pago no es válido.", "error": "INVALID_ID", "status": 422}` |
-| Faltan datos o son inválidos | 422 | Laravel devuelve el detalle por campo |
+| Faltan datos o son inválidos | 422 | `{"success": false, "message": "El monto es obligatorio.", "error": "VALIDATION_ERROR", "status": 422, "errors": {"monto": ["El monto es obligatorio."]}}` |
 | Sin token, token vencido o credenciales incorrectas | 401 | `{"success": false, "message": "Debes iniciar sesión para continuar.", "error": "UNAUTHENTICATED", "status": 401}` |
 | Rol sin permiso | 403 | `{"success": false, "message": "No tienes permisos para realizar esta acción.", "error": "FORBIDDEN", "status": 403}` |
 | Demasiados intentos de login | 429 | `{"success": false, "error": "TOO_MANY_REQUESTS", "status": 429}` |

@@ -18,14 +18,14 @@ export interface RegistroBase {
 export type Activo = boolean | 0 | 1;
 export const estaActivo = (v: Activo): boolean => v === true || v === 1;
 
-/** Respuesta de éxito. `success` es `true` en show/destroy y un texto en index/store/update. */
+/** Respuesta de éxito: el backend siempre responde { success: true, message, data }. */
 export interface ApiResponse<T> {
-  success: boolean | string;
-  message?: string;
+  success: true;
+  message: string;
   data: T;
 }
 
-/** Error de negocio del backend (404 NOT_FOUND, 422 INVALID_ID). */
+/** Error del backend (404 NOT_FOUND, 422 INVALID_ID / VALIDATION_ERROR, 401, 403, 429). */
 export interface ApiErrorBody {
   success?: false;
   message?: string;

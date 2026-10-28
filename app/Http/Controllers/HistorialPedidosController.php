@@ -19,10 +19,7 @@ class HistorialPedidosController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'success' => 'Se listaron correctamente',
-            'data'  => $this->historialPedidosService->list()
-        ]);
+        return $this->ok($this->historialPedidosService->list(), 'Los historiales de pedidos se listaron correctamente.');
     }
 
     /**
@@ -32,10 +29,7 @@ class HistorialPedidosController extends Controller
     {
         $registroInsertado = $this->historialPedidosService->store($datos->validated());
 
-        return response()->json([
-            'success' => 'El historial de pedidos se creó correctamente',
-            'datosInsertados' => $registroInsertado
-        ]);
+        return $this->creado($registroInsertado, 'El historial de pedidos se creó correctamente.');
     }
 
     /**
@@ -45,11 +39,7 @@ class HistorialPedidosController extends Controller
     {
         $historialPedido = $this->historialPedidosService->show($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Historial de pedidos consultado correctamente.',
-            'data' => $historialPedido
-        ]);
+        return $this->ok($historialPedido, 'Historial de pedidos consultado correctamente.');
     }
 
     /**
@@ -57,13 +47,7 @@ class HistorialPedidosController extends Controller
      */
     public function update(UpdateHistorialPedidosRequest $request, int $id)
     {
-        return response()->json([
-            'success' => 'El historial de pedidos se actualizó correctamente',
-            'data' => $this->historialPedidosService->update(
-                $request->validated(),
-                $id
-            )
-        ]);
+        return $this->ok($this->historialPedidosService->update($request->validated(), $id), 'El historial de pedidos se actualizó correctamente.');
     }
 
     /**
@@ -72,10 +56,6 @@ class HistorialPedidosController extends Controller
     public function destroy($id)
     {
         $this->historialPedidosService->destroy($id);
-        return response()->json([
-            'success' => true,
-            'message' => 'Historial de pedidos eliminado correctamente.',
-            'data' => null
-        ]);
+        return $this->ok(null, 'Historial de pedidos eliminado correctamente.');
     }
 }

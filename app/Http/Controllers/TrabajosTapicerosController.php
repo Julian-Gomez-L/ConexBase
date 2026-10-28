@@ -19,10 +19,7 @@ class TrabajosTapicerosController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'success' => 'Se listaron correctamente',
-            'data'  => $this->trabajos_tapicerosService->list()
-        ]);
+        return $this->ok($this->trabajos_tapicerosService->list(), 'Los trabajos de tapiceros se listaron correctamente.');
     }
 
     /**
@@ -32,10 +29,7 @@ class TrabajosTapicerosController extends Controller
     {
         $registroInsertado = $this->trabajos_tapicerosService->store($datos->validated());
 
-        return response()->json([
-            'success' => 'Los trabajos de tapiceros se crearon correctamente',
-            'datosInsertados' => $registroInsertado
-        ]);
+        return $this->creado($registroInsertado, 'Los trabajos de tapiceros se crearon correctamente.');
     }
 
     /**
@@ -45,11 +39,7 @@ class TrabajosTapicerosController extends Controller
     {
         $trabajo = $this->trabajos_tapicerosService->show($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Trabajo de tapicero consultado correctamente.',
-            'data' => $trabajo
-        ]);
+        return $this->ok($trabajo, 'Trabajo de tapicero consultado correctamente.');
     }
 
     /**
@@ -57,13 +47,7 @@ class TrabajosTapicerosController extends Controller
      */
     public function update(UpdateTrabajosTapicerosRequest $request, int $id)
     {
-        return response()->json([
-            'success' => 'Los trabajos de tapiceros se actualizaron correctamente',
-            'data' => $this->trabajos_tapicerosService->update(
-                $request->validated(),
-                $id
-            )
-        ]);
+        return $this->ok($this->trabajos_tapicerosService->update($request->validated(), $id), 'Los trabajos de tapiceros se actualizaron correctamente.');
     }
 
     /**
@@ -72,10 +56,6 @@ class TrabajosTapicerosController extends Controller
     public function destroy($id)
     {
         $this->trabajos_tapicerosService->destroy($id);
-        return response()->json([
-            'success' => true,
-            'message' => 'Trabajo de tapicero eliminado correctamente.',
-            'data' => null
-        ]);
+        return $this->ok(null, 'Trabajo de tapicero eliminado correctamente.');
     }
 }

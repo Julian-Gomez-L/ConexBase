@@ -19,10 +19,7 @@ class ProductoController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'success' => 'Se listaron correctamente',
-            'data'  => $this->productoService->list()
-        ]);
+        return $this->ok($this->productoService->list(), 'Los productos se listaron correctamente.');
     }
 
     /**
@@ -32,10 +29,7 @@ class ProductoController extends Controller
     {
         $registroInsertado = $this->productoService->store($datos->validated());
 
-        return response()->json([
-            'success' => 'El producto se creó correctamente',
-            'datosInsertados' => $registroInsertado
-        ], 201);
+        return $this->creado($registroInsertado, 'El producto se creó correctamente.');
     }
 
     /**
@@ -45,11 +39,7 @@ class ProductoController extends Controller
     {
         $producto = $this->productoService->show($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Producto consultado correctamente.',
-            'data' => $producto
-        ]);
+        return $this->ok($producto, 'Producto consultado correctamente.');
     }
 
     /**
@@ -57,13 +47,7 @@ class ProductoController extends Controller
      */
     public function update(UpdateProductoRequest $request, int $id)
     {
-        return response()->json([
-            'success' => 'El producto se actualizó correctamente',
-            'data' => $this->productoService->update(
-                $request->validated(),
-                $id
-            )
-        ]);
+        return $this->ok($this->productoService->update($request->validated(), $id), 'El producto se actualizó correctamente.');
     }
 
     /**
@@ -72,10 +56,6 @@ class ProductoController extends Controller
     public function destroy($id)
     {
         $this->productoService->destroy($id);
-        return response()->json([
-            'success' => true,
-            'message' => 'Producto eliminado correctamente.',
-            'data' => null
-        ]);
+        return $this->ok(null, 'Producto eliminado correctamente.');
     }
 }

@@ -19,10 +19,7 @@ class ClienteController extends Controller
 
     public function index()
     {
-        return response()->json([
-            'success' => 'Se listaron correctamente',
-            'data'    => $this->clientesService->list()
-        ]);
+        return $this->ok($this->clientesService->list(), 'Los clientes se listaron correctamente.');
     }
 
     /**
@@ -32,10 +29,7 @@ class ClienteController extends Controller
     {
         $registroInsertado = $this->clientesService->store($datos->validated());
 
-        return response()->json([
-            'success'         => 'El cliente se creó correctamente',
-            'datosInsertados' => $registroInsertado
-        ]);
+        return $this->creado($registroInsertado, 'El cliente se creó correctamente.');
     }
 
     /**
@@ -45,11 +39,7 @@ class ClienteController extends Controller
     {
       $cliente = $this->clientesService->show($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Cliente consultado correctamente.',
-            'data' => $cliente
-        ]);
+        return $this->ok($cliente, 'Cliente consultado correctamente.');
     }
 
     /**
@@ -57,13 +47,7 @@ class ClienteController extends Controller
      */
     public function update(UpdateClienteRequest $request, int $id)
     {
-        return response()->json([
-            'success' => 'El cliente se actualizó correctamente',
-            'data' => $this->clientesService->update(
-                $request->validated(),
-                $id
-            )
-        ]);
+        return $this->ok($this->clientesService->update($request->validated(), $id), 'El cliente se actualizó correctamente.');
     }
 
     /**
@@ -72,10 +56,6 @@ class ClienteController extends Controller
     public function destroy($id)
     {
         $this->clientesService->destroy($id);
-        return response()->json([
-            'success' => true,
-            'message' => 'Cliente eliminado correctamente.',
-            'data' => null
-        ]);
+        return $this->ok(null, 'Cliente eliminado correctamente.');
     }
 }

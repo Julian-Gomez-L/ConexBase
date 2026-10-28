@@ -8,7 +8,7 @@ import { AuthService } from '@app/services/auth.service';
 import { PedidosComponent } from './pedidos.component';
 import { DATOS } from '@app/testing/datos-prueba';
 
-const ok = <T>(data: T) => ({ success: 'Se listaron correctamente', data });
+const ok = <T>(data: T) => ({ success: true, message: 'Se listaron correctamente.', data });
 
 describe('PedidosComponent (con API simulada)', () => {
   let http: HttpTestingController;
