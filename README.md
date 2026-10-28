@@ -256,17 +256,32 @@ Envía siempre el encabezado `Accept: application/json` para recibir los errores
 
 ### Datos de prueba
 
-El *seeder* crea 5 roles, 5 usuarios (uno por rol), 3 clientes, 3 categorías, 5 productos y varios pedidos, pagos, producciones y trabajos de tapicería.
+El *seeder* crea 5 roles, 6 usuarios, 5 clientes, 3 categorías, 5 productos y 7 pedidos con sus detalles, pagos, historial, producciones y trabajos de tapicería.
 
-| Rol | Correo | Contraseña |
-|---|---|---|
-| Administrador | `admin@conexbase.com` | `123456` |
-| Vendedor | `vendedor@conexbase.com` | `123456` |
-| Encargado de Producción | `produccion@conexbase.com` | `123456` |
-| Tapicero | `tapicero@conexbase.com` | `123456` |
-| Confirmador | `confirmador@conexbase.com` | `123456` |
+| Rol | Nombre | Correo | Contraseña |
+|---|---|---|---|
+| Administrador | Carlos Rodriguez | `admin@conexbase.com` | `123456` |
+| Vendedor | Juan Perez | `vendedor@conexbase.com` | `123456` |
+| Vendedor | Valentina Suarez | `vendedor2@conexbase.com` | `123456` |
+| Encargado de Producción | Andres Gomez | `produccion@conexbase.com` | `123456` |
+| Tapicero | Miguel Martinez | `tapicero@conexbase.com` | `123456` |
+| Confirmador | Sofia Castro | `confirmador@conexbase.com` | `123456` |
 
-Son solo para desarrollo; no los uses en producción. En la aplicación web, cada rol ve su propio menú: Administración (Panel General, Ventas…), Asesor Comercial (Mis Pedidos…), Confirmación, Fabricación y Tapicero.
+Hay un pedido en cada estado, para que cada rol tenga algo que probar. El total de cada pedido se calcula con los precios de sus productos, y el historial recorre los estados por los que pasó:
+
+| Pedido | Asesor | Estado | Total | Pagado | Para probar |
+|---|---|---|---|---|---|
+| 1 | Juan | Pendiente | $2.000.000 | $1.000.000 | Confirmación |
+| 2 | Juan | En producción | $1.300.000 | $650.000 | Fabricación y Tapicero (2 producciones, 1 trabajo en proceso) |
+| 3 | Juan | Entregado | $1.550.000 | $1.550.000 | Ciclo completo (5 pasos en el historial) |
+| 4 | Valentina | Confirmado | $1.800.000 | $900.000 | Fabricación (listo para recibir) |
+| 5 | Valentina | Cancelado | $1.100.000 | $0 | Filtros y estados finales |
+| 6 | Juan | Rechazado | $900.000 | $0 | Revisar rechazados |
+| 7 | Valentina | Pendiente | $1.500.000 | $500.000 | Confirmación |
+
+Como hay dos vendedores, en *Mis Pedidos* Juan ve 4 pedidos y Valentina 3.
+
+Son solo para desarrollo; no los uses en producción. Si ya tenías la base de datos creada, el *seeder* no la modifica: para cargar estos datos ejecuta `docker compose down -v` y vuelve a levantar. En la aplicación web, cada rol ve su propio menú: Administración (Panel General, Ventas…), Asesor Comercial (Mis Pedidos…), Confirmación, Fabricación y Tapicero.
 
 ### Comandos útiles
 

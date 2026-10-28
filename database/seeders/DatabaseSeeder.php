@@ -119,13 +119,26 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now(),
             ]);
 
-            DB::table('usuarios')->insert([
+            $confirmadorUsuarioId = DB::table('usuarios')->insertGetId([
                 'documento' => '1001001005',
                 'nombre' => 'Sofia',
                 'apellido' => 'Castro',
                 'correo' => 'confirmador@conexbase.com',
                 'password' => Hash::make('123456'),
                 'rol_id' => $confirmadorId,
+                'estado' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Segundo asesor: permite comprobar que "Mis Pedidos" muestra solo los propios.
+            $vendedor2UsuarioId = DB::table('usuarios')->insertGetId([
+                'documento' => '1001001006',
+                'nombre' => 'Valentina',
+                'apellido' => 'Suarez',
+                'correo' => 'vendedor2@conexbase.com',
+                'password' => Hash::make('123456'),
+                'rol_id' => $vendedorId,
                 'estado' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -166,6 +179,28 @@ class DatabaseSeeder extends Seeder
                 'telefono' => '3105556677',
                 'correo' => 'maria@gmail.com',
                 'direccion' => 'Calle 80 # 12-15',
+                'estado' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $cliente4Id = DB::table('clientes')->insertGetId([
+                'documento' => '4040404040',
+                'nombre' => 'Andres Lopez',
+                'telefono' => '3204447788',
+                'correo' => 'andres@gmail.com',
+                'direccion' => 'Avenida 68 # 25-10',
+                'estado' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $cliente5Id = DB::table('clientes')->insertGetId([
+                'documento' => '5050505050',
+                'nombre' => 'Camila Rojas',
+                'telefono' => '3157778899',
+                'correo' => 'camila@gmail.com',
+                'direccion' => 'Calle 26 # 50-40',
                 'estado' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -262,220 +297,227 @@ class DatabaseSeeder extends Seeder
 
             /*
             |--------------------------------------------------------------------------
-            | PEDIDOS
+            | PEDIDOS, DETALLES, PAGOS E HISTORIAL
             |--------------------------------------------------------------------------
+            | Subtotales y total se calculan con el precio de cada producto, para que
+            | siempre cuadren. El historial recorre los estados por los que pasó el
+            | pedido, con la persona que hizo cada cambio.
+            |
+            | Un pedido por estado, para que cada rol tenga algo que probar:
+            |   1 Pendiente       (Juan)       → lo revisa el Confirmador
+            |   2 En producción   (Juan)       → Fabricación y Tapicero trabajando
+            |   3 Entregado       (Juan)       → ciclo completo
+            |   4 Confirmado      (Valentina)  → listo para que Fabricación lo reciba
+            |   5 Cancelado       (Valentina)
+            |   6 Rechazado       (Juan)
+            |   7 Pendiente       (Valentina)  → segundo pedido para el Confirmador
             */
 
-            $pedido1Id = DB::table('pedidos')->insertGetId([
-                'cliente_id' => $cliente1Id,
-                'usuario_id' => $vendedorUsuarioId,
-                'estado' => 'Pendiente',
-                'total' => 2000000,
-                'created_at' => now(),
-                'updated_at' => now(),
+            $precios = DB::table('productos')->pluck('precio', 'id');
+
+            $crearPedido = function (array $p) use ($precios) {
+                $total = 0;
+                foreach ($p['items'] as [$productoId, $cantidad]) {
+                    $total += $precios[$productoId] * $cantidad;
+                }
+
+                $pedidoId = DB::table('pedidos')->insertGetId([
+                    'cliente_id' => $p['cliente'],
+                    'usuario_id' => $p['asesor'],
+                    'estado' => end($p['historial'])[1],
+                    'total' => $total,
+                    'created_at' => $p['fecha'],
+                    'updated_at' => end($p['historial'])[3],
+                ]);
+
+                foreach ($p['items'] as [$productoId, $cantidad]) {
+                    DB::table('detalle_pedidos')->insert([
+                        'pedido_id' => $pedidoId,
+                        'producto_id' => $productoId,
+                        'cantidad' => $cantidad,
+                        'precio_unitario' => $precios[$productoId],
+                        'subtotal' => $precios[$productoId] * $cantidad,
+                        'created_at' => $p['fecha'],
+                        'updated_at' => $p['fecha'],
+                    ]);
+                }
+
+                foreach ($p['pagos'] ?? [] as [$monto, $metodo, $fechaPago, $comprobante]) {
+                    DB::table('pagos')->insert([
+                        'pedido_id' => $pedidoId,
+                        'usuario_id' => $p['asesor'],
+                        'monto' => $monto,
+                        'metodo' => $metodo,
+                        'fecha_pago' => $fechaPago,
+                        'comprobante' => $comprobante,
+                        'created_at' => $fechaPago,
+                        'updated_at' => $fechaPago,
+                    ]);
+                }
+
+                $anterior = null;
+                foreach ($p['historial'] as [$usuarioId, $estado, $observacion, $fecha]) {
+                    DB::table('historial_pedidos')->insert([
+                        'pedido_id' => $pedidoId,
+                        'usuario_id' => $usuarioId,
+                        'cliente_id' => $p['cliente'],
+                        'estado_anterior' => $anterior,
+                        'estado_nuevo' => $estado,
+                        'observacion' => $observacion,
+                        'fecha' => $fecha,
+                        'created_at' => $fecha,
+                        'updated_at' => $fecha,
+                    ]);
+                    $anterior = $estado;
+                }
+
+                return $pedidoId;
+            };
+
+            // 1 · Pendiente: 1 sofá 3 puestos + 2 sillas comedor = 2.000.000 (abono del 50 %)
+            $pedido1Id = $crearPedido([
+                'cliente' => $cliente1Id,
+                'asesor' => $vendedorUsuarioId,
+                'fecha' => '2026-10-20 09:00:00',
+                'items' => [[$sofaId, 1], [$sillaId, 2]],
+                'pagos' => [[1000000, 'Transferencia', '2026-10-20', 'COMP-0001']],
+                'historial' => [
+                    [$vendedorUsuarioId, 'Pendiente', 'Pedido creado', '2026-10-20 09:00:00'],
+                ],
             ]);
 
-            $pedido2Id = DB::table('pedidos')->insertGetId([
-                'cliente_id' => $cliente2Id,
-                'usuario_id' => $vendedorUsuarioId,
-                'estado' => 'En producción',
-                'total' => 1300000,
-                'created_at' => now(),
-                'updated_at' => now(),
+            // 2 · En producción: 2 sillas comedor + 1 mesa comedor = 1.300.000
+            $pedido2Id = $crearPedido([
+                'cliente' => $cliente2Id,
+                'asesor' => $vendedorUsuarioId,
+                'fecha' => '2026-10-10 10:00:00',
+                'items' => [[$sillaId, 2], [$mesaId, 1]],
+                'pagos' => [[650000, 'Efectivo', '2026-10-10', 'COMP-0002']],
+                'historial' => [
+                    [$vendedorUsuarioId, 'Pendiente', 'Pedido creado', '2026-10-10 10:00:00'],
+                    [$confirmadorUsuarioId, 'Confirmado', 'Datos y abono verificados', '2026-10-11 08:30:00'],
+                    [$produccionUsuarioId, 'En producción', 'Pedido enviado a fabricación', '2026-10-12 08:00:00'],
+                ],
             ]);
 
-            $pedido3Id = DB::table('pedidos')->insertGetId([
-                'cliente_id' => $cliente3Id,
-                'usuario_id' => $vendedorUsuarioId,
-                'estado' => 'Entregado',
-                'total' => 1250000,
-                'created_at' => now(),
-                'updated_at' => now(),
+            // 3 · Entregado: 1 sofá 2 puestos + 1 silla de oficina = 1.550.000 (pagado completo)
+            $pedido3Id = $crearPedido([
+                'cliente' => $cliente3Id,
+                'asesor' => $vendedorUsuarioId,
+                'fecha' => '2026-09-25 09:00:00',
+                'items' => [[$sofaDosPuestosId, 1], [$sillaOficinaId, 1]],
+                'pagos' => [
+                    [775000, 'Transferencia', '2026-09-25', 'COMP-0003'],
+                    [775000, 'Efectivo', '2026-10-05', 'COMP-0004'],
+                ],
+                'historial' => [
+                    [$vendedorUsuarioId, 'Pendiente', 'Pedido creado', '2026-09-25 09:00:00'],
+                    [$confirmadorUsuarioId, 'Confirmado', 'Datos y abono verificados', '2026-09-25 15:00:00'],
+                    [$produccionUsuarioId, 'En producción', 'Pedido enviado a fabricación', '2026-09-26 08:00:00'],
+                    [$produccionUsuarioId, 'Finalizado', 'Control de calidad aprobado', '2026-10-03 17:00:00'],
+                    [$administradorUsuarioId, 'Entregado', 'Pedido entregado al cliente', '2026-10-05 11:00:00'],
+                ],
+            ]);
+
+            // 4 · Confirmado: 1 mesa comedor + 4 sillas comedor = 1.800.000
+            $crearPedido([
+                'cliente' => $cliente4Id,
+                'asesor' => $vendedor2UsuarioId,
+                'fecha' => '2026-10-22 11:00:00',
+                'items' => [[$mesaId, 1], [$sillaId, 4]],
+                'pagos' => [[900000, 'Transferencia', '2026-10-22', 'COMP-0005']],
+                'historial' => [
+                    [$vendedor2UsuarioId, 'Pendiente', 'Pedido creado', '2026-10-22 11:00:00'],
+                    [$confirmadorUsuarioId, 'Confirmado', 'Datos y abono verificados', '2026-10-23 09:00:00'],
+                ],
+            ]);
+
+            // 5 · Cancelado: 1 sofá 2 puestos = 1.100.000 (sin pagos)
+            $crearPedido([
+                'cliente' => $cliente5Id,
+                'asesor' => $vendedor2UsuarioId,
+                'fecha' => '2026-10-15 14:00:00',
+                'items' => [[$sofaDosPuestosId, 1]],
+                'historial' => [
+                    [$vendedor2UsuarioId, 'Pendiente', 'Pedido creado', '2026-10-15 14:00:00'],
+                    [$vendedor2UsuarioId, 'Cancelado', 'El cliente desistió de la compra', '2026-10-16 10:00:00'],
+                ],
+            ]);
+
+            // 6 · Rechazado: 2 sillas de oficina = 900.000 (sin pagos)
+            $crearPedido([
+                'cliente' => $cliente4Id,
+                'asesor' => $vendedorUsuarioId,
+                'fecha' => '2026-10-24 16:00:00',
+                'items' => [[$sillaOficinaId, 2]],
+                'historial' => [
+                    [$vendedorUsuarioId, 'Pendiente', 'Pedido creado', '2026-10-24 16:00:00'],
+                    [$confirmadorUsuarioId, 'Rechazado', 'Dirección de entrega incompleta', '2026-10-25 09:00:00'],
+                ],
+            ]);
+
+            // 7 · Pendiente: 1 sofá 3 puestos = 1.500.000 (abono de 500.000)
+            $crearPedido([
+                'cliente' => $cliente5Id,
+                'asesor' => $vendedor2UsuarioId,
+                'fecha' => '2026-10-27 10:00:00',
+                'items' => [[$sofaId, 1]],
+                'pagos' => [[500000, 'Efectivo', '2026-10-27', 'COMP-0006']],
+                'historial' => [
+                    [$vendedor2UsuarioId, 'Pendiente', 'Pedido creado', '2026-10-27 10:00:00'],
+                ],
             ]);
 
 
             /*
             |--------------------------------------------------------------------------
-            | DETALLE PEDIDOS
+            | PRODUCCIONES Y TRABAJOS DE TAPICERÍA
             |--------------------------------------------------------------------------
+            | Solo en pedidos que ya pasaron por confirmación (2 y 3).
             */
 
-            // Pedido 1:
-            // 1 Sofa = 1.500.000
-            // 2 Sillas = 500.000
-            // Total = 2.000.000
-
-            DB::table('detalle_pedidos')->insert([
-                [
-                    'pedido_id' => $pedido1Id,
-                    'producto_id' => $sofaId,
-                    'cantidad' => 1,
-                    'precio_unitario' => 1500000,
-                    'subtotal' => 1500000,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'pedido_id' => $pedido1Id,
-                    'producto_id' => $sillaId,
-                    'cantidad' => 2,
-                    'precio_unitario' => 250000,
-                    'subtotal' => 500000,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-            ]);
-
-            // Pedido 2:
-            // 2 Sillas = 500.000
-            // 1 Mesa = 800.000
-            // Total = 1.300.000
-
-            DB::table('detalle_pedidos')->insert([
-                [
-                    'pedido_id' => $pedido2Id,
-                    'producto_id' => $sillaId,
-                    'cantidad' => 2,
-                    'precio_unitario' => 250000,
-                    'subtotal' => 500000,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'pedido_id' => $pedido2Id,
-                    'producto_id' => $mesaId,
-                    'cantidad' => 1,
-                    'precio_unitario' => 800000,
-                    'subtotal' => 800000,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-            ]);
-
-            // Pedido 3:
-            // 1 Sofa 2 puestos = 1.100.000
-            // 1 Silla oficina = 450.000
-            // Para dejar un ejemplo de pedido con otro valor,
-            // utilizamos solo el sofa de 2 puestos + 1 silla.
-            // Total real = 1.550.000
-
-            DB::table('detalle_pedidos')->insert([
-                [
-                    'pedido_id' => $pedido3Id,
-                    'producto_id' => $sofaDosPuestosId,
-                    'cantidad' => 1,
-                    'precio_unitario' => 1100000,
-                    'subtotal' => 1100000,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'pedido_id' => $pedido3Id,
-                    'producto_id' => $sillaOficinaId,
-                    'cantidad' => 1,
-                    'precio_unitario' => 450000,
-                    'subtotal' => 450000,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-            ]);
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | PAGOS
-            |--------------------------------------------------------------------------
-            */
-
-            DB::table('pagos')->insert([
-                [
-                    'pedido_id' => $pedido1Id,
-                    'usuario_id' => $vendedorUsuarioId,
-                    'monto' => 2000000,
-                    'metodo' => 'Transferencia',
-                    'fecha_pago' => '2026-09-01',
-                    'comprobante' => 'COMP-0001',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'pedido_id' => $pedido2Id,
-                    'usuario_id' => $vendedorUsuarioId,
-                    'monto' => 650000,
-                    'metodo' => 'Efectivo',
-                    'fecha_pago' => '2026-09-02',
-                    'comprobante' => 'COMP-0002',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'pedido_id' => $pedido3Id,
-                    'usuario_id' => $vendedorUsuarioId,
-                    'monto' => 1550000,
-                    'metodo' => 'Transferencia',
-                    'fecha_pago' => '2026-09-03',
-                    'comprobante' => 'COMP-0003',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-            ]);
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | PRODUCCIONES
-            |--------------------------------------------------------------------------
-            */
-
-            $produccion1Id = DB::table('producciones')->insertGetId([
-                'pedido_id' => $pedido1Id,
-                'producto_id' => $sofaId,
+            $produccionSillasId = DB::table('producciones')->insertGetId([
+                'pedido_id' => $pedido2Id,
+                'producto_id' => $sillaId,
                 'usuario_id' => $produccionUsuarioId,
-                'fecha_inicio' => '2026-09-02',
+                'fecha_inicio' => '2026-10-12',
                 'fecha_fin' => null,
                 'estado' => 'En proceso',
-                'observaciones' => 'Fabricacion del sofa de tres puestos',
+                'observaciones' => 'Estructura lista, pendiente tapizado',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            $produccion2Id = DB::table('producciones')->insertGetId([
+            DB::table('producciones')->insert([
                 'pedido_id' => $pedido2Id,
                 'producto_id' => $mesaId,
                 'usuario_id' => $produccionUsuarioId,
-                'fecha_inicio' => '2026-09-03',
+                'fecha_inicio' => '2026-10-12',
                 'fecha_fin' => null,
                 'estado' => 'Pendiente',
-                'observaciones' => 'Produccion de mesa de comedor',
+                'observaciones' => 'Esperando madera para la mesa',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            $produccion3Id = DB::table('producciones')->insertGetId([
+            $produccionSofaId = DB::table('producciones')->insertGetId([
                 'pedido_id' => $pedido3Id,
                 'producto_id' => $sofaDosPuestosId,
                 'usuario_id' => $produccionUsuarioId,
-                'fecha_inicio' => '2026-08-25',
-                'fecha_fin' => '2026-08-30',
+                'fecha_inicio' => '2026-09-26',
+                'fecha_fin' => '2026-10-03',
                 'estado' => 'Finalizada',
                 'observaciones' => 'Trabajo terminado correctamente',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-
-            /*
-            |--------------------------------------------------------------------------
-            | TRABAJOS TAPICEROS
-            |--------------------------------------------------------------------------
-            */
-
             DB::table('trabajos_tapiceros')->insert([
                 [
-                    'produccion_id' => $produccion1Id,
+                    'produccion_id' => $produccionSillasId,
                     'usuario_id' => $tapiceroUsuarioId,
-                    'descripcion' => 'Tapizado del sofa de tres puestos',
-                    'fecha_inicio' => '2026-09-03',
+                    'descripcion' => 'Tapizado de 2 sillas de comedor',
+                    'fecha_inicio' => '2026-10-13',
                     'fecha_fin' => null,
                     'estado' => 'En proceso',
                     'observaciones' => 'Utilizar tela color gris',
@@ -483,89 +525,13 @@ class DatabaseSeeder extends Seeder
                     'updated_at' => now(),
                 ],
                 [
-                    'produccion_id' => $produccion2Id,
+                    'produccion_id' => $produccionSofaId,
                     'usuario_id' => $tapiceroUsuarioId,
-                    'descripcion' => 'Tapizado de sillas para comedor',
-                    'fecha_inicio' => '2026-09-04',
-                    'fecha_fin' => null,
-                    'estado' => 'Pendiente',
-                    'observaciones' => 'Pendiente recibir material',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'produccion_id' => $produccion3Id,
-                    'usuario_id' => $tapiceroUsuarioId,
-                    'descripcion' => 'Tapizado final del sofa de dos puestos',
-                    'fecha_inicio' => '2026-08-26',
-                    'fecha_fin' => '2026-08-29',
+                    'descripcion' => 'Tapizado del sofá de dos puestos',
+                    'fecha_inicio' => '2026-09-28',
+                    'fecha_fin' => '2026-10-02',
                     'estado' => 'Finalizado',
                     'observaciones' => 'Trabajo terminado',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-            ]);
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | HISTORIAL PEDIDOS
-            |--------------------------------------------------------------------------
-            */
-
-            DB::table('historial_pedidos')->insert([
-                [
-                    'pedido_id' => $pedido1Id,
-                    'usuario_id' => $vendedorUsuarioId,
-                    'cliente_id' => $cliente1Id,
-                    'estado_anterior' => null,
-                    'estado_nuevo' => 'Pendiente',
-                    'observacion' => 'Pedido creado',
-                    'fecha' => '2026-09-01 09:00:00',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'pedido_id' => $pedido2Id,
-                    'usuario_id' => $vendedorUsuarioId,
-                    'cliente_id' => $cliente2Id,
-                    'estado_anterior' => null,
-                    'estado_nuevo' => 'Pendiente',
-                    'observacion' => 'Pedido creado',
-                    'fecha' => '2026-09-02 10:00:00',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'pedido_id' => $pedido2Id,
-                    'usuario_id' => $produccionUsuarioId,
-                    'cliente_id' => $cliente2Id,
-                    'estado_anterior' => 'Pendiente',
-                    'estado_nuevo' => 'En producción',
-                    'observacion' => 'Pedido enviado a producción',
-                    'fecha' => '2026-09-03 08:00:00',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'pedido_id' => $pedido3Id,
-                    'usuario_id' => $vendedorUsuarioId,
-                    'cliente_id' => $cliente3Id,
-                    'estado_anterior' => null,
-                    'estado_nuevo' => 'En producción',
-                    'observacion' => 'Pedido creado y enviado a producción',
-                    'fecha' => '2026-08-25 09:00:00',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'pedido_id' => $pedido3Id,
-                    'usuario_id' => $administradorUsuarioId,
-                    'cliente_id' => $cliente3Id,
-                    'estado_anterior' => 'En producción',
-                    'estado_nuevo' => 'Entregado',
-                    'observacion' => 'Pedido entregado al cliente',
-                    'fecha' => '2026-08-30 16:00:00',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ],
