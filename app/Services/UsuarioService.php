@@ -59,6 +59,11 @@ class UsuarioService
 
         $id = (int) $id;
 
+        // Si no se envía una contraseña nueva, se conserva la actual
+        if (empty($data['password'])) {
+            unset($data['password']);
+        }
+
         $resultado = $this->usuarioRepository->update($data, $id);
 
         if (!$resultado) {
