@@ -183,7 +183,18 @@ curl http://localhost:8000/api/pedidos -H "Accept: application/json" -H "Authori
 | `GET /api/auth/me` | Datos del usuario del token |
 | `POST /api/auth/logout` | Revoca el token |
 
-Permisos por rol: cualquier usuario autenticado puede consultar `roles` y `usuarios`, pero solo el **Administrador** puede crearlos, modificarlos o eliminarlos. El resto de recursos están abiertos a todo usuario autenticado.
+Permisos por rol: cualquier usuario autenticado puede **consultar** (listar y ver) todos los recursos. Crear y modificar depende del rol, y **eliminar** es exclusivo del Administrador:
+
+| Recurso | Crear | Modificar | Eliminar |
+|---|---|---|---|
+| Roles, usuarios, categorías, productos, historial de pedidos | Administrador | Administrador | Administrador |
+| Clientes, detalle de pedidos | Administrador, Vendedor | Administrador, Vendedor | Administrador |
+| Pedidos | Administrador, Vendedor | Administrador, Vendedor, Confirmador | Administrador |
+| Pagos | Administrador, Vendedor | Administrador | Administrador |
+| Producciones | Administrador, Encargado de Producción | Administrador, Encargado de Producción | Administrador |
+| Trabajos de tapiceros | Administrador, Encargado de Producción | Administrador, Encargado de Producción, Tapicero | Administrador |
+
+Las reglas están en `routes/api.php`. Los nombres de rol deben coincidir exactamente con la tabla `roles`.
 
 ### Endpoints
 
