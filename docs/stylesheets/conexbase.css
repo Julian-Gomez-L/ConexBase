@@ -1,0 +1,46 @@
+/*
+ * Colores de ConexBase en la documentación.
+ * Modo oscuro = los de la aplicación (fondo #121212, dorado #d4af37).
+ * Modo claro  = el mismo dorado, oscurecido para que se lea sobre blanco.
+ */
+:root {
+  --cb-dorado: #d4af37;
+  --cb-dorado-oscuro: #8a6d12;
+}
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #1a1a1a;
+  --md-primary-fg-color--light: #2a2a2a;
+  --md-primary-fg-color--dark: #0d0d0d;
+  --md-primary-bg-color: var(--cb-dorado);
+  --md-accent-fg-color: var(--cb-dorado-oscuro);
+  --md-typeset-a-color: var(--cb-dorado-oscuro);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-hue: 0;
+  --md-default-bg-color: #121212;
+  --md-default-fg-color: #e8e8e8;
+  --md-default-fg-color--light: #b5b5b5;
+  --md-code-bg-color: #1c1c1c;
+  --md-primary-fg-color: #1a1a1a;
+  --md-primary-fg-color--light: #2a2a2a;
+  --md-primary-fg-color--dark: #0d0d0d;
+  --md-primary-bg-color: var(--cb-dorado);
+  --md-accent-fg-color: #e6c65c;
+  --md-typeset-a-color: var(--cb-dorado);
+  --md-footer-bg-color: #0d0d0d;
+  --md-footer-bg-color--dark: #0a0a0a;
+}
+
+.md-header { border-bottom: 1px solid #2a2a2a; }
+.md-header__title { font-weight: 600; }
+
+[data-md-color-scheme="slate"] .md-typeset h1 { color: var(--cb-dorado); }
+[data-md-color-scheme="default"] .md-typeset h1 { color: var(--cb-dorado-oscuro); }
+.md-typeset h1 { font-weight: 700; }
+.md-typeset h2 { border-bottom: 1px solid var(--md-default-fg-color--lightest); padding-bottom: .3em; }
+
+.md-typeset table:not([class]) { font-size: .72rem; }
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th { background: #1c1c1c; color: var(--cb-dorado); }
+.md-typeset .mermaid { text-align: center; }

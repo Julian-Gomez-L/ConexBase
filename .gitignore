@@ -28,3 +28,6 @@ Thumbs.db
 /client/dist
 /client/.angular
 *.sqlite
+
+# Sitio de documentación generado por MkDocs (mkdocs build)
+/site

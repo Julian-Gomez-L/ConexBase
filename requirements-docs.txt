@@ -1,0 +1,5 @@
+# Dependencias para construir el sitio de documentación (docs/ + mkdocs.yml).
+#   pip install -r requirements-docs.txt
+# Se fija MkDocs 1.x: Material for MkDocs aún no es compatible con MkDocs 2.
+mkdocs>=1.6,<2
+mkdocs-material>=9.7,<10

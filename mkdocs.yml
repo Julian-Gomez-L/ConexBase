@@ -1,0 +1,77 @@
+# Sitio de documentación de ConexBase (MkDocs + Material).
+#   Ver en local:  pip install -r requirements-docs.txt && mkdocs serve   → http://127.0.0.1:8000
+#   Publicación:   automática en GitHub Pages con .github/workflows/docs.yml
+# Si el puerto 8000 está ocupado por la API, usa: mkdocs serve -a 127.0.0.1:8001
+
+site_name: ConexBase · Documentación
+site_description: Sistema de pedidos y producción de Basecamas y Colchones El Dormilón
+site_url: https://julian-gomez-l.github.io/ConexBase/
+repo_url: https://github.com/Julian-Gomez-L/ConexBase
+repo_name: Julian-Gomez-L/ConexBase
+edit_uri: edit/main/docs/
+copyright: Proyecto académico SENA · Tecnólogo en Análisis y Desarrollo de Software · ficha 3177445
+
+theme:
+  name: material
+  language: es
+  palette:
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Cambiar a modo claro
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Cambiar a modo oscuro
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.sections
+    - navigation.indexes
+    - navigation.footer
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+
+extra_css:
+  - stylesheets/conexbase.css
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+plugins:
+  - search:
+      lang: es
+
+nav:
+  - Inicio: index.md
