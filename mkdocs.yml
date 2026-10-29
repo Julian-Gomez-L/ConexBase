@@ -96,3 +96,12 @@ nav:
       - 10. Calidad y pruebas: arquitectura/10-calidad.md
       - 11. Riesgos y deuda técnica: arquitectura/11-riesgos.md
       - 12. Glosario: arquitectura/12-glosario.md
+  - Decisiones (ADR):
+      - decisiones/index.md
+      - ADR-0001 Arquitectura en capas: decisiones/0001-arquitectura-en-capas.md
+      - ADR-0002 Token de acceso propio: decisiones/0002-token-propio.md
+      - ADR-0003 Borrado lógico: decisiones/0003-borrado-logico.md
+      - ADR-0004 Zona horaria de Colombia: decisiones/0004-zona-horaria-bogota.md
+      - ADR-0005 Procesos en el frontend: decisiones/0005-procesos-en-el-frontend.md
+      - ADR-0006 Un repositorio con Docker: decisiones/0006-un-repositorio-con-docker.md
+      - Plantilla para un ADR nuevo: decisiones/plantilla.md
