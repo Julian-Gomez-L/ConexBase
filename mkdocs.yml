@@ -75,3 +75,6 @@ plugins:
 
 nav:
   - Inicio: index.md
+  - Primeros pasos:
+      - Instalar con Docker: primeros-pasos/instalacion.md
+      - Usuarios de prueba: primeros-pasos/usuarios-prueba.md
