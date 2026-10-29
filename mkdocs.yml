@@ -69,6 +69,10 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
 
+# Avisa (y con --strict, falla) si un enlace apunta a un título que no existe
+validation:
+  anchors: warn
+
 plugins:
   - search:
       lang: es
@@ -78,3 +82,17 @@ nav:
   - Primeros pasos:
       - Instalar con Docker: primeros-pasos/instalacion.md
       - Usuarios de prueba: primeros-pasos/usuarios-prueba.md
+  - Arquitectura:
+      - arquitectura/index.md
+      - 1. Introducción y objetivos: arquitectura/01-introduccion.md
+      - 2. Restricciones: arquitectura/02-restricciones.md
+      - 3. Contexto y alcance: arquitectura/03-contexto.md
+      - 4. Estrategia de solución: arquitectura/04-estrategia.md
+      - 5. Vista de bloques: arquitectura/05-vista-de-bloques.md
+      - 6. Vista de ejecución: arquitectura/06-vista-de-ejecucion.md
+      - 7. Despliegue: arquitectura/07-despliegue.md
+      - 8. Conceptos transversales: arquitectura/08-conceptos.md
+      - 9. Decisiones: arquitectura/09-decisiones.md
+      - 10. Calidad y pruebas: arquitectura/10-calidad.md
+      - 11. Riesgos y deuda técnica: arquitectura/11-riesgos.md
+      - 12. Glosario: arquitectura/12-glosario.md
