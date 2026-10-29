@@ -114,3 +114,5 @@ nav:
       - Cambiar permisos o roles: guias/permisos.md
       - Agregar un estado de pedido: guias/estado-pedido.md
       - Cambiar una regla de negocio: guias/regla-de-negocio.md
+  - Base de datos: datos/index.md
+  - API REST: api/index.md
