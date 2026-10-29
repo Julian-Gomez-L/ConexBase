@@ -105,3 +105,12 @@ nav:
       - ADR-0005 Procesos en el frontend: decisiones/0005-procesos-en-el-frontend.md
       - ADR-0006 Un repositorio con Docker: decisiones/0006-un-repositorio-con-docker.md
       - Plantilla para un ADR nuevo: decisiones/plantilla.md
+  - ¿Dónde hago el cambio?:
+      - guias/index.md
+      - Agregar un campo: guias/agregar-campo.md
+      - Crear un recurso nuevo: guias/nuevo-recurso.md
+      - Agregar una operación a la API: guias/nueva-operacion.md
+      - Crear una pantalla: guias/nueva-pantalla.md
+      - Cambiar permisos o roles: guias/permisos.md
+      - Agregar un estado de pedido: guias/estado-pedido.md
+      - Cambiar una regla de negocio: guias/regla-de-negocio.md
