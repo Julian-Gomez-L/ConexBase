@@ -12,12 +12,14 @@ on:
     branches: [main]
     paths:
       - "docs/**"
+      - "CONTRIBUTING.md"
       - "mkdocs.yml"
       - "requirements-docs.txt"
       - ".github/workflows/docs.yml"
   pull_request:
     paths:
       - "docs/**"
+      - "CONTRIBUTING.md"
       - "mkdocs.yml"
       - "requirements-docs.txt"
       - ".github/workflows/docs.yml"

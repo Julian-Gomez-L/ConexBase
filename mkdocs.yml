@@ -59,6 +59,10 @@ markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
+  # Permite incluir archivos de la raíz (CONTRIBUTING.md) dentro de una página
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -116,3 +120,4 @@ nav:
       - Cambiar una regla de negocio: guias/regla-de-negocio.md
   - Base de datos: datos/index.md
   - API REST: api/index.md
+  - Cómo contribuir: contribuir.md
