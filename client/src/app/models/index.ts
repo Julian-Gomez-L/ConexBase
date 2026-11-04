@@ -11,3 +11,4 @@ export * from './produccion.model';
 export * from './trabajo-tapicero.model';
 export * from './historial-pedido.model';
 export * from './auth.model';
+export * from './intento-login.model';

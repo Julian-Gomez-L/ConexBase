@@ -14,6 +14,7 @@ use App\Http\Controllers\PagoController;
 use App\Http\Controllers\ProduccionController;
 use App\Http\Controllers\TrabajosTapicerosController;
 use App\Http\Controllers\HistorialPedidosController;
+use App\Http\Controllers\IntentoLoginController;
 use App\Support\Roles;
 
 /*
@@ -65,6 +66,9 @@ Route::middleware('auth.token')->group(function () {
         Route::apiResource('pagos', PagoController::class)->only(['update', 'destroy']);
         Route::apiResource('producciones', ProduccionController::class)->only(['destroy']);
         Route::apiResource('trabajos-tapiceros', TrabajosTapicerosController::class)->only(['destroy']);
+
+        // Auditoría: inicios de sesión fallidos
+        Route::get('intentos-login', [IntentoLoginController::class, 'index']);
     });
 
     // ── Ventas: registrar clientes, pedidos, sus detalles y el pago inicial ──

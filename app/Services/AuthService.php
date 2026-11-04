@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\ApiAuthException;
 use App\Interfaces\TokenAccesoInterface;
 use App\Interfaces\UsuarioInterface;
+use App\Models\IntentoLogin;
 use App\Models\TokenAcceso;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
@@ -22,17 +23,38 @@ class AuthService
 
     public function __construct(
         private UsuarioInterface $usuarios,
-        private TokenAccesoInterface $tokens
+        private TokenAccesoInterface $tokens,
+        private IntentosLoginService $intentos
     ) {
     }
 
-    public function login(string $correo, string $password): array
+    /**
+     * @param string|null $ip        IP de quien intenta entrar (para el registro de intentos fallidos)
+     * @param string|null $navegador User-Agent del navegador (ídem)
+     */
+    public function login(string $correo, string $password, ?string $ip = null, ?string $navegador = null): array
     {
-        $usuario = $this->usuarios->buscarPorCorreo(trim($correo));
+        $correo = trim($correo);
+        $usuario = $this->usuarios->buscarPorCorreo($correo);
 
         $coincide = Hash::check($password, $usuario?->password ?? self::HASH_RELLENO);
 
-        if (!$usuario || !$coincide || !$usuario->estado) {
+        $motivo = match (true) {
+            !$usuario => IntentoLogin::CORREO_NO_EXISTE,
+            !$coincide => IntentoLogin::CONTRASENA_INCORRECTA,
+            !$usuario->estado => IntentoLogin::USUARIO_INACTIVO,
+            default => null,
+        };
+
+        if ($motivo !== null) {
+            // Queda registrado para el Administrador; al usuario se le responde
+            // con el mismo mensaje genérico de siempre (no revela el motivo).
+            try {
+                $this->intentos->registrarFallido($correo, $usuario, $motivo, $ip, $navegador);
+            } catch (\Throwable $e) {
+                report($e); // si el registro falla, el login igual responde normal
+            }
+
             throw ApiAuthException::credencialesInvalidas();
         }
 

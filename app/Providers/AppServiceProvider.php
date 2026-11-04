@@ -20,6 +20,8 @@ use App\Repositories\TrabajosTapicerosRepository;
 use App\Repositories\UsuarioRepository;
 use App\Interfaces\TokenAccesoInterface;
 use App\Repositories\TokenAccesoRepository;
+use App\Interfaces\IntentosLoginInterface;
+use App\Repositories\IntentosLoginRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -104,6 +106,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             TokenAccesoInterface::class,
             TokenAccesoRepository::class
+        );
+
+        $this->app->bind(
+            IntentosLoginInterface::class,
+            IntentosLoginRepository::class
         );
         
     }

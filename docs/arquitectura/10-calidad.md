@@ -52,9 +52,14 @@ docker compose exec app php artisan test
 ```
 
 Las pruebas usan SQLite en memoria (`phpunit.xml`), así que no tocan tu base
-de datos. Hoy **solo existen las pruebas de ejemplo de Laravel**: es una
-deuda pendiente (ver [Riesgos](11-riesgos.md)). Las pruebas nuevas van en
-`tests/Feature/`.
+de datos. Las pruebas van en `tests/Feature/`:
+
+| Archivo de prueba | Qué comprueba |
+|---|---|
+| `IntentosLoginTest.php` | Cada login fallido se guarda con su motivo, nombre, rol, IP y fecha; el login correcto no; la contraseña nunca se guarda; solo el Administrador ve el listado. |
+
+El resto del backend (permisos por rol, validaciones) todavía no tiene
+pruebas: ver [Riesgos](11-riesgos.md).
 
 ## Prueba manual del ciclo completo
 

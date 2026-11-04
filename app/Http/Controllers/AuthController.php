@@ -32,7 +32,12 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Inicio de sesión exitoso.',
-            'data' => $this->authService->login($datos['correo'], $datos['password']),
+            'data' => $this->authService->login(
+                $datos['correo'],
+                $datos['password'],
+                $request->ip(),
+                $request->userAgent(),
+            ),
         ]);
     }
 

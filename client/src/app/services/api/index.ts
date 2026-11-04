@@ -9,3 +9,4 @@ export * from './productos.service';
 export * from './roles.service';
 export * from './trabajos-tapiceros.service';
 export * from './usuarios.service';
+export * from './intentos-login.service';

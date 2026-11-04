@@ -51,9 +51,9 @@ pedidos será lento.
 (`with()` de Eloquent) y con filtros (por fecha, estado o asesor) y
 paginación.
 
-### 🟠 Sin pruebas en el backend
+### 🟠 Pocas pruebas en el backend
 
-**Qué pasa:** solo existen las pruebas de ejemplo de Laravel. Un cambio en
+**Qué pasa:** solo el registro de intentos de login tiene pruebas. Un cambio en
 una validación o un permiso puede romper algo sin que nadie lo note.
 
 **Solución propuesta:** pruebas en `tests/Feature/` empezando por el login y

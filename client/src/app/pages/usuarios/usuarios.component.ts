@@ -12,6 +12,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucidePencil, LucideRefreshCw, LucideSearch, LucideUserPlus } from '@lucide/angular';
 import { finalize, forkJoin, Observable } from 'rxjs';
 import { PageHeaderComponent } from '@app/components/page-header/page-header.component';
+import { IntentosLoginComponent } from './intentos-login/intentos-login.component';
 import { AppError, estaActivo, Rol, Usuario, UsuarioPayload } from '@app/models';
 import { RolesService, UsuariosService } from '@app/services/api';
 import { AuthService } from '@app/services/auth.service';
@@ -20,10 +21,11 @@ import { AuthService } from '@app/services/auth.service';
  * Usuarios y Roles (Administrador).
  * Crear, editar y desactivar usuarios. No se borran: desactivarlos les
  * quita el acceso y conserva sus pedidos e historial.
+ * La pestaña "Intentos fallidos" muestra los inicios de sesión fallidos.
  */
 @Component({
   selector: 'app-usuarios',
-  imports: [ReactiveFormsModule, PageHeaderComponent, LucideSearch, LucidePencil, LucideRefreshCw, LucideUserPlus],
+  imports: [ReactiveFormsModule, PageHeaderComponent, IntentosLoginComponent, LucideSearch, LucidePencil, LucideRefreshCw, LucideUserPlus],
   templateUrl: './usuarios.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -39,7 +41,7 @@ export class UsuariosComponent implements OnInit {
   protected readonly usuarios = signal<Usuario[]>([]);
   protected readonly roles = signal<Rol[]>([]);
 
-  protected readonly pestana = signal<'usuarios' | 'roles'>('usuarios');
+  protected readonly pestana = signal<'usuarios' | 'roles' | 'intentos'>('usuarios');
   protected readonly busqueda = signal('');
   protected readonly filtroRol = signal<number | null>(null);
 

@@ -1,8 +1,8 @@
 # Base de datos
 
-MySQL, base de datos `ConexBase`, con **12 tablas**. La estructura la definen
+MySQL, base de datos `ConexBase`, con **13 tablas** del negocio. La estructura la definen
 las migraciones de `database/migrations/` (`01_roles.php` a
-`12_tokens_acceso.php`): **ante cualquier diferencia con esta página, mandan
+`13_intentos_login.php`): **ante cualquier diferencia con esta página, mandan
 las migraciones**.
 
 Para verla con tus propios ojos: phpMyAdmin en <http://localhost:8881>
@@ -14,6 +14,7 @@ Para verla con tus propios ojos: phpMyAdmin en <http://localhost:8881>
 erDiagram
     roles ||--o{ usuarios : "tiene"
     usuarios ||--o{ tokens_acceso : "inicia sesión con"
+    usuarios |o--o{ intentos_login : "intentos fallidos"
     categorias ||--o{ productos : "agrupa"
 
     clientes ||--o{ pedidos : "hace"
@@ -44,7 +45,7 @@ más** detalles; `||--o{` = **cero o más**.
 | Llave primaria | `id`, `BIGINT UNSIGNED` autoincremental. |
 | Llaves foráneas | `<tabla en singular>_id`, con `constrained()` y `onDelete('cascade')`. |
 | Fechas de control | `created_at` y `updated_at` en todas las tablas. |
-| Borrado lógico | `deleted_at` en todas las tablas excepto `tokens_acceso` ([ADR-0003](../decisiones/0003-borrado-logico.md)). Un registro con `deleted_at` lleno está eliminado. |
+| Borrado lógico | `deleted_at` en todas las tablas excepto `tokens_acceso` e `intentos_login` ([ADR-0003](../decisiones/0003-borrado-logico.md)). Un registro con `deleted_at` lleno está eliminado. |
 | Dinero | `DECIMAL(12,2)`. |
 | `estado` | `BOOLEAN` (activo o inactivo) en roles, usuarios, clientes, categorías y productos. `VARCHAR(50)` (nombre del estado) en pedidos, producciones y trabajos. |
 
@@ -89,6 +90,29 @@ Sesiones abiertas ([ADR-0002](../decisiones/0002-token-propio.md)). No tiene bor
 | `token` | CHAR(64) | No | Único | Hash sha256 del token (no el token). |
 | `expira_en` | DATETIME | No | | Vencimiento: 8 horas después del login. |
 | `ultimo_uso_en` | DATETIME | Sí | | Última petición hecha con el token. |
+
+#### `intentos_login`
+
+Inicios de sesión **fallidos**, para que el Administrador vea quién intenta
+entrar, cuándo y desde dónde (pestaña *Intentos fallidos* de *Usuarios y
+Roles*). Es un registro de auditoría: no tiene borrado lógico ni se edita.
+El nombre y el rol se copian como texto en el momento del intento, para que
+el registro no cambie si después se edita el usuario. **La contraseña
+escrita nunca se guarda.**
+
+| Campo | Tipo | Nulo | Restricción | Descripción |
+|---|---|---|---|---|
+| `correo` | VARCHAR(150) | No | | Correo que se escribió. |
+| `usuario_id` | BIGINT | Sí | FK → `usuarios` (`SET NULL`) | Dueño del correo; vacío si el correo no existe. |
+| `nombre` | VARCHAR(201) | Sí | | Nombre y apellido del usuario en ese momento. |
+| `rol` | VARCHAR(100) | Sí | | Rol del usuario en ese momento. |
+| `motivo` | VARCHAR(50) | No | | `Contraseña incorrecta`, `El correo no existe` o `Usuario inactivo`. |
+| `ip` | VARCHAR(45) | Sí | | Dirección IP desde donde se intentó. |
+| `navegador` | VARCHAR(255) | Sí | | *User-Agent* del navegador. |
+| `fecha` | DATETIME | No | Índice | Fecha y hora del intento (hora de Colombia). |
+
+Los intentos bloqueados por el límite de 5 por minuto (error 429) no llegan
+a registrarse.
 
 ### Catálogo
 
@@ -202,6 +226,20 @@ Trabajo asignado a un tapicero sobre una producción.
 | `fecha_fin` | DATE | Sí | | Se llena al terminar. |
 | `estado` | VARCHAR(50) | No | | Pendiente, En proceso o Finalizado. |
 | `observaciones` | VARCHAR(255) | Sí | | Notas del tapicero. |
+
+## Tablas internas de Laravel
+
+Además de las tablas del negocio, Laravel crea `migrations` (qué migraciones
+ya se ejecutaron), `cache` y `cache_locks`. Estas dos últimas solo se usan si
+`CACHE_STORE=database` en el `.env`:
+
+| Tabla | Para qué sirve en ConexBase |
+|---|---|
+| `cache` | Guarda datos temporales. Hoy, solo el contador del límite de 5 intentos de login por minuto: una fila por correo e IP, con un número y su vencimiento. No guarda quién ni a qué hora; para eso está `intentos_login`. |
+| `cache_locks` | "Candados" para que dos peticiones no hagan lo mismo al mismo tiempo. ConexBase todavía no los usa, así que está vacía. |
+
+Su contenido se puede borrar en cualquier momento sin perder información
+(`php artisan cache:clear`).
 
 ## Cambiar la estructura
 

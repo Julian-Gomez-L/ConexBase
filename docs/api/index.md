@@ -63,6 +63,15 @@ curl http://localhost:8000/api/pedidos \
 | `GET /api/auth/me` | Datos del usuario dueño del token. |
 | `POST /api/auth/logout` | Cierra la sesión (borra el token). |
 
+Cada login **fallido** queda registrado en la tabla `intentos_login`
+(correo, nombre, rol, motivo, IP, navegador, fecha y hora). Al usuario se le
+responde siempre el mismo mensaje genérico; el motivo solo lo ve el
+Administrador.
+
+| Ruta | Descripción | Quién |
+|---|---|---|
+| `GET /api/intentos-login` | Los 500 intentos fallidos más recientes, del más nuevo al más antiguo. | Solo Administrador |
+
 Cómo funciona por dentro: [Conceptos transversales → Autenticación](../arquitectura/08-conceptos.md#autenticacion).
 
 ## Recursos

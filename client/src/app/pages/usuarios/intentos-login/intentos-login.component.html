@@ -1,0 +1,117 @@
+<section class="bg-card border border-border rounded-lg overflow-hidden">
+  <div
+    class="px-6 py-4 border-b border-border bg-secondary flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between"
+  >
+    <div class="flex items-center gap-3">
+      <svg lucideShieldAlert class="w-5 h-5 text-primary shrink-0" aria-hidden="true"></svg>
+      <div>
+        <h2 class="font-semibold">Inicios de sesión fallidos</h2>
+        <p class="text-xs text-muted-foreground">
+          Hoy: <span class="text-foreground font-medium tabular-nums">{{ hoy() }}</span> · se
+          muestran los últimos {{ intentos().length }}
+        </p>
+      </div>
+    </div>
+    <div class="flex gap-2">
+      <label class="relative">
+        <span class="sr-only">Buscar intento</span>
+        <svg
+          lucideSearch
+          class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        ></svg>
+        <input
+          type="search"
+          [value]="busqueda()"
+          (input)="alBuscar($event)"
+          placeholder="Buscar correo, nombre o IP"
+          class="w-full sm:w-64 pl-9 pr-3 py-2 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+        />
+      </label>
+      <button
+        type="button"
+        (click)="cargar()"
+        [disabled]="cargando()"
+        aria-label="Actualizar"
+        class="w-10 h-10 inline-flex items-center justify-center border border-border rounded-lg hover:bg-card disabled:opacity-50"
+      >
+        <svg
+          lucideRefreshCw
+          class="w-4 h-4"
+          [class.animate-spin]="cargando()"
+          aria-hidden="true"
+        ></svg>
+      </button>
+    </div>
+  </div>
+
+  @if (cargando() && !intentos().length) {
+    <div class="h-64 animate-pulse" aria-hidden="true"></div>
+  } @else if (error(); as e) {
+    <div class="p-12 text-center" role="alert">
+      <p class="text-red-400 mb-4">{{ e.message }}</p>
+      <button
+        type="button"
+        (click)="cargar()"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90"
+      >
+        <svg lucideRefreshCw class="w-4 h-4" aria-hidden="true"></svg>
+        Reintentar
+      </button>
+    </div>
+  } @else if (!visibles().length) {
+    <p class="p-12 text-center text-muted-foreground">
+      {{
+        busqueda()
+          ? 'Ningún intento coincide con la búsqueda.'
+          : 'No hay intentos fallidos registrados.'
+      }}
+    </p>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm min-w-[820px]">
+        <thead class="text-xs text-muted-foreground">
+          <tr class="border-b border-border">
+            <th class="text-left font-medium px-6 py-3">Fecha</th>
+            <th class="text-left font-medium px-4 py-3">Hora</th>
+            <th class="text-left font-medium px-4 py-3">Quién intentó entrar</th>
+            <th class="text-left font-medium px-4 py-3">Rol</th>
+            <th class="text-left font-medium px-4 py-3">Motivo</th>
+            <th class="text-left font-medium px-6 py-3">Desde</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border">
+          @for (v of visibles(); track v.intento.id) {
+            <tr>
+              <td class="px-6 py-3 tabular-nums whitespace-nowrap">{{ v.fecha }}</td>
+              <td class="px-4 py-3 tabular-nums whitespace-nowrap">{{ v.hora }}</td>
+              <td class="px-4 py-3">
+                <p class="font-medium">{{ v.intento.nombre ?? 'Sin usuario' }}</p>
+                <p class="text-xs text-muted-foreground">{{ v.intento.correo }}</p>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap">{{ v.intento.rol ?? '—' }}</td>
+              <td class="px-4 py-3">
+                <span
+                  class="px-2.5 py-1 rounded-full text-xs whitespace-nowrap"
+                  [class]="colorMotivo(v.intento.motivo)"
+                >
+                  {{ v.intento.motivo }}
+                </span>
+              </td>
+              <td class="px-6 py-3">
+                <p class="tabular-nums">{{ v.intento.ip ?? '—' }}</p>
+                <p class="text-xs text-muted-foreground" [title]="v.intento.navegador ?? ''">
+                  {{ v.navegador }}
+                </p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+<p class="text-xs text-muted-foreground mt-3">
+  Al usuario siempre se le dice solo "Correo o contraseña incorrectos": el motivo exacto únicamente
+  lo ve el Administrador aquí. La contraseña escrita nunca se guarda.
+</p>

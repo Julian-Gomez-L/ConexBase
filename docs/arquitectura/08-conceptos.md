@@ -15,6 +15,7 @@ Implementada a mano, sin paquetes externos ([ADR-0002](../decisiones/0002-token-
 | Cada petición | El middleware `auth.token` busca el hash, revisa que no haya vencido y que el usuario siga **activo**. | `AutenticarConToken` |
 | Cierre de sesión | `POST /api/auth/logout` borra el token. | `AuthService::logout()` |
 | Fuerza bruta | Máximo 5 intentos de login por minuto por correo e IP (error 429). | `AppServiceProvider::boot()` |
+| Intentos fallidos | Cada login fallido se guarda en `intentos_login` con el motivo, la IP, el navegador, la fecha y la hora. El Administrador los ve en *Usuarios y Roles → Intentos fallidos*. | `IntentosLoginService::registrarFallido()` |
 | Correos registrados | El mensaje de error es el mismo exista o no el correo, y se tarda lo mismo en responder. | `AuthService::HASH_RELLENO` |
 | Contraseñas | Se guardan con bcrypt automáticamente (cast `'password' => 'hashed'`) y nunca se devuelven (`$hidden`). | `app/Models/Usuario.php` |
 | En el frontend | La sesión se guarda en `sessionStorage`: se pierde al cerrar la pestaña. | `AuthService` (Angular) |

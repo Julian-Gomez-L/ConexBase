@@ -31,3 +31,12 @@ export function desdeFechaISO(valor: string): Date {
   const [a, m, d] = valor.slice(0, 10).split('-').map(Number);
   return new Date(a, m - 1, d);
 }
+
+/** "19:35:12" (con segundos, para registros de auditoría) */
+export const horaConSegundos = (d: Date): string =>
+  d.toLocaleTimeString('es-CO', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });

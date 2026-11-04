@@ -94,7 +94,9 @@ nueva.
 | Historial de pedido | `/api/historial-pedidos` | `HistorialPedidosController` | `HistorialPedidosService` | `HistorialPedidosRepository` |
 
 La autenticación es aparte: `AuthController` → `AuthService` →
-`UsuarioRepository` y `TokenAccesoRepository`.
+`UsuarioRepository` y `TokenAccesoRepository`. Los logins fallidos los
+guarda `AuthService` con `IntentosLoginService`, y el Administrador los
+consulta con `IntentoLoginController` (`GET /api/intentos-login`).
 
 ## Componentes del frontend (C4 · nivel 3)
 
