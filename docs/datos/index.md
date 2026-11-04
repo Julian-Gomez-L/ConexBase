@@ -94,7 +94,7 @@ Sesiones abiertas ([ADR-0002](../decisiones/0002-token-propio.md)). No tiene bor
 #### `intentos_login`
 
 Inicios de sesión **fallidos**, para que el Administrador vea quién intenta
-entrar, cuándo y desde dónde (pestaña *Intentos fallidos* de *Usuarios y
+entrar, cuándo y desde dónde (pestaña *Seguridad* de *Usuarios y
 Roles*). Es un registro de auditoría: no tiene borrado lógico ni se edita.
 El nombre y el rol se copian como texto en el momento del intento, para que
 el registro no cambie si después se edita el usuario. **La contraseña
@@ -106,7 +106,7 @@ escrita nunca se guarda.**
 | `usuario_id` | BIGINT | Sí | FK → `usuarios` (`SET NULL`) | Dueño del correo; vacío si el correo no existe. |
 | `nombre` | VARCHAR(201) | Sí | | Nombre y apellido del usuario en ese momento. |
 | `rol` | VARCHAR(100) | Sí | | Rol del usuario en ese momento. |
-| `motivo` | VARCHAR(50) | No | | `Contraseña incorrecta`, `El correo no existe` o `Usuario inactivo`. |
+| `motivo` | VARCHAR(50) | No | | `Contraseña incorrecta`, `El correo no existe`, `Usuario inactivo` o `Código de recuperación inválido`. |
 | `ip` | VARCHAR(45) | Sí | | Dirección IP desde donde se intentó. |
 | `navegador` | VARCHAR(255) | Sí | | *User-Agent* del navegador. |
 | `fecha` | DATETIME | No | Índice | Fecha y hora del intento (hora de Colombia). |
@@ -226,6 +226,15 @@ Trabajo asignado a un tapicero sobre una producción.
 | `fecha_fin` | DATE | Sí | | Se llena al terminar. |
 | `estado` | VARCHAR(50) | No | | Pendiente, En proceso o Finalizado. |
 | `observaciones` | VARCHAR(255) | Sí | | Notas del tapicero. |
+
+## Fuera de la base de datos: el código de recuperación
+
+El código de recuperación de administrador **no está en MySQL**: su versión
+cifrada vive en el archivo
+`storage/app/private/seguridad/codigo-recuperacion-admin.json`, para que
+siga sirviendo si la base de datos se daña
+([ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md)). Ese archivo no
+se sube al repositorio.
 
 ## Tablas internas de Laravel
 

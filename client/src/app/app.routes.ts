@@ -21,6 +21,14 @@ export const routes: Routes = [
     loadComponent: () => import('@app/pages/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    // Pública: recuperar el acceso de administrador con el código de emergencia
+    path: 'recuperar-acceso',
+    canActivate: [guestGuard],
+    title: 'Recuperar acceso · ConexBase',
+    loadComponent: () =>
+      import('@app/pages/recuperar-acceso/recuperar-acceso.component').then((m) => m.RecuperarAccesoComponent),
+  },
+  {
     path: 'dashboard',
     canActivate: [authGuard],
     loadComponent: () =>

@@ -20,6 +20,8 @@ use App\Repositories\TrabajosTapicerosRepository;
 use App\Repositories\UsuarioRepository;
 use App\Interfaces\TokenAccesoInterface;
 use App\Repositories\TokenAccesoRepository;
+use App\Interfaces\CodigoRecuperacionInterface;
+use App\Repositories\CodigoRecuperacionRepository;
 use App\Interfaces\IntentosLoginInterface;
 use App\Repositories\IntentosLoginRepository;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -112,6 +114,11 @@ class AppServiceProvider extends ServiceProvider
             IntentosLoginInterface::class,
             IntentosLoginRepository::class
         );
+
+        $this->app->bind(
+            CodigoRecuperacionInterface::class,
+            CodigoRecuperacionRepository::class
+        );
         
     }
     
@@ -120,6 +127,11 @@ class AppServiceProvider extends ServiceProvider
         // Máximo 5 intentos de login por minuto por correo + IP (protege contra fuerza bruta)
         RateLimiter::for('login', function (Request $request) {
             return Limit::perMinute(5)->by(Str::lower((string) $request->input('correo')) . '|' . $request->ip());
+        });
+
+        // Recuperación de administrador: máximo 3 intentos por hora por IP
+        RateLimiter::for('recuperacion', function (Request $request) {
+            return Limit::perHour(3)->by($request->ip());
         });
     }
     /**

@@ -1,0 +1,108 @@
+<section class="bg-card border border-border rounded-lg p-6 space-y-4">
+  <div class="flex items-start gap-3">
+    <svg lucideKeyRound class="w-5 h-5 text-primary shrink-0 mt-0.5" aria-hidden="true"></svg>
+    <div class="space-y-1">
+      <h2 class="font-semibold">Código de recuperación de administrador</h2>
+      <p class="text-sm text-muted-foreground max-w-3xl">
+        Sirve para volver a entrar si un día no queda ningún administrador activo (por ejemplo, si
+        alguien los desactiva). Imprímelo y guárdalo en un lugar seguro, como la caja fuerte de la
+        empresa. Solo funciona cuando no hay ningún administrador activo, y sirve una sola vez.
+      </p>
+    </div>
+  </div>
+
+  @if (nuevo(); as c) {
+    <!-- El código recién generado: única vez que se muestra -->
+    <div class="border border-primary/40 bg-primary/5 rounded-lg p-5 space-y-3" role="status">
+      <p class="text-sm font-medium">
+        Este es tu código. <span class="text-primary">No se volverá a mostrar.</span>
+      </p>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <code
+          class="text-xl sm:text-2xl font-mono tracking-widest text-primary select-all break-all"
+          >{{ c.codigo }}</code
+        >
+        <button
+          type="button"
+          (click)="copiar(c.codigo)"
+          class="inline-flex items-center justify-center gap-2 px-3 py-2 border border-border rounded-lg text-sm hover:bg-secondary"
+        >
+          <svg lucideCopy class="w-4 h-4" aria-hidden="true"></svg>
+          {{ copiado() ? 'Copiado' : 'Copiar' }}
+        </button>
+      </div>
+      <ol class="text-sm text-muted-foreground list-decimal pl-5 space-y-1">
+        <li>
+          Escríbelo o imprímelo y guárdalo bajo llave. No lo envíes por WhatsApp ni por correo.
+        </li>
+        <li>Si lo pierdes, genera uno nuevo: el anterior deja de servir.</li>
+        <li>Para usarlo: en el inicio de sesión, "Recuperar acceso de administrador".</li>
+      </ol>
+      <button
+        type="button"
+        (click)="ocultar()"
+        class="text-sm text-primary underline underline-offset-2"
+      >
+        Ya lo guardé, ocultarlo
+      </button>
+    </div>
+  } @else if (estado(); as e) {
+    @if (e.configurado) {
+      <p class="text-sm">
+        <span class="text-emerald-300">✓ Hay un código guardado.</span>
+        <span class="text-muted-foreground"
+          >Lo generó {{ e.generado_por }} el {{ cuando(e.generado_en) }}.</span
+        >
+      </p>
+    } @else {
+      <p
+        class="flex items-start gap-2 text-sm text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-3"
+      >
+        <svg lucideTriangleAlert class="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true"></svg>
+        No hay un código de recuperación. Genera uno para no depender de un desarrollador si se
+        pierde el acceso.
+      </p>
+    }
+  }
+
+  @if (error()) {
+    <p role="alert" class="text-sm text-red-400">{{ error() }}</p>
+  }
+
+  @if (confirmando()) {
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
+      <span>El código anterior dejará de servir. ¿Generar uno nuevo?</span>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          (click)="generar()"
+          class="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90"
+        >
+          Sí, generar
+        </button>
+        <button
+          type="button"
+          (click)="confirmando.set(false)"
+          class="px-4 py-2 border border-border rounded-lg hover:bg-secondary"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  } @else if (!nuevo()) {
+    <button
+      type="button"
+      (click)="pedirGenerar()"
+      [disabled]="trabajando() || !estado()"
+      class="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
+    >
+      {{
+        trabajando()
+          ? 'Generando…'
+          : estado()?.configurado
+            ? 'Generar un código nuevo'
+            : 'Generar código de recuperación'
+      }}
+    </button>
+  }
+</section>

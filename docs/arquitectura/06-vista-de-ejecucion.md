@@ -64,6 +64,39 @@ sequenceDiagram
 Si el token vence o es inválido, la API responde **401**: el
 `errorInterceptor` cierra la sesión y lleva al usuario al login.
 
+## Recuperar el acceso de administrador
+
+Solo cuando no queda ningún administrador activo
+([ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md)).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor D as Dueño
+    participant FE as Recuperar acceso
+    participant API as Laravel
+    participant F as Archivo del código
+    participant DB as MySQL
+
+    D->>FE: código impreso + datos del nuevo administrador
+    FE->>API: POST /api/auth/recuperar-admin
+    API->>API: ¿más de 3 intentos esta hora? → 429
+    API->>DB: ¿hay algún administrador activo?
+    alt Sí hay
+        API-->>FE: 409 No disponible
+    else No hay
+        API->>F: lee el hash del código
+        alt Código equivocado
+            API->>DB: guarda el intento en intentos_login
+            API-->>FE: 422 Código inválido
+        else Código correcto
+            API->>DB: transacción: asegura el rol Administrador<br/>y crea o reactiva el usuario
+            API->>F: borra el código (un solo uso)
+            API-->>FE: 201 Ya puedes iniciar sesión
+        end
+    end
+```
+
 ## Crear un pedido (Vendedor)
 
 `CrearPedidoService` arma el pedido completo usando los CRUD de la API, en

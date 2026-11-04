@@ -44,7 +44,9 @@ conecta a `db:3306`, y Angular reenvía `/api` a `http://app:8000` (variable
 | `client_node_modules` | Las dependencias de npm | `docker compose down -v` |
 
 El código (`.` y `./client`) se monta directamente desde tu carpeta: lo que
-guardas en el editor se refleja al instante en los contenedores.
+guardas en el editor se refleja al instante en los contenedores. Por eso
+`storage/` también queda en tu carpeta, incluido el archivo del código de
+recuperación de administrador (`storage/app/private/seguridad/`).
 
 ## Variables de entorno (`.env`)
 
@@ -81,3 +83,5 @@ Pendientes para cuando exista un servidor real:
 - [ ] Servir la API con un servidor web (Nginx o Apache con PHP-FPM) en lugar de `php artisan serve`.
 - [ ] Servir el frontend compilado (`npm run build`, carpeta `client/dist/`).
 - [ ] HTTPS en los dos.
+- [ ] Copias de seguridad automáticas de MySQL **y** de `storage/app/private/` (donde está el código de recuperación de administrador).
+- [ ] Generar el código de recuperación de administrador y guardarlo impreso ([guía](../administracion/recuperar-acceso.md)).

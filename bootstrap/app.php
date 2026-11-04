@@ -75,9 +75,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
+            $minutos = max(1, (int) ceil(((int) ($exception->getHeaders()['Retry-After'] ?? 60)) / 60));
+
             return response()->json([
                 'success' => false,
-                'message' => 'Demasiados intentos. Espera un minuto e inténtalo de nuevo.',
+                'message' => $minutos === 1
+                    ? 'Demasiados intentos. Espera un minuto e inténtalo de nuevo.'
+                    : "Demasiados intentos. Espera {$minutos} minutos e inténtalo de nuevo.",
                 'error' => 'TOO_MANY_REQUESTS',
                 'status' => 429
             ], 429, $exception->getHeaders());

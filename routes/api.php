@@ -15,6 +15,7 @@ use App\Http\Controllers\ProduccionController;
 use App\Http\Controllers\TrabajosTapicerosController;
 use App\Http\Controllers\HistorialPedidosController;
 use App\Http\Controllers\IntentoLoginController;
+use App\Http\Controllers\RecuperacionAdminController;
 use App\Support\Roles;
 
 /*
@@ -32,6 +33,10 @@ use App\Support\Roles;
 
 // Autenticación (pública, con límite de 5 intentos por minuto)
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
+
+// Recuperar acceso de administrador con el código de emergencia (pública, 3 intentos por hora).
+// Solo funciona si no queda ningún administrador activo.
+Route::post('auth/recuperar-admin', [RecuperacionAdminController::class, 'recuperar'])->middleware('throttle:recuperacion');
 
 // Todo lo demás exige token Bearer
 Route::middleware('auth.token')->group(function () {
@@ -69,6 +74,10 @@ Route::middleware('auth.token')->group(function () {
 
         // Auditoría: inicios de sesión fallidos
         Route::get('intentos-login', [IntentoLoginController::class, 'index']);
+
+        // Código de recuperación de administrador
+        Route::get('recuperacion-admin', [RecuperacionAdminController::class, 'estado']);
+        Route::post('recuperacion-admin/codigo', [RecuperacionAdminController::class, 'generar']);
     });
 
     // ── Ventas: registrar clientes, pedidos, sus detalles y el pago inicial ──

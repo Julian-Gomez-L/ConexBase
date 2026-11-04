@@ -33,4 +33,29 @@ class ApiAuthException extends Exception
     {
         return new self('FORBIDDEN', 'No tienes permisos para realizar esta acción.', 403);
     }
+
+    /** Recuperación de administrador: solo sirve si no queda ningún administrador activo. */
+    public static function recuperacionNoDisponible(): self
+    {
+        return new self(
+            'RECUPERACION_NO_DISPONIBLE',
+            'La recuperación no está disponible: todavía hay un administrador activo. Pídele que te dé acceso.',
+            409
+        );
+    }
+
+    public static function sinCodigoRecuperacion(): self
+    {
+        return new self(
+            'SIN_CODIGO_RECUPERACION',
+            'No hay un código de recuperación configurado. Contacta al equipo de desarrollo.',
+            409
+        );
+    }
+
+    public static function codigoRecuperacionInvalido(): self
+    {
+        // 422 y no 401: un 401 haría que el frontend cierre sesión y redirija al login
+        return new self('CODIGO_RECUPERACION_INVALIDO', 'El código de recuperación no es válido.', 422);
+    }
 }

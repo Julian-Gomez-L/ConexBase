@@ -1,0 +1,164 @@
+<div class="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
+  <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+    <div class="absolute -top-40 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="relative w-full max-w-lg">
+    <div class="bg-card border border-border rounded-2xl p-8 shadow-2xl shadow-black/40">
+      <div class="flex flex-col items-center text-center mb-6">
+        <div class="p-2 bg-primary/10 rounded-xl border border-primary/30 mb-4">
+          <svg lucideKeyRound class="w-7 h-7 text-primary" aria-hidden="true"></svg>
+        </div>
+        <h1 class="text-2xl font-semibold tracking-tight">Recuperar acceso de administrador</h1>
+        <p class="text-sm text-muted-foreground mt-2">
+          Úsalo solo si
+          <strong class="text-foreground">ya no queda ningún administrador</strong> que pueda
+          entrar. Necesitas el código de recuperación que se guardó impreso.
+        </p>
+      </div>
+
+      @if (listo()) {
+        <div class="text-center space-y-5" role="status">
+          <svg
+            lucideShieldCheck
+            class="w-12 h-12 text-emerald-400 mx-auto"
+            aria-hidden="true"
+          ></svg>
+          <p class="text-emerald-300">{{ listo() }}</p>
+          <p class="text-sm text-muted-foreground">
+            El código que usaste ya no sirve. Al entrar, ve a
+            <strong>Usuarios y Roles → Seguridad</strong> y genera uno nuevo.
+          </p>
+          <a
+            routerLink="/login"
+            class="inline-flex items-center justify-center w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90"
+          >
+            Ir a iniciar sesión
+          </a>
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="enviar()" class="space-y-4" novalidate>
+          <div>
+            <label for="codigo" class="block text-sm font-medium mb-1.5"
+              >Código de recuperación</label
+            >
+            <input
+              id="codigo"
+              formControlName="codigo"
+              placeholder="XXXX-XXXX-XXXX-XXXX-XXXX"
+              autocomplete="off"
+              spellcheck="false"
+              class="w-full px-4 py-3 bg-secondary border border-border rounded-lg font-mono tracking-wider uppercase focus:outline-none focus:ring-2 focus:ring-primary/50"
+              [class.border-red-500]="invalido('codigo')"
+            />
+          </div>
+
+          <p class="text-xs text-muted-foreground pt-2">
+            Datos del administrador. Si escribes el correo de un usuario que ya existe, ese usuario
+            se reactiva como Administrador con la contraseña nueva.
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="nombre" class="block text-sm font-medium mb-1.5">Nombre</label>
+              <input
+                id="nombre"
+                formControlName="nombre"
+                autocomplete="given-name"
+                class="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                [class.border-red-500]="invalido('nombre')"
+              />
+            </div>
+            <div>
+              <label for="apellido" class="block text-sm font-medium mb-1.5">Apellido</label>
+              <input
+                id="apellido"
+                formControlName="apellido"
+                autocomplete="family-name"
+                class="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                [class.border-red-500]="invalido('apellido')"
+              />
+            </div>
+            <div>
+              <label for="documento" class="block text-sm font-medium mb-1.5">Documento</label>
+              <input
+                id="documento"
+                formControlName="documento"
+                inputmode="numeric"
+                class="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                [class.border-red-500]="invalido('documento')"
+              />
+            </div>
+            <div>
+              <label for="correo" class="block text-sm font-medium mb-1.5">Correo</label>
+              <input
+                id="correo"
+                type="email"
+                formControlName="correo"
+                autocomplete="email"
+                class="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                [class.border-red-500]="invalido('correo')"
+              />
+            </div>
+            <div>
+              <label for="password" class="block text-sm font-medium mb-1.5"
+                >Contraseña nueva</label
+              >
+              <input
+                id="password"
+                type="password"
+                formControlName="password"
+                autocomplete="new-password"
+                placeholder="Mínimo 8 caracteres"
+                class="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                [class.border-red-500]="invalido('password')"
+              />
+            </div>
+            <div>
+              <label for="confirmacion" class="block text-sm font-medium mb-1.5"
+                >Repite la contraseña</label
+              >
+              <input
+                id="confirmacion"
+                type="password"
+                formControlName="confirmacion"
+                autocomplete="new-password"
+                class="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                [class.border-red-500]="invalido('confirmacion')"
+              />
+            </div>
+          </div>
+
+          @if (error()) {
+            <p
+              role="alert"
+              class="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3"
+            >
+              {{ error() }}
+            </p>
+          }
+
+          <button
+            type="submit"
+            [disabled]="enviando()"
+            class="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {{ enviando() ? 'Verificando…' : 'Recuperar acceso' }}
+          </button>
+          <p class="text-xs text-muted-foreground text-center">
+            Máximo 3 intentos por hora. Cada intento queda registrado.
+          </p>
+        </form>
+      }
+
+      <a
+        routerLink="/login"
+        class="mt-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <svg lucideArrowLeft class="w-4 h-4" aria-hidden="true"></svg>
+        Volver al inicio de sesión
+      </a>
+    </div>
+  </div>
+</div>

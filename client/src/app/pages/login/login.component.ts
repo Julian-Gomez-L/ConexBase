@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { LucideEye, LucideEyeOff, LucideLogIn, LucideSparkles } from '@lucide/angular';
 import { ROLE_HOME } from '@app/config/navigation';
 import { AppError } from '@app/models';
@@ -8,7 +8,7 @@ import { AuthService } from '@app/services/auth.service';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, LucideSparkles, LucideEye, LucideEyeOff, LucideLogIn],
+  imports: [ReactiveFormsModule, RouterLink, LucideSparkles, LucideEye, LucideEyeOff, LucideLogIn],
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

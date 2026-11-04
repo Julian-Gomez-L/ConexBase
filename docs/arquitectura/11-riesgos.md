@@ -59,6 +59,15 @@ una validación o un permiso puede romper algo sin que nadie lo note.
 **Solución propuesta:** pruebas en `tests/Feature/` empezando por el login y
 los permisos por rol.
 
+### 🟠 Sin copias de seguridad automáticas
+
+**Qué pasa:** si se dañan o se borran los datos, el
+[código de recuperación](../administracion/recuperar-acceso.md) devuelve el
+acceso, pero no los pedidos, clientes ni pagos.
+
+**Solución propuesta:** copia diaria de MySQL (`mysqldump`) y de
+`storage/app/private/`, guardada fuera del servidor.
+
 ## Funciones pendientes
 
 | Función | Estado actual |

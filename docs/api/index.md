@@ -74,6 +74,32 @@ Administrador.
 
 Cómo funciona por dentro: [Conceptos transversales → Autenticación](../arquitectura/08-conceptos.md#autenticacion).
 
+## Recuperación de administrador
+
+Código de emergencia para volver a tener un Administrador cuando no queda
+ninguno activo ([ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md)).
+Guía para el dueño: [¿Qué hacer si nadie puede entrar?](../administracion/recuperar-acceso.md).
+
+| Ruta | Descripción | Quién |
+|---|---|---|
+| `GET /api/recuperacion-admin` | Si hay un código guardado, cuándo y quién lo generó. Nunca devuelve el código. | Solo Administrador |
+| `POST /api/recuperacion-admin/codigo` | Genera un código nuevo y reemplaza el anterior. Única vez que se devuelve el código. | Solo Administrador |
+| `POST /api/auth/recuperar-admin` | Con el código, crea un Administrador o reactiva al usuario de ese correo. Máximo 3 intentos por hora por IP. | Pública (sin token) |
+
+```bash
+curl -X POST http://localhost:8000/api/auth/recuperar-admin \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{
+    "codigo": "K7QM-2XRP-9TWD-H4NB-6CVJ",
+    "documento": "1012345678", "nombre": "Carlos", "apellido": "Rodriguez",
+    "correo": "admin@conexbase.com",
+    "password": "NuevaClave2026", "password_confirmation": "NuevaClave2026"
+  }'
+```
+
+El código acepta minúsculas, espacios y guiones. Responde **201** si el
+acceso se recuperó; el código queda usado.
+
 ## Recursos
 
 Los 11 recursos siguen el mismo patrón REST (`apiResource` de Laravel):
@@ -163,6 +189,9 @@ Un rol sin permiso recibe **403**. Para cambiar esta tabla, sigue la guía
 | 404 | `<RECURSO>_NOT_FOUND` | El registro no existe o fue eliminado (ej. `PEDIDO_NOT_FOUND`). |
 | 422 | `INVALID_ID` | El ID de la URL no es un entero positivo. |
 | 422 | `VALIDATION_ERROR` | Faltan datos o son inválidos; el detalle va en `errors`. |
-| 429 | `TOO_MANY_REQUESTS` | Más de 5 intentos de login en un minuto. |
+| 409 | `RECUPERACION_NO_DISPONIBLE` | Se intentó recuperar el acceso, pero todavía hay un administrador activo. |
+| 409 | `SIN_CODIGO_RECUPERACION` | No hay un código de recuperación guardado (nunca se generó o ya se usó). |
+| 422 | `CODIGO_RECUPERACION_INVALIDO` | El código de recuperación no coincide. Es 422 y no 401 para que el frontend no cierre la sesión. |
+| 429 | `TOO_MANY_REQUESTS` | Más de 5 intentos de login en un minuto, o más de 3 recuperaciones en una hora. El mensaje dice cuántos minutos esperar. |
 
 Dónde se definen: `app/Exceptions/` y `bootstrap/app.php`.

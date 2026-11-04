@@ -18,6 +18,7 @@ decisión técnica importante.
 | [0004](0004-zona-horaria-bogota.md) | Usar la zona horaria de Colombia | ✅ Aceptada |
 | [0005](0005-procesos-en-el-frontend.md) | Procesos y cálculos de negocio en el frontend, sobre los CRUD | ✅ Aceptada, con revisión pendiente |
 | [0006](0006-un-repositorio-con-docker.md) | Un solo repositorio para backend y frontend, con Docker Compose | ✅ Aceptada |
+| [0007](0007-codigo-recuperacion-admin.md) | Código de recuperación de administrador | ✅ Aceptada |
 
 Las decisiones 0001, 0002, 0003 y 0005 se tomaron antes de existir esta
 documentación; su contexto se reconstruyó a partir del código. Si

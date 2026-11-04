@@ -25,18 +25,23 @@
       <button
         type="button"
         role="tab"
-        [attr.aria-selected]="pestana() === 'intentos'"
-        (click)="pestana.set('intentos')"
-        class="px-4 py-2 rounded-md transition-colors"
-        [class]="pestana() === 'intentos' ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:text-foreground'"
+        [attr.aria-selected]="pestana() === 'seguridad'"
+        (click)="pestana.set('seguridad')"
+        class="px-4 py-2 rounded-md transition-colors inline-flex items-center gap-2"
+        [class]="pestana() === 'seguridad' ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:text-foreground'"
       >
-        Intentos fallidos
+        Seguridad
+        @if (faltaCodigo()) {
+          <span class="w-2 h-2 rounded-full bg-amber-400" title="Falta el código de recuperación"></span>
+          <span class="sr-only">(falta el código de recuperación)</span>
+        }
       </button>
     </div>
   </div>
 
-  @if (pestana() === 'intentos') {
-    <!-- Carga sus propios datos; no depende de la lista de usuarios -->
+  @if (pestana() === 'seguridad') {
+    <!-- Cargan sus propios datos; no dependen de la lista de usuarios -->
+    <app-codigo-recuperacion (configurado)="faltaCodigo.set(!$event)" />
     <app-intentos-login />
   } @else if (cargando() && !usuarios().length) {
     <div class="bg-card border border-border rounded-lg h-80 animate-pulse" aria-hidden="true"></div>

@@ -12,20 +12,23 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucidePencil, LucideRefreshCw, LucideSearch, LucideUserPlus } from '@lucide/angular';
 import { finalize, forkJoin, Observable } from 'rxjs';
 import { PageHeaderComponent } from '@app/components/page-header/page-header.component';
+import { CodigoRecuperacionComponent } from './codigo-recuperacion/codigo-recuperacion.component';
 import { IntentosLoginComponent } from './intentos-login/intentos-login.component';
 import { AppError, estaActivo, Rol, Usuario, UsuarioPayload } from '@app/models';
 import { RolesService, UsuariosService } from '@app/services/api';
 import { AuthService } from '@app/services/auth.service';
+import { RecuperacionAdminService } from '@app/services/recuperacion-admin.service';
 
 /**
  * Usuarios y Roles (Administrador).
  * Crear, editar y desactivar usuarios. No se borran: desactivarlos les
  * quita el acceso y conserva sus pedidos e historial.
- * La pestaña "Intentos fallidos" muestra los inicios de sesión fallidos.
+ * La pestaña "Seguridad" tiene el código de recuperación de administrador y
+ * los inicios de sesión fallidos.
  */
 @Component({
   selector: 'app-usuarios',
-  imports: [ReactiveFormsModule, PageHeaderComponent, IntentosLoginComponent, LucideSearch, LucidePencil, LucideRefreshCw, LucideUserPlus],
+  imports: [ReactiveFormsModule, PageHeaderComponent, IntentosLoginComponent, CodigoRecuperacionComponent, LucideSearch, LucidePencil, LucideRefreshCw, LucideUserPlus],
   templateUrl: './usuarios.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -34,6 +37,7 @@ export class UsuariosComponent implements OnInit {
   private readonly usuariosApi = inject(UsuariosService);
   private readonly rolesApi = inject(RolesService);
   private readonly auth = inject(AuthService);
+  private readonly recuperacionApi = inject(RecuperacionAdminService);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly cargando = signal(true);
@@ -41,7 +45,9 @@ export class UsuariosComponent implements OnInit {
   protected readonly usuarios = signal<Usuario[]>([]);
   protected readonly roles = signal<Rol[]>([]);
 
-  protected readonly pestana = signal<'usuarios' | 'roles' | 'intentos'>('usuarios');
+  protected readonly pestana = signal<'usuarios' | 'roles' | 'seguridad'>('usuarios');
+  /** true si no hay código de recuperación: se marca la pestaña Seguridad. */
+  protected readonly faltaCodigo = signal(false);
   protected readonly busqueda = signal('');
   protected readonly filtroRol = signal<number | null>(null);
 
@@ -92,6 +98,10 @@ export class UsuariosComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargar();
+    this.recuperacionApi
+      .estado()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: (e) => this.faltaCodigo.set(!e.configurado), error: () => undefined });
   }
 
   protected cargar(): void {

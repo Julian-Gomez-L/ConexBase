@@ -15,7 +15,8 @@ Implementada a mano, sin paquetes externos ([ADR-0002](../decisiones/0002-token-
 | Cada petición | El middleware `auth.token` busca el hash, revisa que no haya vencido y que el usuario siga **activo**. | `AutenticarConToken` |
 | Cierre de sesión | `POST /api/auth/logout` borra el token. | `AuthService::logout()` |
 | Fuerza bruta | Máximo 5 intentos de login por minuto por correo e IP (error 429). | `AppServiceProvider::boot()` |
-| Intentos fallidos | Cada login fallido se guarda en `intentos_login` con el motivo, la IP, el navegador, la fecha y la hora. El Administrador los ve en *Usuarios y Roles → Intentos fallidos*. | `IntentosLoginService::registrarFallido()` |
+| Intentos fallidos | Cada login fallido se guarda en `intentos_login` con el motivo, la IP, el navegador, la fecha y la hora. El Administrador los ve en *Usuarios y Roles → Seguridad*. | `IntentosLoginService::registrarFallido()` |
+| Recuperación de administrador | Si no queda ningún administrador activo, un código de un solo uso, guardado cifrado fuera de MySQL, permite crear uno desde el login. 3 intentos por hora. | `RecuperacionAdminService` ([ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md)) |
 | Correos registrados | El mensaje de error es el mismo exista o no el correo, y se tarda lo mismo en responder. | `AuthService::HASH_RELLENO` |
 | Contraseñas | Se guardan con bcrypt automáticamente (cast `'password' => 'hashed'`) y nunca se devuelven (`$hidden`). | `app/Models/Usuario.php` |
 | En el frontend | La sesión se guarda en `sessionStorage`: se pierde al cerrar la pestaña. | `AuthService` (Angular) |
@@ -80,7 +81,9 @@ lee siempre igual.
 | 404 | `<ENTIDAD>_NOT_FOUND` | El registro no existe (o fue eliminado). |
 | 422 | `INVALID_ID` | El ID no es un entero positivo (`abc`, `-5`). |
 | 422 | `VALIDATION_ERROR` | Faltan datos o son inválidos. |
-| 429 | `TOO_MANY_REQUESTS` | Demasiados intentos de login. |
+| 409 | `RECUPERACION_NO_DISPONIBLE` / `SIN_CODIGO_RECUPERACION` | La recuperación de administrador no se puede usar en este momento. |
+| 422 | `CODIGO_RECUPERACION_INVALIDO` | El código de recuperación no coincide. |
+| 429 | `TOO_MANY_REQUESTS` | Demasiados intentos (login o recuperación). |
 
 En el frontend, `errorInterceptor` convierte cualquier error en un
 `AppError` (`status`, `message`, `code`, `fieldErrors`). Las pantallas solo
