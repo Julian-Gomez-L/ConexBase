@@ -29,7 +29,7 @@ stateDiagram-v2
 | En producción | Producción o Administrador | Fabricación → *Iniciar producción* |
 | Finalizado | Producción o Administrador | Fabricación → *Marcar finalizado* (solo si todas sus producciones están terminadas) |
 | Entregado | Producción o Administrador | Fabricación → *Marcar entregado* |
-| Cancelado | Hoy solo existe en los datos de prueba; no hay botón para cancelar | — |
+| Cancelado | Todavía no hay botón para cancelar un pedido | — |
 
 **Cada cambio de estado** crea una fila en `historial_pedidos` con el estado
 anterior, el nuevo, quién lo hizo, cuándo y la observación (en un rechazo,

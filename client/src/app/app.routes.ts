@@ -132,6 +132,12 @@ export const routes: Routes = [
         loadComponent: () => import('@app/pages/comisiones-asesores/comisiones-asesores.component').then((m) => m.ComisionesAsesoresComponent),
       },
       {
+        path: 'catalogo',
+        canMatch: [rolesPermitidos('administrador')],
+        title: 'Catálogo · ConexBase',
+        loadComponent: () => import('@app/pages/catalogo/catalogo.component').then((m) => m.CatalogoComponent),
+      },
+      {
         path: 'usuarios',
         canMatch: [rolesPermitidos('administrador')],
         title: 'Usuarios y Roles · ConexBase',

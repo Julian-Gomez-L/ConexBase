@@ -39,7 +39,7 @@ La primera vez tarda varios minutos. Docker hace solo esto, en orden
 1. Crea el `.env` copiando `.env.example`, si no existe.
 2. Genera la clave de Laravel (`APP_KEY`).
 3. Espera a que MySQL esté listo y crea las tablas (migraciones).
-4. Carga los [datos de prueba](usuarios-prueba.md), solo si la base de datos está vacía.
+4. Crea los roles y los [usuarios de prueba](usuarios-prueba.md), solo si la base de datos está vacía.
 5. Arranca la API, y el contenedor `client` instala las dependencias de Angular y arranca la aplicación web.
 
 Está listo cuando en la terminal aparecen `API lista en http://localhost:8000/api`
@@ -70,7 +70,7 @@ Comandos dentro de los contenedores:
 
 ```bash
 docker compose exec app php artisan migrate               # aplicar migraciones nuevas
-docker compose exec app php artisan migrate:fresh --seed  # recrear la base de datos con datos de prueba
+docker compose exec app php artisan migrate:fresh --seed  # borrar todo y dejar solo roles y usuarios
 docker compose exec app php artisan route:list --path=api # ver todas las rutas de la API
 docker compose exec app php artisan scribe:generate       # regenerar la documentación de la API
 docker compose exec app php artisan test                  # pruebas del backend

@@ -1,10 +1,18 @@
 # Usuarios de prueba
 
-El *seeder* (`database/seeders/DatabaseSeeder.php`) llena la base de datos
-con información de ejemplo para que cada rol tenga algo que probar.
+El *seeder* (`database/seeders/DatabaseSeeder.php`) crea **solo los roles y
+los usuarios**. No crea clientes, productos ni pedidos: así las pruebas se
+hacen con datos reales, ingresados desde la aplicación.
 
-!!! danger "Solo para desarrollo"
-    Estas contraseñas son públicas. Nunca uses estos datos en un servidor real.
+!!! danger "Cambia las contraseñas si vas a usar datos reales"
+    La contraseña `123456` es pública: está en el repositorio y en esta
+    documentación. Si vas a trabajar con información real de la empresa,
+    cambia la contraseña de cada usuario en *Usuarios y Roles* apenas entres,
+    y genera el [código de recuperación](../administracion/recuperar-acceso.md).
+
+## Roles
+
+Administrador, Vendedor, Confirmador, Encargado de Producción y Tapicero.
 
 ## Usuarios
 
@@ -19,41 +27,38 @@ Todos tienen la contraseña **`123456`**.
 | Encargado de Producción | Andres Gomez | `produccion@conexbase.com` |
 | Tapicero | Miguel Martinez | `tapicero@conexbase.com` |
 
-## Pedidos
+Hay dos vendedores para comprobar que en *Mis Pedidos* cada uno ve solo los
+suyos.
 
-Hay un pedido en cada estado. El total de cada uno se calcula con los precios
-de sus productos, y el historial recorre los estados por los que pasó.
+## Antes del primer pedido: categorías y productos
 
-| Pedido | Asesor | Estado | Total | Pagado | Sirve para probar |
-|---|---|---|---|---|---|
-| RM-00001 | Juan | Pendiente | $2.000.000 | $1.000.000 | Confirmación |
-| RM-00002 | Juan | En producción | $1.300.000 | $650.000 | Fabricación y Tapicero |
-| RM-00003 | Juan | Entregado | $1.550.000 | $1.550.000 | Ciclo completo y comisiones |
-| RM-00004 | Valentina | Confirmado | $1.800.000 | $900.000 | Iniciar producción |
-| RM-00005 | Valentina | Cancelado | $1.100.000 | $0 | Filtros y estados finales |
-| RM-00006 | Juan | Rechazado | $900.000 | $0 | Ver el motivo del rechazo |
-| RM-00007 | Valentina | Pendiente | $1.500.000 | $500.000 | Confirmación |
+*Crear Pedido* necesita productos. Créalos como **Administrador** en
+**Catálogo**:
 
-Como hay dos vendedores, en *Mis Pedidos* Juan ve 4 pedidos y Valentina 3.
-
-También se crean 5 clientes, 3 categorías (Sala, Sillas, Mesas) y 5 productos.
+1. Pestaña **Categorías**: crea las categorías, por ejemplo *Camas*, *Bases* o *Colchones*.
+2. Pestaña **Productos**: crea cada producto con su **medida** y su **precio**.
+   Cada medida es un producto aparte con su propio precio. Para crear el
+   mismo producto en otra medida, usa el botón **+** de la tabla.
 
 ## Recorrido sugerido
 
-Para ver el sistema completo en unos minutos, sigue un pedido de principio a
-fin cambiando de usuario:
+Para probar el sistema completo, sigue un pedido de principio a fin
+cambiando de usuario:
 
-1. **Vendedor** (`vendedor@conexbase.com`): en *Crear Pedido* registra un pedido con un abono.
-2. **Confirmador**: en *Confirmación* confírmalo. También puedes rechazar otro con un motivo.
-3. **Producción**: en *Fabricación* inícialo y asigna el producto al tapicero.
-4. **Tapicero**: en *Mis Productos* empieza el trabajo y termínalo.
-5. **Producción**: marca la producción como *Finalizada*, luego el pedido como *Finalizado* y por último *Entregado*.
-6. **Vendedor**: en *Mis Comisiones* aparece la comisión de ese pedido.
+1. **Administrador**: en *Catálogo* crea una categoría y un par de productos con su medida y precio.
+2. **Vendedor** (`vendedor@conexbase.com`): en *Crear Pedido* registra un pedido con un cliente nuevo y un abono.
+3. **Confirmador**: en *Confirmación* confírmalo. Crea otro y recházalo con un motivo.
+4. **Producción**: en *Fabricación* inicia la producción y asigna el producto al tapicero.
+5. **Tapicero**: en *Mis Productos* empieza el trabajo y termínalo.
+6. **Producción**: marca la producción como *Finalizada*, luego el pedido como *Finalizado* y por último *Entregado*.
+7. **Vendedor**: en *Mis Comisiones* aparece la comisión de ese pedido.
+8. **Administrador**: revisa *Pedidos del Día*, *Consolidado* y *Usuarios y Roles → Seguridad*.
 
-## Volver a los datos originales
+## Volver a empezar
 
 ```bash
 docker compose exec app php artisan migrate:fresh --seed
 ```
 
-Esto borra **todo** lo que hayas creado y vuelve a cargar los datos de prueba.
+Esto **borra todo** (pedidos, clientes, productos…) y deja solo los roles y
+los usuarios de esta página.

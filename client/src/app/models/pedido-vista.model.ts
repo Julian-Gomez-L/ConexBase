@@ -1,5 +1,9 @@
 import { Cliente, DetallePedido, HistorialPedido, Pago, Pedido, Producto, Usuario } from '@app/models';
+import { nombreProducto } from './producto.model';
 import { aNumero } from '@app/utils/format';
+
+/** Nombre con medida, o "Producto #id" si el producto ya no existe. */
+const nombreDe = (p: Producto | undefined, id: number): string => (p ? nombreProducto(p) : `Producto #${id}`);
 
 /** Línea de un pedido lista para mostrar (detalle + nombre del producto). */
 export interface ItemVista {
@@ -112,7 +116,7 @@ export function construirVistas(d: DatosPedidos): PedidoVista[] {
         asesor: usuarios.get(p.usuario_id) ?? null,
         items: (detallesPorPedido.get(p.id) ?? []).map((det) => ({
           productoId: det.producto_id,
-          nombre: productos.get(det.producto_id)?.nombre ?? `Producto #${det.producto_id}`,
+          nombre: nombreDe(productos.get(det.producto_id), det.producto_id),
           cantidad: det.cantidad,
           subtotal: aNumero(det.subtotal),
         })),

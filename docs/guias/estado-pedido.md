@@ -47,6 +47,6 @@ regla `in:`.
 ## Probar
 
 1. `npm test`: las pruebas de `fabricacion.model` y `comision.model` deben pasar.
-2. Con el usuario de Producción, lleva el pedido RM-00002 hasta *En despacho* y luego *Entregado*.
+2. Con el usuario de Producción, lleva un pedido en producción hasta *En despacho* y luego *Entregado*.
 3. Revisa *Pedidos del Día*: el cambio aparece con quién lo hizo.
 4. Actualiza el diagrama del [ciclo de vida](../arquitectura/06-vista-de-ejecucion.md#ciclo-de-vida-del-pedido).

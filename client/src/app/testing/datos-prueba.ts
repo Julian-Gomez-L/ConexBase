@@ -55,6 +55,7 @@ export const DATOS = {
     {
       id: 7,
       nombre: 'Sofa 3 puestos',
+      medida: null,
       descripcion: null,
       precio: '150000.00',
       categoria_id: 1,

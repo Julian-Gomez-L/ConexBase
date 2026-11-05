@@ -235,7 +235,7 @@
                   <option value="" [selected]="productoElegido() === null">Selecciona un producto</option>
                   @for (producto of productosActivos(); track producto.id) {
                     <option [value]="producto.id" [selected]="productoElegido() === producto.id">
-                      {{ producto.nombre }} — {{ formatearCOP(+producto.precio) }}
+                      {{ nombreProducto(producto) }} — {{ formatearCOP(+producto.precio) }}
                     </option>
                   }
                 </select>

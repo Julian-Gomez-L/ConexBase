@@ -119,7 +119,7 @@ flowchart LR
 | `models/` | Interfaces de cada tabla y **funciones puras** con sus pruebas. | `pedido.model.ts`, `comision.model.ts` (`calcularComisiones`) |
 | `guards/` | Quién puede entrar a cada ruta. | `authGuard`, `rolesPermitidos(...)` |
 | `interceptors/` | Lo que se hace con **todas** las peticiones HTTP. | `apiHeadersInterceptor`, `authInterceptor`, `errorInterceptor` |
-| `config/` | Datos de configuración de la aplicación. | `roles.ts`, `navigation.ts` (menú por rol), `comisiones.ts` (5 %) |
+| `config/` | Datos de configuración de la aplicación. | `roles.ts`, `navigation.ts` (menú por rol), `comisiones.ts` (5 %), `medidas.ts` (lista de medidas del Catálogo) |
 | `components/` | Piezas visuales reutilizables. | `estado-badge`, `stat-card`, `page-header` |
 | `layouts/` | El marco con menú lateral que envuelve las pantallas. | `main-layout` |
 | `utils/` | Funciones de apoyo. | `fecha.ts`, `format.ts` |
@@ -141,6 +141,7 @@ flowchart LR
 | `pedidos-del-dia` | `pedidos-del-dia` | Todos menos Tapicero |
 | `consolidado` | `consolidado` | Todos menos Tapicero |
 | `comisiones-asesores` | `comisiones-asesores` | Administrador |
+| `catalogo` | `catalogo` | Administrador |
 | `usuarios` | `usuarios` | Administrador |
 
 La misma pantalla `pedidos` sirve para tres rutas distintas: la ruta le pasa

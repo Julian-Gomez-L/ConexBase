@@ -137,9 +137,13 @@ a registrarse.
 
 #### `productos`
 
+Se crean y editan en **Catálogo** (solo Administrador). En todo el sistema se
+muestran como *nombre · medida*, por ejemplo "Base cama tapizada · Doble 140x190".
+
 | Campo | Tipo | Nulo | Restricción | Descripción |
 |---|---|---|---|---|
-| `nombre` | VARCHAR(150) | No | | Ej.: Sofá 3 puestos. |
+| `nombre` | VARCHAR(150) | No | | Ej.: Base cama tapizada. |
+| `medida` | VARCHAR(50) | Sí | | Ej.: Doble 140x190. Cada medida es un producto aparte con su propio precio. Vacía si el producto no tiene medida. |
 | `descripcion` | TEXT | Sí | | |
 | `precio` | DECIMAL(12,2) | No | | Precio de venta actual. |
 | `categoria_id` | BIGINT | No | FK → `categorias` | Su categoría. |

@@ -49,7 +49,7 @@ Cada persona entra con un rol y ve solo el menú y las pantallas de ese rol.
 
 | Rol | Qué hace en ConexBase | Pantallas |
 |---|---|---|
-| **Administrador** | Supervisa todo, gestiona usuarios y ve las comisiones de todos. | Panel General, Ventas, Confirmación, Fabricación, Pedidos del Día, Comisiones de Asesores, Consolidado, Usuarios y Roles |
+| **Administrador** | Supervisa todo, gestiona usuarios y el catálogo de productos, y ve las comisiones de todos. | Panel General, Ventas, Confirmación, Fabricación, Pedidos del Día, Comisiones de Asesores, Consolidado, Catálogo, Usuarios y Roles |
 | **Vendedor** (asesor comercial) | Registra pedidos con su abono y consulta sus comisiones. | Crear Pedido, Mis Pedidos, Mis Comisiones, Ventas Confirmadas, Consolidado, Pedidos del Día |
 | **Confirmador** | Revisa los pedidos nuevos y los confirma o rechaza. | Confirmación, Pedidos del Día, Consolidado |
 | **Encargado de Producción** | Inicia la fabricación, asigna tapiceros, finaliza y entrega. | Fabricación, Pedidos del Día, Consolidado |

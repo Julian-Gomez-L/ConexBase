@@ -1,0 +1,481 @@
+<div class="space-y-6">
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    <app-page-header
+      titulo="Catálogo"
+      subtitulo="Productos con su medida y precio, y sus categorías"
+    />
+    <div
+      class="inline-flex flex-wrap self-start p-1 bg-card border border-border rounded-lg text-sm"
+      role="tablist"
+    >
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="pestana() === 'productos'"
+        (click)="pestana.set('productos')"
+        class="px-4 py-2 rounded-md transition-colors"
+        [class]="
+          pestana() === 'productos'
+            ? 'bg-primary text-primary-foreground font-medium'
+            : 'text-muted-foreground hover:text-foreground'
+        "
+      >
+        Productos ({{ productos().length }})
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="pestana() === 'categorias'"
+        (click)="pestana.set('categorias')"
+        class="px-4 py-2 rounded-md transition-colors"
+        [class]="
+          pestana() === 'categorias'
+            ? 'bg-primary text-primary-foreground font-medium'
+            : 'text-muted-foreground hover:text-foreground'
+        "
+      >
+        Categorías ({{ categorias().length }})
+      </button>
+    </div>
+  </div>
+
+  @if (cargando() && !productos().length && !categorias().length) {
+    <div
+      class="bg-card border border-border rounded-lg h-80 animate-pulse"
+      aria-hidden="true"
+    ></div>
+  } @else if (error(); as e) {
+    <div class="bg-card border border-border rounded-lg p-12 text-center" role="alert">
+      <p class="text-red-400 mb-4">{{ e.message }}</p>
+      <button
+        type="button"
+        (click)="cargar()"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90"
+      >
+        <svg lucideRefreshCw class="w-4 h-4" aria-hidden="true"></svg>
+        Reintentar
+      </button>
+    </div>
+  } @else if (pestana() === 'productos') {
+    <div class="flex flex-col xl:flex-row gap-6 items-start">
+      <!-- Tabla de productos -->
+      <section
+        class="w-full xl:flex-1 min-w-0 bg-card border border-border rounded-lg overflow-hidden"
+      >
+        <div
+          class="px-6 py-4 border-b border-border bg-secondary flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between"
+        >
+          <label class="relative">
+            <span class="sr-only">Buscar producto</span>
+            <svg
+              lucideSearch
+              class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            ></svg>
+            <input
+              type="search"
+              [value]="busqueda()"
+              (input)="alBuscar($event)"
+              placeholder="Buscar nombre o medida"
+              class="w-full sm:w-72 pl-9 pr-3 py-2 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </label>
+          <label>
+            <span class="sr-only">Filtrar por categoría</span>
+            <select
+              (change)="alFiltrarCategoria($event)"
+              class="w-full sm:w-52 px-3 py-2 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              <option value="">Todas las categorías</option>
+              @for (c of categorias(); track c.id) {
+                <option [value]="c.id" [selected]="filtroCategoria() === c.id">
+                  {{ c.nombre }}
+                </option>
+              }
+            </select>
+          </label>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[680px]">
+            <thead class="text-xs text-muted-foreground">
+              <tr class="border-b border-border">
+                <th class="text-left font-medium px-6 py-3">Producto</th>
+                <th class="text-left font-medium px-4 py-3">Medida</th>
+                <th class="text-right font-medium px-4 py-3">Precio</th>
+                <th class="text-left font-medium px-4 py-3">Categoría</th>
+                <th class="text-left font-medium px-4 py-3">Estado</th>
+                <th class="text-right font-medium px-6 py-3">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border">
+              @for (f of filas(); track f.producto.id) {
+                <tr [class]="editandoProducto()?.id === f.producto.id ? 'bg-primary/5' : ''">
+                  <td class="px-6 py-3">
+                    <p class="font-medium" [class.text-muted-foreground]="!f.activo">
+                      {{ f.producto.nombre }}
+                    </p>
+                    @if (f.producto.descripcion) {
+                      <p class="text-xs text-muted-foreground">{{ f.producto.descripcion }}</p>
+                    }
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">{{ f.producto.medida ?? '—' }}</td>
+                  <td class="px-4 py-3 text-right tabular-nums whitespace-nowrap">
+                    {{ formatearCOP(f.precio) }}
+                  </td>
+                  <td class="px-4 py-3">{{ f.categoria }}</td>
+                  <td class="px-4 py-3">
+                    @if (f.activo) {
+                      <span class="text-emerald-300">Activo</span>
+                    } @else {
+                      <span class="text-muted-foreground">Inactivo</span>
+                    }
+                  </td>
+                  <td class="px-6 py-2 text-right whitespace-nowrap">
+                    <button
+                      type="button"
+                      (click)="otraMedidaDe(f.producto)"
+                      [attr.aria-label]="'Crear ' + f.producto.nombre + ' en otra medida'"
+                      title="Crear en otra medida"
+                      class="w-9 h-9 inline-flex items-center justify-center border border-border rounded-lg hover:bg-secondary mr-2"
+                    >
+                      <svg lucidePlus class="w-4 h-4" aria-hidden="true"></svg>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="editarProducto(f.producto)"
+                      [attr.aria-label]="'Editar ' + f.nombre"
+                      title="Editar"
+                      class="w-9 h-9 inline-flex items-center justify-center border border-border rounded-lg hover:bg-secondary"
+                    >
+                      <svg lucidePencil class="w-4 h-4" aria-hidden="true"></svg>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="px-6 py-10 text-center text-muted-foreground">
+                    {{
+                      productos().length
+                        ? 'No hay productos que coincidan.'
+                        : 'Todavía no hay productos. Crea el primero con el formulario.'
+                    }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Formulario de producto -->
+      <aside class="w-full xl:w-96 bg-card border border-border rounded-lg p-6 space-y-4">
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-lg font-semibold">
+            {{ editandoProducto() ? 'Editar producto' : 'Nuevo producto' }}
+          </h2>
+          @if (editandoProducto()) {
+            <button
+              type="button"
+              (click)="nuevoProducto()"
+              class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+            >
+              <svg lucidePlus class="w-4 h-4" aria-hidden="true"></svg>
+              Crear otro
+            </button>
+          }
+        </div>
+
+        @if (!categoriasActivas().length) {
+          <p
+            class="text-sm text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-3"
+          >
+            Primero crea una categoría en la pestaña
+            <button
+              type="button"
+              (click)="pestana.set('categorias')"
+              class="underline underline-offset-2"
+            >
+              Categorías</button
+            >.
+          </p>
+        }
+
+        <form
+          [formGroup]="formProducto"
+          (ngSubmit)="guardarProducto()"
+          class="space-y-4"
+          novalidate
+        >
+          <div>
+            <label for="p-nombre" class="block text-sm font-medium mb-1.5">Nombre *</label>
+            <input
+              id="p-nombre"
+              formControlName="nombre"
+              placeholder="Ej. Base cama tapizada"
+              class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              [class]="invalidoProducto('nombre') ? 'border-red-500/60' : 'border-border'"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="col-span-2 sm:col-span-1">
+              <label for="p-medida" class="block text-sm font-medium mb-1.5">Medida</label>
+              <select
+                id="p-medida"
+                formControlName="medida"
+                class="w-full h-10 px-3 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                <option [ngValue]="SIN_MEDIDA">Sin medida</option>
+                @for (m of MEDIDAS; track m) {
+                  <option [ngValue]="m">{{ m }}</option>
+                }
+                <option [ngValue]="OTRA">Otra…</option>
+              </select>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+              <label for="p-precio" class="block text-sm font-medium mb-1.5">Precio (COP) *</label>
+              <input
+                id="p-precio"
+                type="number"
+                min="0"
+                step="1000"
+                inputmode="numeric"
+                formControlName="precio"
+                placeholder="850000"
+                class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/50"
+                [class]="invalidoProducto('precio') ? 'border-red-500/60' : 'border-border'"
+              />
+            </div>
+          </div>
+
+          @if (medidaElegida() === OTRA) {
+            <div>
+              <label for="p-otra" class="block text-sm font-medium mb-1.5">¿Qué medida? *</label>
+              <input
+                id="p-otra"
+                formControlName="otraMedida"
+                placeholder="Ej. 180x200"
+                class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                [class]="invalidoProducto('otraMedida') ? 'border-red-500/60' : 'border-border'"
+              />
+            </div>
+          }
+          @if (formProducto.controls.precio.value) {
+            <p class="text-xs text-muted-foreground -mt-2">
+              {{ formatearCOP(+formProducto.controls.precio.value) }}
+            </p>
+          }
+
+          <div>
+            <label for="p-categoria" class="block text-sm font-medium mb-1.5">Categoría *</label>
+            <select
+              id="p-categoria"
+              formControlName="categoriaId"
+              class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              [class]="invalidoProducto('categoriaId') ? 'border-red-500/60' : 'border-border'"
+            >
+              <option [ngValue]="0" disabled>Selecciona una categoría</option>
+              @for (c of categorias(); track c.id) {
+                <option [ngValue]="c.id" [disabled]="!estaActivo(c.estado)">
+                  {{ c.nombre }}{{ estaActivo(c.estado) ? '' : ' (inactiva)' }}
+                </option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label for="p-descripcion" class="block text-sm font-medium mb-1.5">Descripción</label>
+            <textarea
+              id="p-descripcion"
+              formControlName="descripcion"
+              rows="2"
+              placeholder="Ej. Tapizada en tela antifluidos"
+              class="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            ></textarea>
+          </div>
+
+          <label class="flex items-center gap-2.5 text-sm">
+            <input type="checkbox" formControlName="activo" class="w-4 h-4 accent-[#d4af37]" />
+            Producto activo (se puede vender)
+          </label>
+
+          @if (avisoProducto(); as a) {
+            <p
+              [attr.role]="a.tipo === 'ok' ? 'status' : 'alert'"
+              class="text-sm rounded-lg px-4 py-3 border"
+              [class]="
+                a.tipo === 'ok'
+                  ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20'
+                  : 'text-red-400 bg-red-500/10 border-red-500/20'
+              "
+            >
+              {{ a.texto }}
+            </p>
+          }
+
+          <button
+            type="submit"
+            [disabled]="guardandoProducto() || !categoriasActivas().length"
+            class="w-full min-h-11 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
+          >
+            {{
+              guardandoProducto()
+                ? 'Guardando…'
+                : editandoProducto()
+                  ? 'Guardar cambios'
+                  : 'Crear producto'
+            }}
+          </button>
+          <p class="text-xs text-muted-foreground">
+            Cada medida es un producto con su propio precio: usa el botón + de la tabla para crear
+            el mismo producto en otra medida. Cambiar el precio no afecta los pedidos ya creados.
+            Para dejar de venderlo, desactívalo.
+          </p>
+        </form>
+      </aside>
+    </div>
+  } @else {
+    <!-- Categorías -->
+    <div class="flex flex-col xl:flex-row gap-6 items-start">
+      <section
+        class="w-full xl:flex-1 min-w-0 bg-card border border-border rounded-lg overflow-hidden"
+      >
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[560px]">
+            <thead class="text-xs text-muted-foreground">
+              <tr class="border-b border-border">
+                <th class="text-left font-medium px-6 py-3">Categoría</th>
+                <th class="text-right font-medium px-4 py-3">Productos</th>
+                <th class="text-left font-medium px-4 py-3">Estado</th>
+                <th class="text-right font-medium px-6 py-3">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border">
+              @for (f of filasCat(); track f.categoria.id) {
+                <tr [class]="editandoCategoria()?.id === f.categoria.id ? 'bg-primary/5' : ''">
+                  <td class="px-6 py-3">
+                    <p class="font-medium" [class.text-muted-foreground]="!f.activa">
+                      {{ f.categoria.nombre }}
+                    </p>
+                    @if (f.categoria.descripcion) {
+                      <p class="text-xs text-muted-foreground">{{ f.categoria.descripcion }}</p>
+                    }
+                  </td>
+                  <td class="px-4 py-3 text-right tabular-nums">
+                    {{ f.activos }}
+                    @if (f.productos > f.activos) {
+                      <span class="text-xs text-muted-foreground"
+                        >(+{{ f.productos - f.activos }} inactivos)</span
+                      >
+                    }
+                  </td>
+                  <td class="px-4 py-3">
+                    @if (f.activa) {
+                      <span class="text-emerald-300">Activa</span>
+                    } @else {
+                      <span class="text-muted-foreground">Inactiva</span>
+                    }
+                  </td>
+                  <td class="px-6 py-2 text-right">
+                    <button
+                      type="button"
+                      (click)="editarCategoria(f.categoria)"
+                      [attr.aria-label]="'Editar ' + f.categoria.nombre"
+                      class="w-9 h-9 inline-flex items-center justify-center border border-border rounded-lg hover:bg-secondary"
+                    >
+                      <svg lucidePencil class="w-4 h-4" aria-hidden="true"></svg>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="px-6 py-10 text-center text-muted-foreground">
+                    Todavía no hay categorías. Crea la primera, por ejemplo "Camas" o "Colchones".
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="w-full xl:w-96 bg-card border border-border rounded-lg p-6 space-y-4">
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-lg font-semibold">
+            {{ editandoCategoria() ? 'Editar categoría' : 'Nueva categoría' }}
+          </h2>
+          @if (editandoCategoria()) {
+            <button
+              type="button"
+              (click)="nuevaCategoria()"
+              class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+            >
+              <svg lucidePlus class="w-4 h-4" aria-hidden="true"></svg>
+              Crear otra
+            </button>
+          }
+        </div>
+        <form
+          [formGroup]="formCategoria"
+          (ngSubmit)="guardarCategoria()"
+          class="space-y-4"
+          novalidate
+        >
+          <div>
+            <label for="c-nombre" class="block text-sm font-medium mb-1.5">Nombre *</label>
+            <input
+              id="c-nombre"
+              formControlName="nombre"
+              placeholder="Ej. Colchones"
+              class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              [class]="invalidoCategoria('nombre') ? 'border-red-500/60' : 'border-border'"
+            />
+          </div>
+          <div>
+            <label for="c-descripcion" class="block text-sm font-medium mb-1.5">Descripción</label>
+            <textarea
+              id="c-descripcion"
+              formControlName="descripcion"
+              rows="2"
+              class="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            ></textarea>
+          </div>
+          <label class="flex items-center gap-2.5 text-sm">
+            <input type="checkbox" formControlName="activa" class="w-4 h-4 accent-[#d4af37]" />
+            Categoría activa
+          </label>
+          @if (avisoCategoria(); as a) {
+            <p
+              [attr.role]="a.tipo === 'ok' ? 'status' : 'alert'"
+              class="text-sm rounded-lg px-4 py-3 border"
+              [class]="
+                a.tipo === 'ok'
+                  ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20'
+                  : 'text-red-400 bg-red-500/10 border-red-500/20'
+              "
+            >
+              {{ a.texto }}
+            </p>
+          }
+          <button
+            type="submit"
+            [disabled]="guardandoCategoria()"
+            class="w-full min-h-11 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
+          >
+            {{
+              guardandoCategoria()
+                ? 'Guardando…'
+                : editandoCategoria()
+                  ? 'Guardar cambios'
+                  : 'Crear categoría'
+            }}
+          </button>
+          <p class="text-xs text-muted-foreground">
+            Una categoría inactiva no se puede elegir para productos nuevos; sus productos siguen
+            como están.
+          </p>
+        </form>
+      </aside>
+    </div>
+  }
+</div>

@@ -25,7 +25,7 @@ import {
 } from '@lucide/angular';
 import { finalize, forkJoin, merge } from 'rxjs';
 import { PageHeaderComponent } from '@app/components/page-header/page-header.component';
-import { AppError, Cliente, estaActivo, Pedido, Producto } from '@app/models';
+import { AppError, Cliente, estaActivo, nombreProducto, Pedido, Producto } from '@app/models';
 import { codigoPedido } from '@app/models/pedido-vista.model';
 import { ClientesService, ProductosService } from '@app/services/api';
 import { CrearPedidoService, LineaPedido } from '@app/services/crear-pedido.service';
@@ -111,6 +111,7 @@ export class CrearPedidoComponent implements OnInit {
   protected readonly cantidadElegida = signal(1);
   protected readonly lineas = signal<LineaVista[]>([]);
 
+  protected readonly nombreProducto = nombreProducto;
   protected readonly productosActivos = computed(() =>
     this.productos().filter((p) => estaActivo(p.estado)),
   );
@@ -159,7 +160,11 @@ export class CrearPedidoComponent implements OnInit {
       .subscribe({
         next: ({ clientes, productos }) => {
           this.clientes.set([...clientes].sort((a, b) => a.nombre.localeCompare(b.nombre)));
-          this.productos.set([...productos].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+          this.productos.set(
+            [...productos].sort(
+              (a, b) => a.nombre.localeCompare(b.nombre) || (a.medida ?? '').localeCompare(b.medida ?? ''),
+            ),
+          );
         },
         error: (e: AppError) => this.errorCarga.set(e),
       });
@@ -211,7 +216,7 @@ export class CrearPedidoComponent implements OnInit {
         ...lineas,
         {
           productoId: producto.id,
-          nombre: producto.nombre,
+          nombre: nombreProducto(producto),
           precioUnitario: aNumero(producto.precio),
           cantidad,
         },

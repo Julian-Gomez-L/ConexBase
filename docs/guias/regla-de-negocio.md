@@ -34,6 +34,7 @@ porcentaje en esta documentación: busca `5 %` en `docs/`.
 | Largo mínimo del motivo de rechazo | 5 caracteres (`MIN_MOTIVO`) | `pages/confirmacion/confirmacion.component.ts` |
 | Cuándo se puede finalizar un pedido | Todas sus producciones terminadas | `models/fabricacion.model.ts` → `listoParaFinalizar` |
 | Qué cuenta como venta en el Consolidado | Todo menos Cancelado y Rechazado | `models/reportes.model.ts` |
+| Medidas que aparecen en la lista del Catálogo | Sencilla 100x190, Semidoble 120x190, Doble 140x190, Queen 160x190, King 200x200 (y "Otra") | `config/medidas.ts` → `MEDIDAS` |
 | Vigencia de la sesión | 8 horas | `app/Services/AuthService.php` → `HORAS_VIGENCIA` |
 | Intentos de login por minuto | 5 | `app/Providers/AppServiceProvider.php` → `boot()` |
 | Largo mínimo de la contraseña | 8 caracteres | `app/Http/Requests/Usuario/` y `pages/usuarios` |
