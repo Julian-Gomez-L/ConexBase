@@ -1,21 +1,30 @@
-# ¿Qué hacer si nadie puede entrar como administrador?
+# ¿Qué hacer si nadie puede entrar como Super Administrador?
 
-Puede pasar que **ya no quede ningún administrador** que pueda entrar a
-ConexBase: alguien los desactivó por error, se perdió la contraseña del
-único administrador, o alguien con malas intenciones los bloqueó.
+El **Super Administrador** es el único que crea usuarios, cambia roles y
+maneja el código de recuperación. El **Administrador** gestiona el negocio,
+pero en *Usuarios y Roles* solo puede mirar ([ADR-0008](../decisiones/0008-super-administrador.md)).
+
+Puede pasar que **ya no quede ningún Super Administrador** que pueda entrar
+a ConexBase: alguien lo desactivó por error, se perdió su contraseña, o
+alguien con malas intenciones lo bloqueó.
 
 Para eso existe el **código de recuperación**. Con él, el dueño de la
-empresa vuelve a tener un administrador **sin llamar a un desarrollador**.
+empresa vuelve a tener un Super Administrador **sin llamar a un desarrollador**.
+
+!!! info "El sistema nunca se queda sin Super Administrador por un clic"
+    No se puede desactivar, eliminar ni cambiar de rol al **último** Super
+    Administrador activo. Primero hay que darle ese rol a otra persona.
 
 !!! warning "El código funciona como la llave de emergencia de la empresa"
-    Quien lo tenga puede crear un administrador si no queda ninguno.
+    Quien lo tenga puede crear un Super Administrador si no queda ninguno.
     Guárdalo bajo llave y no se lo envíes a nadie.
 
 ## 1. Antes de cualquier problema: guardar el código
 
 Hazlo una vez, el día que empiecen a usar el sistema.
 
-1. Entra con tu usuario de **Administrador**.
+1. Entra con tu usuario de **Super Administrador**. Un Administrador no
+   ve la tarjeta del código.
 2. En el menú, abre **Usuarios y Roles** y luego la pestaña **Seguridad**.
    Si la pestaña tiene un **punto amarillo**, todavía no hay un código.
 3. Oprime **Generar código de recuperación**.
@@ -34,20 +43,20 @@ alguien entra a esas cuentas, tendría la llave.
 
 ### Si pierdes el papel
 
-Entra como administrador y genera un código nuevo. El anterior deja de
+Entra como Super Administrador y genera un código nuevo. El anterior deja de
 servir en ese momento.
 
-## 2. Si nadie puede entrar como administrador
+## 2. Si nadie puede entrar como Super Administrador
 
 1. Abre ConexBase en el navegador. En la pantalla de inicio de sesión,
-   debajo del botón, oprime **Recuperar acceso de administrador**.
+   debajo del botón, oprime **Recuperar acceso de Super Administrador**.
 2. Escribe el **código de recuperación** tal como está en el papel. No
    importa si lo escribes en minúsculas o sin guiones.
-3. Escribe los datos del nuevo administrador: nombre, apellido, documento,
+3. Escribe los datos del nuevo Super Administrador: nombre, apellido, documento,
    correo y una contraseña nueva de al menos 8 caracteres, dos veces.
     - Si escribes el **correo de una persona que ya tenía usuario** (por
-      ejemplo, el tuyo), ese usuario se reactiva como administrador con la
-      contraseña nueva. Sus datos y su historial se conservan.
+      ejemplo, el tuyo), ese usuario se reactiva como Super Administrador con
+      la contraseña nueva. Sus datos y su historial se conservan.
     - Si el correo es nuevo, se crea un usuario nuevo.
 4. Oprime **Recuperar acceso**.
 5. Si todo sale bien, verás **"Listo. Ya puedes iniciar sesión"**. Entra
@@ -62,7 +71,7 @@ servir en ese momento.
 
 | Mensaje | Qué significa | Qué hacer |
 |---|---|---|
-| *La recuperación no está disponible: todavía hay un administrador activo* | Hay al menos un administrador que puede entrar. Por seguridad, el código solo funciona cuando no queda ninguno. | Pídele a ese administrador que te dé acceso desde *Usuarios y Roles*. |
+| *La recuperación no está disponible: todavía hay un Super Administrador activo* | Hay al menos un Super Administrador que puede entrar. Por seguridad, el código solo funciona cuando no queda ninguno (los Administradores no cuentan). | Pídele a ese Super Administrador que te dé acceso desde *Usuarios y Roles*. |
 | *El código de recuperación no es válido* | El código está mal escrito o es uno viejo. | Revisa el papel letra por letra. El código no tiene la letra O ni el número 0, ni la I, la L o el 1. |
 | *No hay un código de recuperación configurado* | Nunca se generó un código, o ya se usó. | Hay que pedir ayuda al equipo de desarrollo (ver abajo). |
 | *Demasiados intentos. Espera 60 minutos…* | Se permiten 3 intentos por hora, para que nadie pueda adivinar el código. | Espera y vuelve a intentarlo con calma. |
@@ -93,10 +102,27 @@ la base de datos. Pídele al equipo de desarrollo que las configure.
 
 ## Si no hay código y nadie puede entrar
 
-Un desarrollador puede crear un administrador desde el servidor. Debe:
+Un desarrollador puede asignar el rol desde el servidor (ver abajo). Debe:
 
 1. Guardar el código nuevo, como en el paso 1 de esta guía.
 2. Revisar los intentos fallidos para entender qué pasó.
 
-Detalles técnicos para el desarrollador: [ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md)
+## Primera vez: base de datos que ya existía
+
+La migración `15_rol_super_administrador` crea el rol, pero **no se lo da a
+nadie**. Si la base de datos ya tenía usuarios, después de
+`php artisan migrate` hay que elegir quién será el Super Administrador.
+Desde phpMyAdmin (<http://localhost:8881>) o la consola de MySQL:
+
+```sql
+UPDATE usuarios
+SET rol_id = (SELECT id FROM roles WHERE nombre = 'Super Administrador')
+WHERE correo = 'admin@conexbase.com';   -- el correo de esa persona
+```
+
+Con una base nueva (`php artisan migrate:fresh --seed`) no hace falta: el
+seeder crea `superadmin@conexbase.com`.
+
+Detalles técnicos para el desarrollador: [ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md),
+[ADR-0008](../decisiones/0008-super-administrador.md)
 y [API REST](../api/index.md#recuperacion-de-administrador).

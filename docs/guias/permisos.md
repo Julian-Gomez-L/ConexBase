@@ -9,6 +9,14 @@ Los permisos viven en **dos lugares** y casi siempre hay que tocar los dos:
 
 La tabla actual de permisos está en [API REST → Permisos](../api/index.md#permisos-por-rol).
 
+!!! info "El Super Administrador hereda todo lo del Administrador"
+    - **Backend:** `Roles::middleware(Roles::ADMIN, …)` agrega solo
+      `Roles::SUPERADMIN`. No lo escribas a mano en cada grupo.
+    - **Frontend:** `rolesPermitidos('administrador')` también deja pasar al
+      `'superadmin'` (función `cumpleRol()` en `config/roles.ts`).
+    - Lo exclusivo del Super Administrador va en su propio grupo:
+      `Roles::middleware(Roles::SUPERADMIN)` ([ADR-0008](../decisiones/0008-super-administrador.md)).
+
 ## Caso 1: darle a un rol un permiso que no tiene
 
 **Ejemplo:** que el **Confirmador** también pueda registrar abonos

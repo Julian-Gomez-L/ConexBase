@@ -13,14 +13,15 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Código de recuperación de administrador.
+ * Código de recuperación (ADR-0007 y ADR-0008).
  *
- * El Administrador genera un código y lo guarda impreso. Si un día no queda
- * ningún administrador activo (por ejemplo, alguien los desactivó o borró),
- * el dueño escribe ese código en "Recuperar acceso de administrador" y crea
- * (o reactiva) una cuenta de Administrador, sin depender de un desarrollador.
+ * El Super Administrador genera un código y lo guarda impreso. Si un día no
+ * queda ningún Super Administrador activo (por ejemplo, alguien los desactivó
+ * o borró), el dueño escribe ese código en "Recuperar acceso de administrador"
+ * y crea (o reactiva) una cuenta de Super Administrador, sin depender de un
+ * desarrollador.
  *
- * Protecciones: solo funciona si NO hay ningún administrador activo, el código
+ * Protecciones: solo funciona si NO hay ningún Super Administrador activo, el código
  * es largo y de un solo uso, hay un máximo de intentos por hora (ruta) y cada
  * código equivocado queda en intentos_login.
  */
@@ -71,13 +72,13 @@ class RecuperacionAdminService
     }
 
     /**
-     * Crea (o reactiva) un Administrador con el código de recuperación.
+     * Crea (o reactiva) un Super Administrador con el código de recuperación.
      *
      * @param array $datos codigo, documento, nombre, apellido, correo, password
      */
     public function recuperar(array $datos, ?string $ip, ?string $navegador): Usuario
     {
-        if ($this->usuarios->hayAdministradorActivo()) {
+        if ($this->usuarios->haySuperAdministradorActivo()) {
             throw ApiAuthException::recuperacionNoDisponible();
         }
 
@@ -92,12 +93,12 @@ class RecuperacionAdminService
         }
 
         $administrador = DB::transaction(function () use ($datos) {
-            $rol = $this->roles->asegurarAdministrador();
+            $rol = $this->roles->asegurarSuperAdministrador();
             $existente = $this->usuarios->buscarPorCorreoConEliminados($datos['correo']);
 
             // El correo ya era de alguien (por ejemplo, el dueño desactivado): se reactiva.
             if ($existente) {
-                return $this->usuarios->activarComoAdministrador($existente, $rol->id, $datos['password']);
+                return $this->usuarios->activarConRol($existente, $rol->id, $datos['password']);
             }
 
             if ($this->usuarios->existeDocumento($datos['documento'])) {

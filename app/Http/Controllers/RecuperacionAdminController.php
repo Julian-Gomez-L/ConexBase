@@ -9,8 +9,9 @@ use Illuminate\Http\Request;
 /**
  * @group Recuperación de administrador
  *
- * Código de emergencia para volver a tener un Administrador cuando no queda
- * ninguno activo, sin depender de un desarrollador.
+ * Código de emergencia para volver a tener un Super Administrador cuando no
+ * queda ninguno activo, sin depender de un desarrollador. Generarlo y ver su
+ * estado es exclusivo del Super Administrador.
  */
 class RecuperacionAdminController extends Controller
 {
@@ -46,8 +47,8 @@ class RecuperacionAdminController extends Controller
     /**
      * Recuperar acceso de administrador
      *
-     * Solo funciona si no hay ningún administrador activo. Crea un Administrador
-     * (o reactiva al usuario de ese correo) y el código queda usado.
+     * Solo funciona si no hay ningún Super Administrador activo. Crea un Super
+     * Administrador (o reactiva al usuario de ese correo) y el código queda usado.
      *
      * @unauthenticated
      */
@@ -61,7 +62,7 @@ class RecuperacionAdminController extends Controller
 
         return $this->creado(
             ['correo' => $usuario->correo],
-            'Listo. Ya puedes iniciar sesión como Administrador. Genera un código de recuperación nuevo.'
+            'Listo. Ya puedes iniciar sesión como Super Administrador. Genera un código de recuperación nuevo.'
         );
     }
 }

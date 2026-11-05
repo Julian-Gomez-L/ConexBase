@@ -2,7 +2,13 @@
 
 | Estado | Fecha | Autores |
 |---|---|---|
-| ✅ Aceptada | 2026-11-03 | Equipo ConexBase |
+| ✅ Aceptada, modificada por [ADR-0008](0008-super-administrador.md) | 2026-11-03 | Equipo ConexBase |
+
+!!! note "Cambio de ADR-0008"
+    Desde el rol **Super Administrador**, donde esta ficha dice
+    *Administrador* hay que leer **Super Administrador**: solo él genera el
+    código, el código solo funciona si no queda ningún Super Administrador
+    activo, y lo que se recupera es un Super Administrador.
 
 ## Contexto
 
@@ -34,7 +40,7 @@ Protecciones:
 
 | Protección | Dónde |
 |---|---|
-| Solo funciona si **no hay ningún administrador activo** (409) | `UsuarioRepository::hayAdministradorActivo()` |
+| Solo funciona si **no hay ningún Super Administrador activo** (409) | `UsuarioRepository::haySuperAdministradorActivo()` |
 | Código de 20 caracteres aleatorios (≈ 99 bits): no se puede adivinar | `RecuperacionAdminService::codigoAleatorio()` |
 | Un solo uso: se borra al usarlo | `RecuperacionAdminService::recuperar()` |
 | 3 intentos por hora por IP (429) | `throttle:recuperacion` en `AppServiceProvider` |

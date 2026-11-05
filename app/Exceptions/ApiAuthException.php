@@ -34,12 +34,12 @@ class ApiAuthException extends Exception
         return new self('FORBIDDEN', 'No tienes permisos para realizar esta acción.', 403);
     }
 
-    /** Recuperación de administrador: solo sirve si no queda ningún administrador activo. */
+    /** Recuperación: solo sirve si no queda ningún Super Administrador activo. */
     public static function recuperacionNoDisponible(): self
     {
         return new self(
             'RECUPERACION_NO_DISPONIBLE',
-            'La recuperación no está disponible: todavía hay un administrador activo. Pídele que te dé acceso.',
+            'La recuperación no está disponible: todavía hay un Super Administrador activo. Pídele que te dé acceso.',
             409
         );
     }

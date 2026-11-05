@@ -21,6 +21,23 @@ export interface NavItem {
   icon: LucideIconData;
 }
 
+/** Menú del Administrador y del Super Administrador. */
+const NAV_ADMINISTRADOR: NavItem[] = [
+  { path: '/dashboard', label: 'Panel General', icon: LucideLayoutDashboard.icon },
+  { path: '/dashboard/ventas', label: 'Ventas', icon: LucideShoppingCart.icon },
+  { path: '/dashboard/confirmacion', label: 'Confirmación', icon: LucideCheckCircle.icon },
+  { path: '/dashboard/fabricacion', label: 'Fabricación', icon: LucideFactory.icon },
+  { path: '/dashboard/pedidos-del-dia', label: 'Pedidos del Día', icon: LucideCalendarDays.icon },
+  {
+    path: '/dashboard/comisiones-asesores',
+    label: 'Comisiones de Asesores',
+    icon: LucideCircleDollarSign.icon,
+  },
+  { path: '/dashboard/consolidado', label: 'Consolidado', icon: LucideFileText.icon },
+  { path: '/dashboard/catalogo', label: 'Catálogo', icon: LucideBoxes.icon },
+  { path: '/dashboard/usuarios', label: 'Usuarios y Roles', icon: LucideUsers.icon },
+];
+
 /** Menú lateral por rol. Replica el DashboardLayout.tsx del ZIP de referencia. */
 export const NAV_BY_ROLE: Record<AppRole, NavItem[]> = {
   vendedor: [
@@ -39,21 +56,9 @@ export const NAV_BY_ROLE: Record<AppRole, NavItem[]> = {
     { path: '/dashboard/consolidado', label: 'Consolidado', icon: LucideFileText.icon },
     { path: '/dashboard/pedidos-del-dia', label: 'Pedidos del Día', icon: LucideCalendarDays.icon },
   ],
-  administrador: [
-    { path: '/dashboard', label: 'Panel General', icon: LucideLayoutDashboard.icon },
-    { path: '/dashboard/ventas', label: 'Ventas', icon: LucideShoppingCart.icon },
-    { path: '/dashboard/confirmacion', label: 'Confirmación', icon: LucideCheckCircle.icon },
-    { path: '/dashboard/fabricacion', label: 'Fabricación', icon: LucideFactory.icon },
-    { path: '/dashboard/pedidos-del-dia', label: 'Pedidos del Día', icon: LucideCalendarDays.icon },
-    {
-      path: '/dashboard/comisiones-asesores',
-      label: 'Comisiones de Asesores',
-      icon: LucideCircleDollarSign.icon,
-    },
-    { path: '/dashboard/consolidado', label: 'Consolidado', icon: LucideFileText.icon },
-    { path: '/dashboard/catalogo', label: 'Catálogo', icon: LucideBoxes.icon },
-    { path: '/dashboard/usuarios', label: 'Usuarios y Roles', icon: LucideUsers.icon },
-  ],
+  // El Super Administrador ve exactamente el mismo menú (ADR-0008)
+  superadmin: NAV_ADMINISTRADOR,
+  administrador: NAV_ADMINISTRADOR,
   confirmador: [
     { path: '/dashboard/confirmacion', label: 'Confirmación', icon: LucideCheckCircle.icon },
     { path: '/dashboard/pedidos-del-dia', label: 'Pedidos del Día', icon: LucideCalendarDays.icon },
@@ -67,8 +72,9 @@ export const NAV_BY_ROLE: Record<AppRole, NavItem[]> = {
   tapicero: [{ path: '/dashboard/tapicero', label: 'Mis Productos', icon: LucideScissors.icon }],
 };
 
-/** Pantalla de inicio de cada rol (el Panel General es solo del administrador). */
+/** Pantalla de inicio de cada rol (el Panel General es del administrador y del super administrador). */
 export const ROLE_HOME: Record<AppRole, string> = {
+  superadmin: '/dashboard',
   administrador: '/dashboard',
   vendedor: '/dashboard/crear-pedido',
   confirmador: '/dashboard/confirmacion',

@@ -70,21 +70,22 @@ Administrador.
 
 | Ruta | Descripción | Quién |
 |---|---|---|
-| `GET /api/intentos-login` | Los 500 intentos fallidos más recientes, del más nuevo al más antiguo. | Solo Administrador |
+| `GET /api/intentos-login` | Los 500 intentos fallidos más recientes, del más nuevo al más antiguo. | Super Administrador y Administrador |
 
 Cómo funciona por dentro: [Conceptos transversales → Autenticación](../arquitectura/08-conceptos.md#autenticacion).
 
 ## Recuperación de administrador
 
-Código de emergencia para volver a tener un Administrador cuando no queda
-ninguno activo ([ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md)).
+Código de emergencia para volver a tener un **Super Administrador** cuando
+no queda ninguno activo ([ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md),
+[ADR-0008](../decisiones/0008-super-administrador.md)).
 Guía para el dueño: [¿Qué hacer si nadie puede entrar?](../administracion/recuperar-acceso.md).
 
 | Ruta | Descripción | Quién |
 |---|---|---|
-| `GET /api/recuperacion-admin` | Si hay un código guardado, cuándo y quién lo generó. Nunca devuelve el código. | Solo Administrador |
-| `POST /api/recuperacion-admin/codigo` | Genera un código nuevo y reemplaza el anterior. Única vez que se devuelve el código. | Solo Administrador |
-| `POST /api/auth/recuperar-admin` | Con el código, crea un Administrador o reactiva al usuario de ese correo. Máximo 3 intentos por hora por IP. | Pública (sin token) |
+| `GET /api/recuperacion-admin` | Si hay un código guardado, cuándo y quién lo generó. Nunca devuelve el código. | Solo Super Administrador |
+| `POST /api/recuperacion-admin/codigo` | Genera un código nuevo y reemplaza el anterior. Única vez que se devuelve el código. | Solo Super Administrador |
+| `POST /api/auth/recuperar-admin` | Con el código, crea un Super Administrador o reactiva al usuario de ese correo. Máximo 3 intentos por hora por IP. | Pública (sin token) |
 
 ```bash
 curl -X POST http://localhost:8000/api/auth/recuperar-admin \
@@ -127,7 +128,8 @@ Para escribir:
 
 | Recurso | Crear | Actualizar | Eliminar |
 |---|---|---|---|
-| Roles, usuarios, categorías, productos | Admin | Admin | Admin |
+| Roles, usuarios | Super | Super | Super |
+| Categorías, productos | Admin | Admin | Admin |
 | Clientes | Admin, Vendedor | Admin, Vendedor | Admin |
 | Pedidos | Admin, Vendedor | Admin, Vendedor, Confirmador, Producción | Admin |
 | Detalle de pedidos | Admin, Vendedor | Admin, Vendedor | Admin |
@@ -136,7 +138,12 @@ Para escribir:
 | Trabajos de tapiceros | Admin, Producción | Admin, Producción, Tapicero | Admin |
 | Historial de pedidos | Admin, Vendedor, Confirmador, Producción | Admin | Admin |
 
-*Admin* = Administrador; *Producción* = Encargado de Producción.
+*Super* = solo Super Administrador; *Admin* = Administrador **y** Super
+Administrador (lo hereda todo); *Producción* = Encargado de Producción.
+
+El último Super Administrador activo no se puede desactivar, eliminar ni
+cambiar de rol, y el rol Super Administrador no se puede renombrar,
+desactivar ni eliminar: la API responde **422**.
 
 Un rol sin permiso recibe **403**. Para cambiar esta tabla, sigue la guía
 [Cambiar permisos o roles](../guias/permisos.md) y actualiza esta página.
@@ -189,7 +196,7 @@ Un rol sin permiso recibe **403**. Para cambiar esta tabla, sigue la guía
 | 404 | `<RECURSO>_NOT_FOUND` | El registro no existe o fue eliminado (ej. `PEDIDO_NOT_FOUND`). |
 | 422 | `INVALID_ID` | El ID de la URL no es un entero positivo. |
 | 422 | `VALIDATION_ERROR` | Faltan datos o son inválidos; el detalle va en `errors`. |
-| 409 | `RECUPERACION_NO_DISPONIBLE` | Se intentó recuperar el acceso, pero todavía hay un administrador activo. |
+| 409 | `RECUPERACION_NO_DISPONIBLE` | Se intentó recuperar el acceso, pero todavía hay un Super Administrador activo. |
 | 409 | `SIN_CODIGO_RECUPERACION` | No hay un código de recuperación guardado (nunca se generó o ya se usó). |
 | 422 | `CODIGO_RECUPERACION_INVALIDO` | El código de recuperación no coincide. Es 422 y no 401 para que el frontend no cierre la sesión. |
 | 429 | `TOO_MANY_REQUESTS` | Más de 5 intentos de login en un minuto, o más de 3 recuperaciones en una hora. El mensaje dice cuántos minutos esperar. |

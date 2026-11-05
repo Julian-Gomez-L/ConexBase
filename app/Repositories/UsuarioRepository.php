@@ -21,12 +21,17 @@ class UsuarioRepository extends BaseRepository implements UsuarioInterface
             ->first();
     }
 
-    public function hayAdministradorActivo(): bool
+    public function haySuperAdministradorActivo(): bool
+    {
+        return $this->contarSuperAdministradoresActivos() > 0;
+    }
+
+    public function contarSuperAdministradoresActivos(): int
     {
         return $this->model
             ->where('estado', true)
-            ->whereHas('rol', fn ($q) => $q->where('nombre', Roles::ADMIN)->where('estado', true))
-            ->exists();
+            ->whereHas('rol', fn ($q) => $q->where('nombre', Roles::SUPERADMIN)->where('estado', true))
+            ->count();
     }
 
     public function buscarPorCorreoConEliminados(string $correo): ?Usuario
@@ -39,7 +44,7 @@ class UsuarioRepository extends BaseRepository implements UsuarioInterface
         return $this->model->withTrashed()->where('documento', $documento)->exists();
     }
 
-    public function activarComoAdministrador(Usuario $usuario, int $rolId, string $password): Usuario
+    public function activarConRol(Usuario $usuario, int $rolId, string $password): Usuario
     {
         if ($usuario->trashed()) {
             $usuario->restore();

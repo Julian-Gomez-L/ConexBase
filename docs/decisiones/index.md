@@ -18,7 +18,8 @@ decisión técnica importante.
 | [0004](0004-zona-horaria-bogota.md) | Usar la zona horaria de Colombia | ✅ Aceptada |
 | [0005](0005-procesos-en-el-frontend.md) | Procesos y cálculos de negocio en el frontend, sobre los CRUD | ✅ Aceptada, con revisión pendiente |
 | [0006](0006-un-repositorio-con-docker.md) | Un solo repositorio para backend y frontend, con Docker Compose | ✅ Aceptada |
-| [0007](0007-codigo-recuperacion-admin.md) | Código de recuperación de administrador | ✅ Aceptada |
+| [0007](0007-codigo-recuperacion-admin.md) | Código de recuperación de administrador | ✅ Aceptada, modificada por ADR-0008 |
+| [0008](0008-super-administrador.md) | Rol Super Administrador | ✅ Aceptada |
 
 Las decisiones 0001, 0002, 0003 y 0005 se tomaron antes de existir esta
 documentación; su contexto se reconstruyó a partir del código. Si
@@ -36,7 +37,7 @@ participaste en alguna y recuerdas otra razón, corrígela.
 ## Cómo escribir uno nuevo
 
 1. Copia la [plantilla](plantilla.md) a un archivo nuevo con el siguiente
-   número: `docs/decisiones/0007-titulo-corto.md`.
+   número: `docs/decisiones/0009-titulo-corto.md`.
 2. Llena las secciones: **Contexto → Decisión → Consecuencias → Alternativas**.
 3. Agrégalo a la tabla de esta página y al menú en `mkdocs.yml`.
 4. Súbelo en el mismo Pull Request del cambio de código que lo motiva.

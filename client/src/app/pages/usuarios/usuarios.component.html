@@ -41,7 +41,9 @@
 
   @if (pestana() === 'seguridad') {
     <!-- Cargan sus propios datos; no dependen de la lista de usuarios -->
-    <app-codigo-recuperacion (configurado)="faltaCodigo.set(!$event)" />
+    @if (puedeEditar()) {
+      <app-codigo-recuperacion (configurado)="faltaCodigo.set(!$event)" />
+    }
     <app-intentos-login />
   } @else if (cargando() && !usuarios().length) {
     <div class="bg-card border border-border rounded-lg h-80 animate-pulse" aria-hidden="true"></div>
@@ -58,6 +60,12 @@
       </button>
     </div>
   } @else if (pestana() === 'usuarios') {
+    @if (!puedeEditar()) {
+      <p class="flex items-start gap-2 text-sm text-muted-foreground bg-card border border-border rounded-lg px-4 py-3">
+        <svg lucideLock class="w-4 h-4 shrink-0 mt-0.5 text-primary" aria-hidden="true"></svg>
+        Puedes ver los usuarios, pero solo el Super Administrador puede crearlos, editarlos o cambiar sus roles.
+      </p>
+    }
     <div class="flex flex-col xl:flex-row gap-6 items-start">
       <!-- Tabla -->
       <section class="w-full xl:flex-1 min-w-0 bg-card border border-border rounded-lg overflow-hidden">
@@ -94,7 +102,9 @@
                 <th class="text-left font-medium px-4 py-3">Documento</th>
                 <th class="text-left font-medium px-4 py-3">Rol</th>
                 <th class="text-left font-medium px-4 py-3">Estado</th>
-                <th class="text-right font-medium px-6 py-3">Acciones</th>
+                @if (puedeEditar()) {
+                  <th class="text-right font-medium px-6 py-3">Acciones</th>
+                }
               </tr>
             </thead>
             <tbody class="divide-y divide-border">
@@ -113,7 +123,7 @@
                   <td class="px-4 py-3">
                     <span
                       class="px-2.5 py-1 rounded-full text-xs whitespace-nowrap"
-                      [class]="rolDe(u) === 'Administrador' ? 'bg-primary/15 text-primary' : 'bg-secondary text-foreground'"
+                      [class]="rolDe(u).includes('Administrador') ? 'bg-primary/15 text-primary' : 'bg-secondary text-foreground'"
                     >
                       {{ rolDe(u) }}
                     </span>
@@ -125,20 +135,22 @@
                       <span class="text-muted-foreground">Inactivo</span>
                     }
                   </td>
-                  <td class="px-6 py-2 text-right">
-                    <button
-                      type="button"
-                      (click)="editar(u)"
-                      [attr.aria-label]="'Editar a ' + u.nombre + ' ' + u.apellido"
-                      class="w-9 h-9 inline-flex items-center justify-center border border-border rounded-lg hover:bg-secondary"
-                    >
-                      <svg lucidePencil class="w-4 h-4" aria-hidden="true"></svg>
-                    </button>
-                  </td>
+                  @if (puedeEditar()) {
+                    <td class="px-6 py-2 text-right">
+                      <button
+                        type="button"
+                        (click)="editar(u)"
+                        [attr.aria-label]="'Editar a ' + u.nombre + ' ' + u.apellido"
+                        class="w-9 h-9 inline-flex items-center justify-center border border-border rounded-lg hover:bg-secondary"
+                      >
+                        <svg lucidePencil class="w-4 h-4" aria-hidden="true"></svg>
+                      </button>
+                    </td>
+                  }
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="5" class="px-6 py-10 text-center text-muted-foreground">No hay usuarios que coincidan.</td>
+                  <td [attr.colspan]="puedeEditar() ? 5 : 4" class="px-6 py-10 text-center text-muted-foreground">No hay usuarios que coincidan.</td>
                 </tr>
               }
             </tbody>
@@ -146,123 +158,125 @@
         </div>
       </section>
 
-      <!-- Formulario -->
-      <aside class="w-full xl:w-96 bg-card border border-border rounded-lg p-6 space-y-4">
-        <div class="flex items-center justify-between gap-3">
-          <h2 class="text-lg font-semibold">{{ editando() ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
-          @if (editando()) {
-            <button
-              type="button"
-              (click)="nuevo()"
-              class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-            >
-              <svg lucideUserPlus class="w-4 h-4" aria-hidden="true"></svg>
-              Crear otro
-            </button>
-          }
-        </div>
+      <!-- Formulario: solo Super Administrador -->
+      @if (puedeEditar()) {
+        <aside class="w-full xl:w-96 bg-card border border-border rounded-lg p-6 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="text-lg font-semibold">{{ editando() ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+            @if (editando()) {
+              <button
+                type="button"
+                (click)="nuevo()"
+                class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+              >
+                <svg lucideUserPlus class="w-4 h-4" aria-hidden="true"></svg>
+                Crear otro
+              </button>
+            }
+          </div>
 
-        <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4" novalidate>
-          <div class="grid grid-cols-2 gap-3">
+          <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-4" novalidate>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="u-nombre" class="block text-sm font-medium mb-1.5">Nombre *</label>
+                <input
+                  id="u-nombre"
+                  formControlName="nombre"
+                  class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  [class]="invalido('nombre') ? 'border-red-500/60' : 'border-border'"
+                />
+              </div>
+              <div>
+                <label for="u-apellido" class="block text-sm font-medium mb-1.5">Apellido *</label>
+                <input
+                  id="u-apellido"
+                  formControlName="apellido"
+                  class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  [class]="invalido('apellido') ? 'border-red-500/60' : 'border-border'"
+                />
+              </div>
+            </div>
             <div>
-              <label for="u-nombre" class="block text-sm font-medium mb-1.5">Nombre *</label>
+              <label for="u-documento" class="block text-sm font-medium mb-1.5">Documento *</label>
               <input
-                id="u-nombre"
-                formControlName="nombre"
+                id="u-documento"
+                formControlName="documento"
+                inputmode="numeric"
                 class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                [class]="invalido('nombre') ? 'border-red-500/60' : 'border-border'"
+                [class]="invalido('documento') ? 'border-red-500/60' : 'border-border'"
               />
             </div>
             <div>
-              <label for="u-apellido" class="block text-sm font-medium mb-1.5">Apellido *</label>
+              <label for="u-correo" class="block text-sm font-medium mb-1.5">Correo *</label>
               <input
-                id="u-apellido"
-                formControlName="apellido"
+                id="u-correo"
+                type="email"
+                formControlName="correo"
+                autocomplete="off"
                 class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                [class]="invalido('apellido') ? 'border-red-500/60' : 'border-border'"
+                [class]="invalido('correo') ? 'border-red-500/60' : 'border-border'"
               />
             </div>
-          </div>
-          <div>
-            <label for="u-documento" class="block text-sm font-medium mb-1.5">Documento *</label>
-            <input
-              id="u-documento"
-              formControlName="documento"
-              inputmode="numeric"
-              class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              [class]="invalido('documento') ? 'border-red-500/60' : 'border-border'"
-            />
-          </div>
-          <div>
-            <label for="u-correo" class="block text-sm font-medium mb-1.5">Correo *</label>
-            <input
-              id="u-correo"
-              type="email"
-              formControlName="correo"
-              autocomplete="off"
-              class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              [class]="invalido('correo') ? 'border-red-500/60' : 'border-border'"
-            />
-          </div>
-          <div>
-            <label for="u-password" class="block text-sm font-medium mb-1.5">
-              {{ editando() ? 'Nueva contraseña' : 'Contraseña *' }}
+            <div>
+              <label for="u-password" class="block text-sm font-medium mb-1.5">
+                {{ editando() ? 'Nueva contraseña' : 'Contraseña *' }}
+              </label>
+              <input
+                id="u-password"
+                type="password"
+                formControlName="password"
+                autocomplete="new-password"
+                [placeholder]="editando() ? 'Déjala vacía para no cambiarla' : 'Mínimo 8 caracteres'"
+                class="w-full h-10 px-3 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
+            <div>
+              <label for="u-rol" class="block text-sm font-medium mb-1.5">Rol *</label>
+              <select
+                id="u-rol"
+                formControlName="rolId"
+                class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                [class]="invalido('rolId') ? 'border-red-500/60' : 'border-border'"
+              >
+                <option [ngValue]="0" disabled>Selecciona un rol</option>
+                @for (r of roles(); track r.id) {
+                  <option [ngValue]="r.id">{{ r.nombre }}</option>
+                }
+              </select>
+            </div>
+            <label class="flex items-center gap-2.5 text-sm">
+              <input type="checkbox" formControlName="activo" class="w-4 h-4 accent-[#d4af37]" />
+              Usuario activo (puede iniciar sesión)
             </label>
-            <input
-              id="u-password"
-              type="password"
-              formControlName="password"
-              autocomplete="new-password"
-              [placeholder]="editando() ? 'Déjala vacía para no cambiarla' : 'Mínimo 8 caracteres'"
-              class="w-full h-10 px-3 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </div>
-          <div>
-            <label for="u-rol" class="block text-sm font-medium mb-1.5">Rol *</label>
-            <select
-              id="u-rol"
-              formControlName="rolId"
-              class="w-full h-10 px-3 bg-input-background border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-              [class]="invalido('rolId') ? 'border-red-500/60' : 'border-border'"
-            >
-              <option [ngValue]="0" disabled>Selecciona un rol</option>
-              @for (r of roles(); track r.id) {
-                <option [ngValue]="r.id">{{ r.nombre }}</option>
-              }
-            </select>
-          </div>
-          <label class="flex items-center gap-2.5 text-sm">
-            <input type="checkbox" formControlName="activo" class="w-4 h-4 accent-[#d4af37]" />
-            Usuario activo (puede iniciar sesión)
-          </label>
 
-          @if (aviso(); as a) {
-            <p
-              [attr.role]="a.tipo === 'ok' ? 'status' : 'alert'"
-              class="text-sm rounded-lg px-4 py-3 border"
-              [class]="
-                a.tipo === 'ok'
-                  ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20'
-                  : 'text-red-400 bg-red-500/10 border-red-500/20'
-              "
+            @if (aviso(); as a) {
+              <p
+                [attr.role]="a.tipo === 'ok' ? 'status' : 'alert'"
+                class="text-sm rounded-lg px-4 py-3 border"
+                [class]="
+                  a.tipo === 'ok'
+                    ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20'
+                    : 'text-red-400 bg-red-500/10 border-red-500/20'
+                "
+              >
+                {{ a.texto }}
+              </p>
+            }
+
+            <button
+              type="submit"
+              [disabled]="guardando()"
+              class="w-full min-h-11 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
             >
-              {{ a.texto }}
+              {{ guardando() ? 'Guardando…' : editando() ? 'Guardar cambios' : 'Crear usuario' }}
+            </button>
+            <p class="text-xs text-muted-foreground">
+              Para quitarle el acceso a alguien, desactívalo en lugar de borrarlo: así se conservan sus
+              pedidos e historial.
             </p>
-          }
-
-          <button
-            type="submit"
-            [disabled]="guardando()"
-            class="w-full min-h-11 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
-          >
-            {{ guardando() ? 'Guardando…' : editando() ? 'Guardar cambios' : 'Crear usuario' }}
-          </button>
-          <p class="text-xs text-muted-foreground">
-            Para quitarle el acceso a alguien, desactívalo en lugar de borrarlo: así se conservan sus
-            pedidos e historial.
-          </p>
-        </form>
-      </aside>
+          </form>
+        </aside>
+      }
     </div>
   } @else {
     <!-- Roles -->

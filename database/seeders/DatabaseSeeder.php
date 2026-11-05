@@ -11,8 +11,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Solo roles y usuarios (sin clientes, productos ni pedidos) para hacer pruebas con datos reales.
-        // Idempotente: si ya hay datos no se vuelve a sembrar (el arranque con Docker lo ejecuta siempre).
-        if (DB::table('roles')->exists()) {
+        // Idempotente: si ya hay usuarios no se vuelve a sembrar (el arranque con Docker lo ejecuta siempre).
+        // Se revisan los usuarios y no los roles, porque la migración 15 ya crea el rol Super Administrador.
+        if (DB::table('usuarios')->exists()) {
             $this->command?->info('Los datos de prueba ya existen; no se vuelven a insertar.');
             return;
         }
@@ -25,9 +26,19 @@ class DatabaseSeeder extends Seeder
             |--------------------------------------------------------------------------
             */
 
+            // Lo crea la migración 15; aquí solo se busca (o se crea si no existe).
+            $superAdministradorId = DB::table('roles')->where('nombre', 'Super Administrador')->value('id')
+                ?? DB::table('roles')->insertGetId([
+                    'nombre' => 'Super Administrador',
+                    'descripcion' => 'Todo lo del Administrador; además gestiona usuarios, roles y el código de recuperación',
+                    'estado' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
             $administradorId = DB::table('roles')->insertGetId([
                 'nombre' => 'Administrador',
-                'descripcion' => 'Usuario con acceso completo al sistema',
+                'descripcion' => 'Gestiona el negocio: catálogo, pedidos y reportes. Ve los usuarios, pero no los modifica',
                 'estado' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -71,6 +82,18 @@ class DatabaseSeeder extends Seeder
             | USUARIOS
             |--------------------------------------------------------------------------
             */
+
+            DB::table('usuarios')->insert([
+                'documento' => '1001001000',
+                'nombre' => 'Diana',
+                'apellido' => 'Moreno',
+                'correo' => 'superadmin@conexbase.com',
+                'password' => Hash::make('123456'),
+                'rol_id' => $superAdministradorId,
+                'estado' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
             DB::table('usuarios')->insert([
                 'documento' => '1001001001',

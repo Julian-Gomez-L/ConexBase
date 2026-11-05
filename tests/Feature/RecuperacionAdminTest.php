@@ -17,8 +17,9 @@ class RecuperacionAdminTest extends TestCase
 {
     use RefreshDatabase;
 
-    private Rol $rolAdmin;
-    private Usuario $admin;
+    private Rol $rolSuper;
+    private Usuario $admin;      // Super Administrador
+    private Usuario $soloAdmin;  // Administrador (sin acceso al código)
     private Usuario $vendedor;
 
     protected function setUp(): void
@@ -26,11 +27,14 @@ class RecuperacionAdminTest extends TestCase
         parent::setUp();
         Storage::fake('local');
 
-        $this->rolAdmin = Rol::create(['nombre' => 'Administrador', 'estado' => true]);
+        // La migración 15 ya crea el rol Super Administrador
+        $this->rolSuper = Rol::where('nombre', 'Super Administrador')->firstOrFail();
+        $rolAdmin = Rol::create(['nombre' => 'Administrador', 'estado' => true]);
         $rolVendedor = Rol::create(['nombre' => 'Vendedor', 'estado' => true]);
 
-        $this->admin = $this->crearUsuario('admin@conexbase.com', '1001', $this->rolAdmin->id);
+        $this->admin = $this->crearUsuario('admin@conexbase.com', '1001', $this->rolSuper->id);
         $this->vendedor = $this->crearUsuario('vendedor@conexbase.com', '1002', $rolVendedor->id);
+        $this->soloAdmin = $this->crearUsuario('soloadmin@conexbase.com', '1003', $rolAdmin->id);
     }
 
     private function crearUsuario(string $correo, string $documento, int $rolId): Usuario
@@ -108,15 +112,27 @@ class RecuperacionAdminTest extends TestCase
 
     public function test_otros_roles_no_pueden_generar_ni_consultar_el_codigo(): void
     {
-        $token = $this->token('vendedor@conexbase.com');
+        foreach (['vendedor@conexbase.com', 'soloadmin@conexbase.com'] as $correo) {
+            $token = $this->token($correo);
 
-        $this->withToken($token)->postJson('/api/recuperacion-admin/codigo')->assertForbidden();
-        $this->withToken($token)->getJson('/api/recuperacion-admin')->assertForbidden();
+            $this->withToken($token)->postJson('/api/recuperacion-admin/codigo')->assertForbidden();
+            $this->withToken($token)->getJson('/api/recuperacion-admin')->assertForbidden();
+        }
+    }
+
+    public function test_un_administrador_activo_no_impide_la_recuperacion(): void
+    {
+        // Solo cuenta el Super Administrador: el Administrador no puede arreglar usuarios
+        $codigo = $this->generarCodigo();
+        $this->admin->update(['estado' => false]);
+
+        $this->recuperar($codigo)->assertCreated();
+        $this->assertSame($this->rolSuper->id, Usuario::where('correo', 'dueno@conexbase.com')->value('rol_id'));
     }
 
     // ── Recuperar el acceso ──────────────────────────────────────────────
 
-    public function test_no_funciona_mientras_haya_un_administrador_activo(): void
+    public function test_no_funciona_mientras_haya_un_super_administrador_activo(): void
     {
         $codigo = $this->generarCodigo();
 
@@ -135,7 +151,7 @@ class RecuperacionAdminTest extends TestCase
         $this->recuperar($codigo)->assertCreated();
 
         $nuevo = Usuario::where('correo', 'dueno@conexbase.com')->first();
-        $this->assertSame($this->rolAdmin->id, $nuevo->rol_id);
+        $this->assertSame($this->rolSuper->id, $nuevo->rol_id);
         $this->assertTrue((bool) $nuevo->estado);
 
         $this->token('dueno@conexbase.com', 'nuevaClave2026');
@@ -178,7 +194,7 @@ class RecuperacionAdminTest extends TestCase
         $this->assertSame('dueno@conexbase.com', $intento->correo);
     }
 
-    public function test_si_el_correo_ya_existe_reactiva_a_ese_usuario_como_administrador(): void
+    public function test_si_el_correo_ya_existe_reactiva_a_ese_usuario_como_super_administrador(): void
     {
         $codigo = $this->generarCodigo();
         // Alguien desactivó al administrador y además lo eliminó
@@ -195,16 +211,16 @@ class RecuperacionAdminTest extends TestCase
         $this->token('admin@conexbase.com', 'nuevaClave2026');
     }
 
-    public function test_si_borraron_el_rol_administrador_lo_vuelve_a_crear(): void
+    public function test_si_borraron_el_rol_super_administrador_lo_vuelve_a_crear(): void
     {
         $codigo = $this->generarCodigo();
         $this->admin->update(['estado' => false]);
-        $this->rolAdmin->delete();
+        $this->rolSuper->delete();
 
         $this->recuperar($codigo)->assertCreated();
 
         $nuevo = Usuario::with('rol')->where('correo', 'dueno@conexbase.com')->first();
-        $this->assertSame('Administrador', $nuevo->rol->nombre);
+        $this->assertSame('Super Administrador', $nuevo->rol->nombre);
     }
 
     public function test_un_documento_repetido_se_explica_en_espanol(): void

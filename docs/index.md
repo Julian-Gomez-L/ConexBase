@@ -30,7 +30,7 @@ flowchart LR
 | Entender **por qué** algo se hizo de cierta forma | [Decisiones (ADR)](decisiones/index.md) |
 | Ver las tablas y sus campos | [Base de datos](datos/index.md) |
 | Consultar los endpoints y permisos de la API | [API REST](api/index.md) |
-| Recuperar el acceso si no queda ningún administrador | [Para el administrador](administracion/index.md) |
+| Recuperar el acceso si no queda ningún Super Administrador | [Para el administrador](administracion/index.md) |
 | Subir mis cambios al repositorio | [Cómo contribuir](contribuir.md) |
 
 ## Tecnologías
@@ -49,7 +49,8 @@ Cada persona entra con un rol y ve solo el menú y las pantallas de ese rol.
 
 | Rol | Qué hace en ConexBase | Pantallas |
 |---|---|---|
-| **Administrador** | Supervisa todo, gestiona usuarios y el catálogo de productos, y ve las comisiones de todos. | Panel General, Ventas, Confirmación, Fabricación, Pedidos del Día, Comisiones de Asesores, Consolidado, Catálogo, Usuarios y Roles |
+| **Super Administrador** | Todo lo del Administrador y, además, crea y edita usuarios y roles y maneja el código de recuperación. | Las mismas del Administrador |
+| **Administrador** | Supervisa todo, gestiona el catálogo de productos y ve las comisiones de todos. Ve los usuarios, pero no los modifica. | Panel General, Ventas, Confirmación, Fabricación, Pedidos del Día, Comisiones de Asesores, Consolidado, Catálogo, Usuarios y Roles |
 | **Vendedor** (asesor comercial) | Registra pedidos con su abono y consulta sus comisiones. | Crear Pedido, Mis Pedidos, Mis Comisiones, Ventas Confirmadas, Consolidado, Pedidos del Día |
 | **Confirmador** | Revisa los pedidos nuevos y los confirma o rechaza. | Confirmación, Pedidos del Día, Consolidado |
 | **Encargado de Producción** | Inicia la fabricación, asigna tapiceros, finaliza y entrega. | Fabricación, Pedidos del Día, Consolidado |
@@ -60,7 +61,7 @@ Cada persona entra con un rol y ve solo el menú y las pantallas de ese rol.
 | Ya funciona | Pendiente |
 |---|---|
 | Inicio de sesión con token y permisos por rol | Recuperación de contraseña |
-| Registro de intentos fallidos y código de recuperación de administrador | Copias de seguridad automáticas |
+| Registro de intentos fallidos y código de recuperación del Super Administrador | Copias de seguridad automáticas |
 | Ciclo completo del pedido, de Crear a Entregado | Cancelar un pedido desde la aplicación |
 | Abonos al crear el pedido | Registrar abonos después de creado el pedido |
 | Comisiones de asesores (5 % de lo entregado) | Liquidación por destajo de los tapiceros |

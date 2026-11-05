@@ -64,10 +64,10 @@ sequenceDiagram
 Si el token vence o es inválido, la API responde **401**: el
 `errorInterceptor` cierra la sesión y lleva al usuario al login.
 
-## Recuperar el acceso de administrador
+## Recuperar el acceso de Super Administrador
 
-Solo cuando no queda ningún administrador activo
-([ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md)).
+Solo cuando no queda ningún Super Administrador activo
+([ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md), [ADR-0008](../decisiones/0008-super-administrador.md)).
 
 ```mermaid
 sequenceDiagram
@@ -78,10 +78,10 @@ sequenceDiagram
     participant F as Archivo del código
     participant DB as MySQL
 
-    D->>FE: código impreso + datos del nuevo administrador
+    D->>FE: código impreso + datos del nuevo Super Administrador
     FE->>API: POST /api/auth/recuperar-admin
     API->>API: ¿más de 3 intentos esta hora? → 429
-    API->>DB: ¿hay algún administrador activo?
+    API->>DB: ¿hay algún Super Administrador activo?
     alt Sí hay
         API-->>FE: 409 No disponible
     else No hay
@@ -90,7 +90,7 @@ sequenceDiagram
             API->>DB: guarda el intento en intentos_login
             API-->>FE: 422 Código inválido
         else Código correcto
-            API->>DB: transacción: asegura el rol Administrador<br/>y crea o reactiva el usuario
+            API->>DB: transacción: asegura el rol Super Administrador<br/>y crea o reactiva el usuario
             API->>F: borra el código (un solo uso)
             API-->>FE: 201 Ya puedes iniciar sesión
         end

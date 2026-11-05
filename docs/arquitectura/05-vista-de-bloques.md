@@ -142,7 +142,9 @@ flowchart LR
 | `consolidado` | `consolidado` | Todos menos Tapicero |
 | `comisiones-asesores` | `comisiones-asesores` | Administrador |
 | `catalogo` | `catalogo` | Administrador |
-| `usuarios` | `usuarios` | Administrador |
+| `usuarios` | `usuarios` | Super Administrador; el Administrador solo en lectura |
+
+Donde dice *Administrador*, también entra el Super Administrador.
 
 La misma pantalla `pedidos` sirve para tres rutas distintas: la ruta le pasa
 datos (`data`) que cambian el título, el alcance y los estados que muestra.
@@ -165,7 +167,7 @@ ConexBase/
 ├── bootstrap/app.php         alias de middleware y formato de los errores
 ├── config/                   configuración (app, cors, scribe…)
 ├── database/
-│   ├── migrations/           estructura de las tablas (01_ a 12_)
+│   ├── migrations/           estructura de las tablas (01_ a 15_)
 │   └── seeders/              datos de prueba
 ├── routes/api.php            todas las rutas y sus permisos
 ├── client/                   ← FRONTEND (Angular)

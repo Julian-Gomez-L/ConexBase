@@ -16,7 +16,7 @@ Implementada a mano, sin paquetes externos ([ADR-0002](../decisiones/0002-token-
 | Cierre de sesión | `POST /api/auth/logout` borra el token. | `AuthService::logout()` |
 | Fuerza bruta | Máximo 5 intentos de login por minuto por correo e IP (error 429). | `AppServiceProvider::boot()` |
 | Intentos fallidos | Cada login fallido se guarda en `intentos_login` con el motivo, la IP, el navegador, la fecha y la hora. El Administrador los ve en *Usuarios y Roles → Seguridad*. | `IntentosLoginService::registrarFallido()` |
-| Recuperación de administrador | Si no queda ningún administrador activo, un código de un solo uso, guardado cifrado fuera de MySQL, permite crear uno desde el login. 3 intentos por hora. | `RecuperacionAdminService` ([ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md)) |
+| Recuperación de Super Administrador | Si no queda ningún Super Administrador activo, un código de un solo uso, guardado cifrado fuera de MySQL, permite crear uno desde el login. 3 intentos por hora. | `RecuperacionAdminService` ([ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md)) |
 | Correos registrados | El mensaje de error es el mismo exista o no el correo, y se tarda lo mismo en responder. | `AuthService::HASH_RELLENO` |
 | Contraseñas | Se guardan con bcrypt automáticamente (cast `'password' => 'hashed'`) y nunca se devuelven (`$hidden`). | `app/Models/Usuario.php` |
 | En el frontend | La sesión se guarda en `sessionStorage`: se pierde al cerrar la pestaña. | `AuthService` (Angular) |
@@ -35,11 +35,16 @@ Regla general del backend:
 - **Leer** (listar y ver): cualquier usuario autenticado.
 - **Crear y modificar**: solo los roles que intervienen en ese proceso.
 - **Eliminar**: solo el Administrador.
+- **Usuarios, roles y código de recuperación**: solo el Super Administrador.
+
+El **Super Administrador** hereda todo lo del Administrador:
+`Roles::middleware()` lo agrega donde está el Administrador, y en el frontend
+`cumpleRol()` hace lo mismo ([ADR-0008](../decisiones/0008-super-administrador.md)).
 
 La tabla completa está en [API REST → Permisos](../api/index.md#permisos-por-rol).
 Los nombres de los roles están en `app/Support/Roles.php` y deben coincidir
 **exactamente** con la columna `roles.nombre`. En el frontend,
-`resolverRol()` (`config/roles.ts`) convierte ese nombre en uno de los 5
+`resolverRol()` (`config/roles.ts`) convierte ese nombre en uno de los 6
 roles de la aplicación sin depender de tildes ni mayúsculas.
 
 ## Formato de las respuestas

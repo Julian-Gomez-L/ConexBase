@@ -6,10 +6,10 @@ import { AppError } from '@app/models';
 import { RecuperacionAdminService } from '@app/services/recuperacion-admin.service';
 
 /**
- * Recuperar acceso de administrador (pública, desde el login).
- * Con el código de recuperación impreso, el dueño crea un Administrador
+ * Recuperar acceso de Super Administrador (pública, desde el login).
+ * Con el código de recuperación impreso, el dueño crea un Super Administrador
  * cuando ya no queda ninguno activo. El backend rechaza el intento si todavía
- * hay un administrador activo.
+ * hay un Super Administrador activo (ADR-0008).
  */
 @Component({
   selector: 'app-recuperar-acceso',

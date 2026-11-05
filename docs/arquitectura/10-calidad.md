@@ -57,8 +57,11 @@ de datos. Las pruebas van en `tests/Feature/`:
 | Archivo de prueba | Qué comprueba |
 |---|---|
 | `IntentosLoginTest.php` | Cada login fallido se guarda con su motivo, nombre, rol, IP y fecha; el login correcto no; la contraseña nunca se guarda; solo el Administrador ve el listado. |
+| `RecuperacionAdminTest.php` | El código de recuperación: solo lo genera el Super Administrador, se guarda cifrado, sirve una vez, solo funciona si no queda ningún Super Administrador activo y tiene máximo 3 intentos por hora. |
+| `CatalogoTest.php` | Productos con medida y precio, y categorías, desde el Catálogo. |
+| `SuperAdministradorTest.php` | El Administrador ve los usuarios pero recibe 403 al modificarlos; el Super Administrador hereda todo; nunca se queda el sistema sin Super Administrador. |
 
-El resto del backend (permisos por rol, validaciones) todavía no tiene
+El resto del backend (la mayoría de permisos por rol y validaciones) todavía no tiene
 pruebas: ver [Riesgos](11-riesgos.md).
 
 ## Prueba manual del ciclo completo

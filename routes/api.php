@@ -26,6 +26,8 @@ use App\Support\Roles;
 |   frontend combinan varios recursos (pedidos + clientes + pagos...).
 | - ESCRITURA (store, update): solo los roles que intervienen en ese proceso.
 | - ELIMINAR (destroy): solo el Administrador (es borrado lógico).
+| - USUARIOS, ROLES y CÓDIGO DE RECUPERACIÓN: solo el Super Administrador.
+| - El Super Administrador hereda todo lo del Administrador (Roles::middleware).
 |
 | Los nombres de rol están en App\Support\Roles. Pendiente: Policies para reglas por registro,
 | p. ej. "un vendedor solo edita sus propios pedidos".
@@ -34,8 +36,8 @@ use App\Support\Roles;
 // Autenticación (pública, con límite de 5 intentos por minuto)
 Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
-// Recuperar acceso de administrador con el código de emergencia (pública, 3 intentos por hora).
-// Solo funciona si no queda ningún administrador activo.
+// Recuperar acceso con el código de emergencia (pública, 3 intentos por hora).
+// Solo funciona si no queda ningún Super Administrador activo; crea uno.
 Route::post('auth/recuperar-admin', [RecuperacionAdminController::class, 'recuperar'])->middleware('throttle:recuperacion');
 
 // Todo lo demás exige token Bearer
@@ -57,10 +59,18 @@ Route::middleware('auth.token')->group(function () {
     Route::apiResource('trabajos-tapiceros', TrabajosTapicerosController::class)->only(['index', 'show']);
     Route::apiResource('historial-pedidos', HistorialPedidosController::class)->only(['index', 'show']);
 
-    // ── Administrador: control total del catálogo, usuarios y eliminación ──
-    Route::middleware(Roles::middleware(Roles::ADMIN))->group(function () {
+    // ── Solo Super Administrador: usuarios, roles y código de recuperación (ADR-0008) ──
+    Route::middleware(Roles::middleware(Roles::SUPERADMIN))->group(function () {
         Route::apiResource('roles', RolController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('usuarios', UsuarioController::class)->only(['store', 'update', 'destroy']);
+
+        // Código de recuperación de administrador
+        Route::get('recuperacion-admin', [RecuperacionAdminController::class, 'estado']);
+        Route::post('recuperacion-admin/codigo', [RecuperacionAdminController::class, 'generar']);
+    });
+
+    // ── Administrador (y Super Administrador): catálogo, auditoría y eliminación ──
+    Route::middleware(Roles::middleware(Roles::ADMIN))->group(function () {
         Route::apiResource('categorias', CategoriaController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('productos', ProductoController::class)->only(['store', 'update', 'destroy']);
         Route::apiResource('historial-pedidos', HistorialPedidosController::class)->only(['update', 'destroy']);
@@ -72,12 +82,8 @@ Route::middleware('auth.token')->group(function () {
         Route::apiResource('producciones', ProduccionController::class)->only(['destroy']);
         Route::apiResource('trabajos-tapiceros', TrabajosTapicerosController::class)->only(['destroy']);
 
-        // Auditoría: inicios de sesión fallidos
+        // Auditoría: inicios de sesión fallidos (solo lectura)
         Route::get('intentos-login', [IntentoLoginController::class, 'index']);
-
-        // Código de recuperación de administrador
-        Route::get('recuperacion-admin', [RecuperacionAdminController::class, 'estado']);
-        Route::post('recuperacion-admin/codigo', [RecuperacionAdminController::class, 'generar']);
     });
 
     // ── Ventas: registrar clientes, pedidos, sus detalles y el pago inicial ──

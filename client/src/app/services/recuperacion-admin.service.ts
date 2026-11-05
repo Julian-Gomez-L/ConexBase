@@ -6,8 +6,8 @@ import { ApiResponse, CodigoGenerado, DatosRecuperacion, EstadoRecuperacion } fr
 
 /**
  * Código de recuperación de administrador.
- * - estado() y generar(): solo Administrador (pantalla Usuarios y Roles → Seguridad).
- * - recuperar(): pública, desde "Recuperar acceso de administrador" en el login.
+ * - estado() y generar(): solo Super Administrador (pantalla Usuarios y Roles → Seguridad).
+ * - recuperar(): pública, desde "Recuperar acceso de Super Administrador" en el login.
  */
 @Injectable({ providedIn: 'root' })
 export class RecuperacionAdminService {

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { resolverRol } from './roles';
+import { cumpleRol, gestionaUsuarios, resolverRol } from './roles';
 
 describe('resolverRol', () => {
   it('reconoce los roles que siembra el backend', () => {
+    expect(resolverRol('Super Administrador')).toBe('superadmin');
     expect(resolverRol('Administrador')).toBe('administrador');
     expect(resolverRol('Vendedor')).toBe('vendedor');
     expect(resolverRol('Encargado de Producción')).toBe('produccion');
@@ -18,5 +19,27 @@ describe('resolverRol', () => {
   it('devuelve null si el rol no existe', () => {
     expect(resolverRol('Invitado')).toBeNull();
     expect(resolverRol(undefined)).toBeNull();
+  });
+});
+
+describe('cumpleRol', () => {
+  it('el Super Administrador hereda todo lo del Administrador', () => {
+    expect(cumpleRol('superadmin', ['administrador'])).toBe(true);
+    expect(cumpleRol('superadmin', ['administrador', 'confirmador'])).toBe(true);
+    expect(cumpleRol('superadmin', ['vendedor'])).toBe(false);
+  });
+
+  it('los demás roles solo entran donde están permitidos', () => {
+    expect(cumpleRol('administrador', ['administrador'])).toBe(true);
+    expect(cumpleRol('administrador', ['superadmin'])).toBe(false);
+    expect(cumpleRol('vendedor', ['administrador'])).toBe(false);
+  });
+});
+
+describe('gestionaUsuarios', () => {
+  it('solo el Super Administrador modifica usuarios', () => {
+    expect(gestionaUsuarios('superadmin')).toBe(true);
+    expect(gestionaUsuarios('administrador')).toBe(false);
+    expect(gestionaUsuarios(null)).toBe(false);
   });
 });

@@ -12,7 +12,12 @@ hacen con datos reales, ingresados desde la aplicación.
 
 ## Roles
 
-Administrador, Vendedor, Confirmador, Encargado de Producción y Tapicero.
+Super Administrador, Administrador, Vendedor, Confirmador, Encargado de
+Producción y Tapicero.
+
+El **Administrador** hace todo lo del Super Administrador, salvo que en
+*Usuarios y Roles* solo puede mirar y no ve el código de recuperación
+([ADR-0008](../decisiones/0008-super-administrador.md)).
 
 ## Usuarios
 
@@ -20,6 +25,7 @@ Todos tienen la contraseña **`123456`**.
 
 | Rol | Nombre | Correo |
 |---|---|---|
+| Super Administrador | Diana Moreno | `superadmin@conexbase.com` |
 | Administrador | Carlos Rodriguez | `admin@conexbase.com` |
 | Vendedor | Juan Perez | `vendedor@conexbase.com` |
 | Vendedor | Valentina Suarez | `vendedor2@conexbase.com` |
@@ -52,7 +58,8 @@ cambiando de usuario:
 5. **Tapicero**: en *Mis Productos* empieza el trabajo y termínalo.
 6. **Producción**: marca la producción como *Finalizada*, luego el pedido como *Finalizado* y por último *Entregado*.
 7. **Vendedor**: en *Mis Comisiones* aparece la comisión de ese pedido.
-8. **Administrador**: revisa *Pedidos del Día*, *Consolidado* y *Usuarios y Roles → Seguridad*.
+8. **Administrador**: revisa *Pedidos del Día* y *Consolidado*. En *Usuarios y Roles* comprueba que solo puede mirar.
+9. **Super Administrador**: en *Usuarios y Roles → Seguridad* genera el código de recuperación.
 
 ## Volver a empezar
 

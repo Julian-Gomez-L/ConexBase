@@ -2,7 +2,7 @@
 
 MySQL, base de datos `ConexBase`, con **13 tablas** del negocio. La estructura la definen
 las migraciones de `database/migrations/` (`01_roles.php` a
-`13_intentos_login.php`): **ante cualquier diferencia con esta página, mandan
+`15_rol_super_administrador.php`): **ante cualquier diferencia con esta página, mandan
 las migraciones**.
 
 Para verla con tus propios ojos: phpMyAdmin en <http://localhost:8881>
@@ -62,7 +62,7 @@ Roles del sistema. Sus nombres deben coincidir con `app/Support/Roles.php`.
 
 | Campo | Tipo | Nulo | Restricción | Descripción |
 |---|---|---|---|---|
-| `nombre` | VARCHAR(255) | No | Único | Administrador, Vendedor, Confirmador, Encargado de Producción o Tapicero. |
+| `nombre` | VARCHAR(255) | No | Único | Super Administrador, Administrador, Vendedor, Confirmador, Encargado de Producción o Tapicero. |
 | `descripcion` | VARCHAR(255) | Sí | | Para qué sirve el rol. |
 | `estado` | BOOLEAN | No | Por defecto `true` | Activo o inactivo. |
 

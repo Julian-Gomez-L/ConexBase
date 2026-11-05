@@ -13,11 +13,11 @@ class RolRepository extends BaseRepository implements RolInterface
         parent::__construct($RolModel);
     }
 
-    public function asegurarAdministrador(): Rol
+    public function asegurarSuperAdministrador(): Rol
     {
         $rol = $this->model->withTrashed()->firstOrCreate(
-            ['nombre' => Roles::ADMIN],
-            ['descripcion' => 'Usuario con acceso completo al sistema', 'estado' => true]
+            ['nombre' => Roles::SUPERADMIN],
+            ['descripcion' => Roles::DESCRIPCION_SUPERADMIN, 'estado' => true]
         );
 
         if ($rol->trashed()) {

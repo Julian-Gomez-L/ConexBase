@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, CanMatchFn, Router } from '@angular/router';
 import { ROLE_HOME } from '@app/config/navigation';
-import { AppRole } from '@app/config/roles';
+import { AppRole, cumpleRol } from '@app/config/roles';
 import { AuthService } from '@app/services/auth.service';
 
 /** Solo usuarios con sesión. */
@@ -29,13 +29,13 @@ export const rolesPermitidos =
     const router = inject(Router);
     const rol = auth.rol();
     if (!rol) return router.createUrlTree(['/login']);
-    return roles.includes(rol) || router.createUrlTree([ROLE_HOME[rol]]);
+    return cumpleRol(rol, roles) || router.createUrlTree([ROLE_HOME[rol]]);
   };
 
-/** `/dashboard` (Panel General) es solo del administrador; los demás van a su inicio. */
+/** `/dashboard` (Panel General) es del administrador y del super administrador; los demás van a su inicio. */
 export const inicioPorRolGuard: CanActivateFn = () => {
   const rol = inject(AuthService).rol();
   const router = inject(Router);
   if (!rol) return router.createUrlTree(['/login']);
-  return rol === 'administrador' || router.createUrlTree([ROLE_HOME[rol]]);
+  return cumpleRol(rol, ['administrador']) || router.createUrlTree([ROLE_HOME[rol]]);
 };
