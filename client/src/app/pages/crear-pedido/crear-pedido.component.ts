@@ -25,23 +25,27 @@ import {
 } from '@lucide/angular';
 import { finalize, forkJoin, merge } from 'rxjs';
 import { PageHeaderComponent } from '@app/components/page-header/page-header.component';
-import { AppError, Cliente, estaActivo, nombreProducto, Pedido, Producto } from '@app/models';
+import { AppError, Cliente, estaActivo, Pedido } from '@app/models';
+import { METODO_ADDI, METODOS_PAGO, RECARGO_ADDI } from '@app/config/pagos';
+import { calcularCobro } from '@app/models/cobro.model';
 import { codigoPedido } from '@app/models/pedido-vista.model';
-import { ClientesService, ProductosService } from '@app/services/api';
+import { ClientesService } from '@app/services/api';
 import { CrearPedidoService, LineaPedido } from '@app/services/crear-pedido.service';
-import { aNumero, formatearCOP, formatearMiles, leerMiles } from '@app/utils/format';
+import { formatearCOP, formatearMiles, leerMiles } from '@app/utils/format';
 
-/** Línea del carrito con lo necesario para mostrarla. */
+/** Producto agregado al pedido; `clave` solo sirve para quitarlo o cambiar la cantidad. */
 interface LineaVista extends LineaPedido {
-  nombre: string;
+  clave: number;
 }
 
-const METODOS_PAGO = ['Efectivo', 'Transferencia', 'Tarjeta', 'Nequi', 'Daviplata'];
 
 /**
  * Crear Pedido (asesor comercial).
  * El pedido nace en "Pendiente" a nombre de quien inició sesión, y luego lo
- * revisa el Confirmador. El total se calcula con el precio de cada producto.
+ * revisa el Confirmador. Ya no hay catálogo: cada producto se describe con
+ * diseño, descripción, color y tipo de tela, cantidad y valor; el pedido
+ * lleva la localidad de entrega. El total se calcula con esos valores.
+ * Con Addi se paga todo por anticipado con un 10 % de recargo (ver config/pagos.ts).
  */
 @Component({
   selector: 'app-crear-pedido',
@@ -67,18 +71,17 @@ const METODOS_PAGO = ['Efectivo', 'Transferencia', 'Tarjeta', 'Nequi', 'Daviplat
 export class CrearPedidoComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly clientesApi = inject(ClientesService);
-  private readonly productosApi = inject(ProductosService);
   private readonly crearPedido = inject(CrearPedidoService);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly metodosPago = METODOS_PAGO;
   protected readonly formatearCOP = formatearCOP;
+  protected readonly formatearMilesCampo = formatearMiles;
 
-  // ── Catálogos ──────────────────────────────────────────────────────────
+  // ── Clientes ───────────────────────────────────────────────────────────
   protected readonly cargando = signal(true);
   protected readonly errorCarga = signal<AppError | null>(null);
   protected readonly clientes = signal<Cliente[]>([]);
-  protected readonly productos = signal<Producto[]>([]);
 
   // ── Cliente ────────────────────────────────────────────────────────────
   protected readonly modoCliente = signal<'existente' | 'nuevo'>('existente');
@@ -106,15 +109,22 @@ export class CrearPedidoComponent implements OnInit {
     () => this.clientes().find((c) => c.id === this.clienteId()) ?? null,
   );
 
-  // ── Productos ──────────────────────────────────────────────────────────
-  protected readonly productoElegido = signal<number | null>(null);
-  protected readonly cantidadElegida = signal(1);
-  protected readonly lineas = signal<LineaVista[]>([]);
+  // ── Entrega ────────────────────────────────────────────────────────────
+  protected readonly localidad = signal('');
 
-  protected readonly nombreProducto = nombreProducto;
-  protected readonly productosActivos = computed(() =>
-    this.productos().filter((p) => estaActivo(p.estado)),
-  );
+  // ── Productos (especificaciones) ───────────────────────────────────────
+  protected readonly formProducto = this.fb.nonNullable.group({
+    diseno: ['', [Validators.required, Validators.maxLength(150)]],
+    descripcion: ['', [Validators.maxLength(2000)]],
+    tipoTela: ['', [Validators.required, Validators.maxLength(100)]],
+    colorTela: ['', [Validators.required, Validators.maxLength(100)]],
+    cantidad: [1, [Validators.required, Validators.min(1)]],
+  });
+  /** Valor unitario del producto que se está agregando (el campo muestra puntos de miles). */
+  protected readonly valorProducto = signal(0);
+  protected readonly errorProducto = signal('');
+  protected readonly lineas = signal<LineaVista[]>([]);
+  private siguienteClave = 1;
 
   // ── Abono ──────────────────────────────────────────────────────────────
   protected readonly formAbono = this.fb.nonNullable.group({
@@ -123,6 +133,8 @@ export class CrearPedidoComponent implements OnInit {
     comprobante: [''],
   });
   private readonly montoAbono = signal(0);
+  protected readonly metodoPago = signal(METODOS_PAGO[0]);
+  protected readonly porcentajeAddi = Math.round(RECARGO_ADDI * 100);
   /** El monto con puntos de miles ("1.500.000") para mostrarlo en el campo. */
   protected readonly montoTexto = computed(() => formatearMiles(this.montoAbono()));
 
@@ -135,12 +147,16 @@ export class CrearPedidoComponent implements OnInit {
   }
 
   // ── Resumen ────────────────────────────────────────────────────────────
-  protected readonly total = computed(() => CrearPedidoService.total(this.lineas()));
+  /** Valor de los productos, sin recargos. */
+  protected readonly subtotal = computed(() => CrearPedidoService.total(this.lineas()));
+  /** Recargo, total, abono y saldo según el método de pago (Addi: 10 % y pago completo). */
+  protected readonly cobro = computed(() => calcularCobro(this.subtotal(), this.metodoPago(), this.montoAbono()));
+  protected readonly total = computed(() => this.cobro().total);
   protected readonly unidades = computed(() =>
     this.lineas().reduce((suma, l) => suma + l.cantidad, 0),
   );
-  protected readonly abono = computed(() => Math.max(this.montoAbono() || 0, 0));
-  protected readonly saldo = computed(() => Math.max(this.total() - this.abono(), 0));
+  protected readonly abono = computed(() => this.cobro().abono);
+  protected readonly saldo = computed(() => this.cobro().saldo);
 
   // ── Envío ──────────────────────────────────────────────────────────────
   protected readonly enviando = signal(false);
@@ -153,6 +169,9 @@ export class CrearPedidoComponent implements OnInit {
     this.formAbono.controls.monto.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((v) => this.montoAbono.set(Number(v) || 0));
+    this.formAbono.controls.metodo.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((m) => this.metodoPago.set(m));
     // El aviso de error se borra apenas el usuario corrige algo
     merge(this.formAbono.valueChanges, this.formCliente.valueChanges)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -162,19 +181,14 @@ export class CrearPedidoComponent implements OnInit {
   protected cargarCatalogos(): void {
     this.cargando.set(true);
     this.errorCarga.set(null);
-    forkJoin({ clientes: this.clientesApi.listar(), productos: this.productosApi.listar() })
+    forkJoin({ clientes: this.clientesApi.listar() })
       .pipe(
         finalize(() => this.cargando.set(false)),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: ({ clientes, productos }) => {
+        next: ({ clientes }) => {
           this.clientes.set([...clientes].sort((a, b) => a.nombre.localeCompare(b.nombre)));
-          this.productos.set(
-            [...productos].sort(
-              (a, b) => a.nombre.localeCompare(b.nombre) || (a.medida ?? '').localeCompare(b.medida ?? ''),
-            ),
-          );
         },
         error: (e: AppError) => this.errorCarga.set(e),
       });
@@ -200,53 +214,62 @@ export class CrearPedidoComponent implements OnInit {
     return c.invalid && (c.touched || c.dirty);
   }
 
-  // ── Productos ──────────────────────────────────────────────────────────
-  protected alElegirProducto(evento: Event): void {
-    const valor = (evento.target as HTMLSelectElement).value;
-    this.productoElegido.set(valor ? Number(valor) : null);
-  }
-
-  protected alCambiarCantidad(evento: Event): void {
-    const n = Math.floor(Number((evento.target as HTMLInputElement).value));
-    this.cantidadElegida.set(n > 0 ? n : 1);
-  }
-
-  protected agregarProducto(): void {
-    const producto = this.productos().find((p) => p.id === this.productoElegido());
-    if (!producto) return;
-    const cantidad = this.cantidadElegida();
-    this.lineas.update((lineas) => {
-      const existente = lineas.find((l) => l.productoId === producto.id);
-      if (existente) {
-        return lineas.map((l) =>
-          l.productoId === producto.id ? { ...l, cantidad: l.cantidad + cantidad } : l,
-        );
-      }
-      return [
-        ...lineas,
-        {
-          productoId: producto.id,
-          nombre: nombreProducto(producto),
-          precioUnitario: aNumero(producto.precio),
-          cantidad,
-        },
-      ];
-    });
-    this.productoElegido.set(null);
-    this.cantidadElegida.set(1);
+  // ── Entrega ────────────────────────────────────────────────────────────
+  protected alEscribirLocalidad(evento: Event): void {
+    this.localidad.set((evento.target as HTMLInputElement).value);
     this.error.set('');
   }
 
-  protected cambiarCantidad(productoId: number, delta: number): void {
+  // ── Productos ──────────────────────────────────────────────────────────
+  protected productoInvalido(nombre: keyof typeof this.formProducto.controls): boolean {
+    const c = this.formProducto.controls[nombre];
+    return c.invalid && (c.touched || c.dirty);
+  }
+
+  protected alEscribirValor(evento: Event): void {
+    const campo = evento.target as HTMLInputElement;
+    const valor = leerMiles(campo.value);
+    this.valorProducto.set(valor);
+    campo.value = formatearMiles(valor);
+  }
+
+  protected agregarProducto(): void {
+    if (this.formProducto.invalid) {
+      this.formProducto.markAllAsTouched();
+      this.errorProducto.set('Completa el diseño, el tipo y el color de la tela, y la cantidad.');
+      return;
+    }
+    if (this.valorProducto() <= 0) {
+      this.errorProducto.set('Escribe el valor del producto.');
+      return;
+    }
+    const f = this.formProducto.getRawValue();
+    this.lineas.update((lineas) => [
+      ...lineas,
+      {
+        clave: this.siguienteClave++,
+        diseno: f.diseno.trim(),
+        descripcion: f.descripcion.trim() || null,
+        tipoTela: f.tipoTela.trim(),
+        colorTela: f.colorTela.trim(),
+        cantidad: Math.floor(f.cantidad),
+        precioUnitario: this.valorProducto(),
+      },
+    ]);
+    this.formProducto.reset({ diseno: '', descripcion: '', tipoTela: '', colorTela: '', cantidad: 1 });
+    this.valorProducto.set(0);
+    this.errorProducto.set('');
+    this.error.set('');
+  }
+
+  protected cambiarCantidad(clave: number, delta: number): void {
     this.lineas.update((lineas) =>
-      lineas.map((l) =>
-        l.productoId === productoId ? { ...l, cantidad: Math.max(1, l.cantidad + delta) } : l,
-      ),
+      lineas.map((l) => (l.clave === clave ? { ...l, cantidad: Math.max(1, l.cantidad + delta) } : l)),
     );
   }
 
-  protected quitarProducto(productoId: number): void {
-    this.lineas.update((lineas) => lineas.filter((l) => l.productoId !== productoId));
+  protected quitarProducto(clave: number): void {
+    this.lineas.update((lineas) => lineas.filter((l) => l.clave !== clave));
   }
 
   // ── Envío ──────────────────────────────────────────────────────────────
@@ -259,8 +282,12 @@ export class CrearPedidoComponent implements OnInit {
       this.formCliente.markAllAsTouched();
       return 'Completa los datos del cliente nuevo.';
     }
+    if (!this.localidad().trim()) return 'Escribe la localidad de entrega.';
     if (this.lineas().length === 0) return 'Agrega al menos un producto.';
     if (this.formAbono.invalid) return 'El abono no puede ser negativo.';
+    if (this.cobro().pagoAnticipado && !this.formAbono.controls.comprobante.value.trim()) {
+      return `Con ${METODO_ADDI} se paga todo por anticipado: escribe el número de la transacción.`;
+    }
     if (this.abono() > this.total()) return 'El abono no puede ser mayor que el total del pedido.';
     return '';
   }
@@ -286,11 +313,9 @@ export class CrearPedidoComponent implements OnInit {
                 correo: datosCliente.correo.trim(),
                 direccion: datosCliente.direccion.trim() || null,
               },
-        lineas: this.lineas().map(({ productoId, cantidad, precioUnitario }) => ({
-          productoId,
-          cantidad,
-          precioUnitario,
-        })),
+        localidad: this.localidad().trim(),
+        recargo: this.cobro().recargo,
+        lineas: this.lineas().map(({ clave: _, ...linea }) => linea),
         abono:
           this.abono() > 0
             ? {
@@ -315,11 +340,16 @@ export class CrearPedidoComponent implements OnInit {
   protected nuevoPedido(): void {
     this.creado.set(null);
     this.lineas.set([]);
+    this.localidad.set('');
+    this.formProducto.reset({ diseno: '', descripcion: '', tipoTela: '', colorTela: '', cantidad: 1 });
+    this.valorProducto.set(0);
+    this.errorProducto.set('');
     this.clienteId.set(null);
     this.busquedaCliente.set('');
     this.modoCliente.set('existente');
     this.formCliente.reset();
     this.formAbono.reset({ monto: 0, metodo: METODOS_PAGO[0], comprobante: '' });
+    this.metodoPago.set(METODOS_PAGO[0]);
     this.error.set('');
     this.cargarCatalogos(); // incluye el cliente nuevo, si se registró uno
   }

@@ -13,4 +13,3 @@ export * from './historial-pedido.model';
 export * from './auth.model';
 export * from './intento-login.model';
 export * from './recuperacion.model';
-export * from './catalogo.model';

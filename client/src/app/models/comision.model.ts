@@ -31,6 +31,9 @@ export interface ResumenComisiones {
   ganadoEsteMes: number;
 }
 
+/** Valor de la venta para la comisión: el total sin el recargo de Addi. */
+export const valorVenta = (p: PedidoVista): number => p.total - (p.recargo ?? 0);
+
 export const claveMes = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
 export function etiquetaMes(d: Date): string {
@@ -40,7 +43,7 @@ export function etiquetaMes(d: Date): string {
 
 /**
  * Función PURA: calcula las comisiones de un asesor.
- * - Ganada: pedido Entregado → tasa × total, en el mes en que se entregó.
+ * - Ganada: pedido Entregado → tasa × total (sin el recargo de Addi), en el mes en que se entregó.
  * - Por ganar: pedido Confirmado, En producción o Finalizado.
  * Pendientes, cancelados y rechazados no generan comisión.
  */
@@ -68,12 +71,12 @@ export function calcularComisiones(
 
   const ganadas = propios
     .filter((p) => normalizarEstado(p.estado) === entregado)
-    .map((p) => ({ pedido: p, fecha: fechaEntrega.get(p.id) ?? p.creadoEn, comision: comision(p.total) }))
+    .map((p) => ({ pedido: p, fecha: fechaEntrega.get(p.id) ?? p.creadoEn, comision: comision(valorVenta(p)) }))
     .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
 
   const porGanar = propios
     .filter((p) => enCurso.includes(normalizarEstado(p.estado)))
-    .map((p) => ({ pedido: p, fecha: p.creadoEn, comision: comision(p.total) }))
+    .map((p) => ({ pedido: p, fecha: p.creadoEn, comision: comision(valorVenta(p)) }))
     .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
 
   const porMes = new Map<string, ComisionMes>();
@@ -87,7 +90,7 @@ export function calcularComisiones(
       comision: 0,
     };
     mes.pedidos += 1;
-    mes.ventas += g.pedido.total;
+    mes.ventas += valorVenta(g.pedido);
     mes.comision += g.comision;
     porMes.set(clave, mes);
   }
@@ -101,7 +104,7 @@ export function calcularComisiones(
     porGanar,
     meses,
     totalGanado: suma(ganadas, (c) => c.comision),
-    totalVentas: suma(ganadas, (c) => c.pedido.total),
+    totalVentas: suma(ganadas, (c) => valorVenta(c.pedido)),
     totalPorGanar: suma(porGanar, (c) => c.comision),
     ganadoEsteMes: porMes.get(claveMes(hoy))?.comision ?? 0,
   };
@@ -147,7 +150,7 @@ export function comisionesPorAsesor(
     return {
       asesor,
       entregados,
-      ventas: entregados.reduce((s, g) => s + g.pedido.total, 0),
+      ventas: entregados.reduce((s, g) => s + valorVenta(g.pedido), 0),
       comision: entregados.reduce((s, g) => s + g.comision, 0),
       porGanar: r.porGanar,
       totalPorGanar: r.totalPorGanar,

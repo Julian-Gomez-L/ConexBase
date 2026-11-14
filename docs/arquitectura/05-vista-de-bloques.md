@@ -141,7 +141,9 @@ flowchart LR
 | `pedidos-del-dia` | `pedidos-del-dia` | Todos menos Tapicero |
 | `consolidado` | `consolidado` | Todos menos Tapicero |
 | `comisiones-asesores` | `comisiones-asesores` | Administrador |
-| `catalogo` | `catalogo` | Administrador |
+| `pagos-tapiceros` | `pagos-tapiceros` | Administrador y Producción |
+| `facturas` | `facturas` | Administrador y Producción |
+| `productos-terminados` | `productos-terminados` | Tapicero |
 | `usuarios` | `usuarios` | Super Administrador; el Administrador solo en lectura |
 
 Donde dice *Administrador*, también entra el Super Administrador.

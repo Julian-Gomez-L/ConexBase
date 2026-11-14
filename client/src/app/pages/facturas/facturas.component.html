@@ -20,17 +20,26 @@
         <div class="p-4 border-b border-border space-y-3">
           <label class="relative block">
             <span class="sr-only">Buscar</span>
-            <svg lucideSearch class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true"></svg>
+            <svg
+              lucideSearch
+              class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            ></svg>
             <input
               type="search"
               [value]="busqueda()"
               (input)="alBuscar($event)"
-              placeholder="Código, cliente o documento"
+              placeholder="Código, cliente, documento o localidad"
               class="w-full h-10 pl-9 pr-3 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </label>
           <label class="flex items-center gap-2 text-xs text-muted-foreground">
-            <input type="checkbox" [checked]="incluirAnulados()" (change)="alCambiarAnulados($event)" class="accent-[#d4af37]" />
+            <input
+              type="checkbox"
+              [checked]="incluirAnulados()"
+              (change)="alCambiarAnulados($event)"
+              class="accent-[#d4af37]"
+            />
             Mostrar rechazados y cancelados
           </label>
         </div>
@@ -53,16 +62,21 @@
                   [class.bg-secondary]="p.id === seleccionadoId()"
                 >
                   <div class="min-w-0">
-                    <p class="font-medium truncate">{{ p.cliente?.nombre ?? 'Cliente #' + p.clienteId }}</p>
+                    <p class="font-medium truncate">
+                      {{ p.cliente?.nombre ?? 'Cliente #' + p.clienteId }}
+                    </p>
                     <p class="text-xs text-muted-foreground">
-                      <span class="font-mono">{{ p.codigo }}</span> · {{ fechaCorta(p.creadoEn) }} · {{ formatearCOP(p.total) }}
+                      <span class="font-mono">{{ p.codigo }}</span> · {{ fechaCorta(p.creadoEn) }} ·
+                      {{ formatearCOP(p.total) }}
                     </p>
                   </div>
                   <app-estado-badge [estado]="p.estado" />
                 </button>
               </li>
             } @empty {
-              <li class="px-4 py-10 text-center text-sm text-muted-foreground">No hay pedidos con esa búsqueda.</li>
+              <li class="px-4 py-10 text-center text-sm text-muted-foreground">
+                No hay pedidos con esa búsqueda.
+              </li>
             }
           </ul>
         }
@@ -82,7 +96,9 @@
             </button>
           </div>
 
-          <article class="zona-impresion bg-white text-neutral-900 rounded-lg p-8 sm:p-10 space-y-8 text-sm">
+          <article
+            class="zona-impresion bg-white text-neutral-900 rounded-lg p-8 sm:p-10 space-y-8 text-sm"
+          >
             <header class="flex flex-wrap justify-between gap-6 border-b border-neutral-300 pb-6">
               <div>
                 <p class="text-xl font-bold">{{ empresa.nombre }}</p>
@@ -93,7 +109,10 @@
                   <p>{{ empresa.direccion }}</p>
                 }
                 @if (empresa.telefono || empresa.correo) {
-                  <p>{{ empresa.telefono }}{{ empresa.telefono && empresa.correo ? ' · ' : '' }}{{ empresa.correo }}</p>
+                  <p>
+                    {{ empresa.telefono }}{{ empresa.telefono && empresa.correo ? ' · ' : ''
+                    }}{{ empresa.correo }}
+                  </p>
                 }
               </div>
               <div class="text-right">
@@ -101,7 +120,11 @@
                 <p class="font-mono text-base">N.º {{ f.numero }}</p>
                 <p class="text-neutral-600">{{ fechaLarga(f.fecha) }}</p>
                 @if (f.anulada) {
-                  <p class="mt-2 inline-block border-2 border-red-600 text-red-600 font-bold px-3 py-1 rounded">ANULADA · {{ f.pedido.estado }}</p>
+                  <p
+                    class="mt-2 inline-block border-2 border-red-600 text-red-600 font-bold px-3 py-1 rounded"
+                  >
+                    ANULADA · {{ f.pedido.estado }}
+                  </p>
                 }
               </div>
             </header>
@@ -109,7 +132,9 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <p class="text-xs font-semibold uppercase text-neutral-500 mb-1">Cliente</p>
-                <p class="font-semibold">{{ f.pedido.cliente?.nombre ?? 'Cliente #' + f.pedido.clienteId }}</p>
+                <p class="font-semibold">
+                  {{ f.pedido.cliente?.nombre ?? 'Cliente #' + f.pedido.clienteId }}
+                </p>
                 @if (f.pedido.cliente; as c) {
                   <p>Documento: {{ c.documento }}</p>
                   @if (c.telefono) {
@@ -122,11 +147,19 @@
                     <p>{{ c.correo }}</p>
                   }
                 }
+                @if (f.pedido.localidad) {
+                  <p class="mt-1">
+                    <span class="font-semibold">Localidad de entrega:</span>
+                    {{ f.pedido.localidad }}
+                  </p>
+                }
               </div>
               <div class="sm:text-right">
                 <p class="text-xs font-semibold uppercase text-neutral-500 mb-1">Asesor</p>
                 <p>{{ f.pedido.asesor?.nombre }} {{ f.pedido.asesor?.apellido }}</p>
-                <p class="text-xs font-semibold uppercase text-neutral-500 mt-3 mb-1">Estado del pedido</p>
+                <p class="text-xs font-semibold uppercase text-neutral-500 mt-3 mb-1">
+                  Estado del pedido
+                </p>
                 <p>{{ f.pedido.estado }}</p>
               </div>
             </div>
@@ -134,7 +167,7 @@
             <table class="w-full">
               <thead>
                 <tr class="border-b-2 border-neutral-800 text-left text-xs uppercase">
-                  <th class="py-2 font-semibold">Producto</th>
+                  <th class="py-2 font-semibold">Diseño y especificaciones</th>
                   <th class="py-2 font-semibold text-center w-20">Cant.</th>
                   <th class="py-2 font-semibold text-right w-36">Valor unitario</th>
                   <th class="py-2 font-semibold text-right w-36">Subtotal</th>
@@ -143,10 +176,34 @@
               <tbody>
                 @for (l of f.lineas; track $index) {
                   <tr class="border-b border-neutral-200">
-                    <td class="py-2.5">{{ l.descripcion }}</td>
-                    <td class="py-2.5 text-center tabular-nums">{{ l.cantidad }}</td>
-                    <td class="py-2.5 text-right tabular-nums">{{ formatearCOP(l.precioUnitario) }}</td>
-                    <td class="py-2.5 text-right tabular-nums">{{ formatearCOP(l.subtotal) }}</td>
+                    <td class="py-2.5 pr-4 align-top">
+                      <p class="font-semibold">{{ l.diseno }}</p>
+                      @if (l.tipoTela || l.colorTela) {
+                        <p class="text-xs">
+                          @if (l.tipoTela) {
+                            <span>Tipo de tela: {{ l.tipoTela }}</span>
+                          }
+                          @if (l.tipoTela && l.colorTela) {
+                            <span> · </span>
+                          }
+                          @if (l.colorTela) {
+                            <span>Color de tela: {{ l.colorTela }}</span>
+                          }
+                        </p>
+                      }
+                      @if (l.descripcion) {
+                        <p class="text-xs text-neutral-600 whitespace-pre-line">
+                          {{ l.descripcion }}
+                        </p>
+                      }
+                    </td>
+                    <td class="py-2.5 text-center tabular-nums align-top">{{ l.cantidad }}</td>
+                    <td class="py-2.5 text-right tabular-nums align-top">
+                      {{ formatearCOP(l.precioUnitario) }}
+                    </td>
+                    <td class="py-2.5 text-right tabular-nums align-top">
+                      {{ formatearCOP(l.subtotal) }}
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -166,7 +223,19 @@
                   <dt>Unidades</dt>
                   <dd class="tabular-nums">{{ f.unidades }}</dd>
                 </div>
-                <div class="flex justify-between text-base font-bold border-t-2 border-neutral-800 pt-2">
+                @if (f.recargo) {
+                  <div class="flex justify-between">
+                    <dt>Valor productos</dt>
+                    <dd class="tabular-nums">{{ formatearCOP(f.subtotal) }}</dd>
+                  </div>
+                  <div class="flex justify-between">
+                    <dt>Recargo Addi (10 %)</dt>
+                    <dd class="tabular-nums">{{ formatearCOP(f.recargo) }}</dd>
+                  </div>
+                }
+                <div
+                  class="flex justify-between text-base font-bold border-t-2 border-neutral-800 pt-2"
+                >
                   <dt>Total</dt>
                   <dd class="tabular-nums">{{ formatearCOP(f.total) }}</dd>
                 </div>
@@ -188,7 +257,9 @@
           </article>
         </section>
       } @else if (!cargando()) {
-        <div class="bg-card border border-dashed border-border rounded-lg p-12 text-center text-muted-foreground">
+        <div
+          class="bg-card border border-dashed border-border rounded-lg p-12 text-center text-muted-foreground"
+        >
           <svg lucideFileText class="w-12 h-12 mx-auto mb-3 opacity-30" aria-hidden="true"></svg>
           <p>Elige un pedido de la lista para ver su factura.</p>
         </div>

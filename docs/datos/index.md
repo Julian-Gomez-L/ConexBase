@@ -137,8 +137,10 @@ a registrarse.
 
 #### `productos`
 
-Se crean y editan en **Catálogo** (solo Administrador). En todo el sistema se
-muestran como *nombre · medida*, por ejemplo "Base cama tapizada · Doble 140x190".
+!!! note "Ya no se usa para vender"
+    Desde la migración 18 ya no hay pantalla de Catálogo: cada producto del
+    pedido se describe con sus especificaciones en `detalle_pedidos`. La tabla
+    se conserva solo para mostrar los pedidos anteriores al cambio.
 
 | Campo | Tipo | Nulo | Restricción | Descripción |
 |---|---|---|---|---|
@@ -160,18 +162,25 @@ La fecha del pedido es `created_at`.
 | `cliente_id` | BIGINT | No | FK → `clientes` | Cliente que compra. |
 | `usuario_id` | BIGINT | No | FK → `usuarios` | Asesor que lo vendió (el de la comisión). |
 | `estado` | VARCHAR(50) | No | | Pendiente, Confirmado, En producción, Finalizado, Entregado, Rechazado o Cancelado. |
-| `total` | DECIMAL(12,2) | No | | Suma de los subtotales de sus detalles. |
+| `localidad` | VARCHAR(150) | Sí | | Lugar de entrega (texto libre). Obligatoria en pedidos nuevos; NULL en los anteriores a la migración 18. |
+| `total` | DECIMAL(12,2) | No | | Suma de los subtotales de sus detalles más el `recargo`. |
+| `recargo` | DECIMAL(12,2) | No | Por defecto 0 | Recargo por el método de pago: con **Addi** es el 10 % del valor de los productos y el cliente paga todo por anticipado. La comisión del asesor se calcula sin el recargo. |
 
 #### `detalle_pedidos`
 
-Un renglón por producto del pedido.
+Un renglón por producto del pedido. El asesor describe cada producto con sus
+especificaciones en *Crear Pedido* (ya no se elige de un catálogo).
 
 | Campo | Tipo | Nulo | Restricción | Descripción |
 |---|---|---|---|---|
 | `pedido_id` | BIGINT | No | FK → `pedidos` | |
-| `producto_id` | BIGINT | No | FK → `productos` | |
+| `producto_id` | BIGINT | Sí | FK → `productos` | Solo en pedidos anteriores a la migración 18. |
+| `diseno` | VARCHAR(150) | Sí | Obligatorio sin `producto_id` | Diseño del producto. |
+| `descripcion` | TEXT | Sí | | Detalles: medidas, espaldar, botones… |
+| `color_tela` | VARCHAR(100) | Sí | Obligatorio sin `producto_id` | |
+| `tipo_tela` | VARCHAR(100) | Sí | Obligatorio sin `producto_id` | |
 | `cantidad` | INT UNSIGNED | No | | Unidades. |
-| `precio_unitario` | DECIMAL(12,2) | No | | Precio **al momento de la venta** (no cambia si después cambia el precio del producto). |
+| `precio_unitario` | DECIMAL(12,2) | No | | Valor por unidad acordado en la venta. |
 | `subtotal` | DECIMAL(12,2) | No | | `cantidad × precio_unitario`. |
 
 #### `pagos`
@@ -210,7 +219,8 @@ Fabricación de un producto de un pedido. Se crea una por cada producto al inici
 | Campo | Tipo | Nulo | Restricción | Descripción |
 |---|---|---|---|---|
 | `pedido_id` | BIGINT | No | FK → `pedidos` | |
-| `producto_id` | BIGINT | No | FK → `productos` | Qué se fabrica. |
+| `detalle_pedido_id` | BIGINT | Sí | FK → `detalle_pedidos` | Qué producto del pedido se fabrica (producciones nuevas). |
+| `producto_id` | BIGINT | Sí | FK → `productos` | Solo en producciones anteriores a la migración 18. |
 | `usuario_id` | BIGINT | No | FK → `usuarios` | Encargado de producción. |
 | `fecha_inicio` | DATE | No | | |
 | `fecha_fin` | DATE | Sí | | Se llena al terminar. |

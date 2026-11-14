@@ -29,6 +29,8 @@ porcentaje en esta documentación: busca `5 %` en `docs/`.
 | Regla | Valor actual | Dónde |
 |---|---|---|
 | Estado en que la comisión se gana | Entregado | `config/comisiones.ts` → `ESTADO_COMISIONABLE` |
+| Métodos de pago | Efectivo, Transferencia, Tarjeta, Nequi, Daviplata, Addi | `config/pagos.ts` → `METODOS_PAGO` |
+| Recargo de Addi (pago completo por anticipado) | 10 % | `config/pagos.ts` → `RECARGO_ADDI` |
 | Estados en que la comisión está "por ganar" | Confirmado, En producción, Finalizado | `config/comisiones.ts` → `ESTADOS_EN_CURSO` |
 | Estado inicial de un pedido | Pendiente | `services/crear-pedido.service.ts` → `ESTADO_INICIAL` |
 | Largo mínimo del motivo de rechazo | 5 caracteres (`MIN_MOTIVO`) | `pages/confirmacion/confirmacion.component.ts` |

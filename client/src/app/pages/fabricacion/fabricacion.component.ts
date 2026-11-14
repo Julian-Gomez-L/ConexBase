@@ -149,7 +149,7 @@ export class FabricacionComponent implements OnInit {
   }
 
   // ── Pedidos ────────────────────────────────────────────────────────────
-  /** Crea una producción por producto y pasa el pedido a "En producción". */
+  /** Crea una producción por cada producto del pedido (ligada a su detalle) y pasa el pedido a "En producción". */
   protected iniciar(p: PedidoEnFabricacion): void {
     const yo = this.auth.sesion()?.usuarioId;
     if (!yo) return;
@@ -159,6 +159,7 @@ export class FabricacionComponent implements OnInit {
         this.produccionesApi.crear({
           pedido_id: p.pedido.id,
           producto_id: item.productoId,
+          detalle_pedido_id: item.detalleId,
           usuario_id: yo,
           fecha_inicio: hoy,
           fecha_fin: null,

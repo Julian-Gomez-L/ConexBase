@@ -20,7 +20,8 @@ class StoreProduccionRequest extends FormRequest
             'estado' => ['required', 'string'],
             'observaciones' => ['nullable', 'string'],
             'pedido_id' => ['required', 'integer', 'exists:pedidos,id'],
-            'producto_id' => ['required', 'integer', 'exists:productos,id'],
+            'detalle_pedido_id' => ['required_without:producto_id', 'nullable', 'integer', 'exists:detalle_pedidos,id'],
+            'producto_id' => ['nullable', 'integer', 'exists:productos,id'],
             'usuario_id' => ['required', 'integer', 'exists:usuarios,id'],
         ];
     }
@@ -37,7 +38,8 @@ class StoreProduccionRequest extends FormRequest
             'pedido_id.required' => 'El ID del pedido es obligatorio.',
             'pedido_id.integer' => 'El ID del pedido debe ser un número entero.',
             'pedido_id.exists' => 'El ID del pedido no existe en la base de datos.',
-            'producto_id.required' => 'El ID del producto es obligatorio.',
+            'detalle_pedido_id.required_without' => 'Indica el producto del pedido que se va a fabricar.',
+            'detalle_pedido_id.exists' => 'El producto del pedido no existe.',
             'producto_id.integer' => 'El ID del producto debe ser un número entero.',
             'producto_id.exists' => 'El ID del producto no existe en la base de datos.',
             'usuario_id.required' => 'El ID del usuario es obligatorio.',

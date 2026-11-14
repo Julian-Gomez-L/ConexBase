@@ -73,7 +73,11 @@
     @let r = resumen();
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
       <app-stat-card etiqueta="Pedidos creados" [valor]="r.creados.length" [icono]="iconoPaquete" />
-      <app-stat-card etiqueta="Valor vendido" [valor]="formatearCOP(r.valorVendido)" [icono]="iconoDinero" />
+      <app-stat-card
+        etiqueta="Valor vendido"
+        [valor]="formatearCOP(r.valorVendido)"
+        [icono]="iconoDinero"
+      />
       <app-stat-card
         etiqueta="Abonos recibidos"
         [valor]="formatearCOP(r.abonos)"
@@ -81,24 +85,35 @@
         variante="exito"
         [detalle]="r.pagos.length + (r.pagos.length === 1 ? ' pago' : ' pagos')"
       />
-      <app-stat-card etiqueta="Cambios de estado" [valor]="r.movimientos.length" [icono]="iconoReloj" variante="alerta" />
+      <app-stat-card
+        etiqueta="Cambios de estado"
+        [valor]="r.movimientos.length"
+        [icono]="iconoReloj"
+        variante="alerta"
+      />
     </div>
 
     @if (puedeEntregar) {
       @let e = entregas();
       <!-- Entregas: solo el Administrador las confirma -->
-      <section class="bg-card border border-border rounded-lg overflow-hidden" aria-labelledby="titulo-entregas">
+      <section
+        class="bg-card border border-border rounded-lg overflow-hidden"
+        aria-labelledby="titulo-entregas"
+      >
         <div class="px-6 py-4 border-b border-border bg-secondary">
           <h2 id="titulo-entregas" class="text-lg font-semibold">Entregas</h2>
           <p class="text-xs text-muted-foreground mt-1">
-            Al marcar un pedido como entregado, el asesor gana su comisión. Si no se entregó, no la recibe.
+            Al marcar un pedido como entregado, el asesor gana su comisión. Si no se entregó, no la
+            recibe.
           </p>
         </div>
 
         @if (aviso(); as a) {
           <p
             class="mx-6 mt-4 px-4 py-2.5 rounded-lg text-sm"
-            [class]="a.tipo === 'ok' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-red-500/10 text-red-400'"
+            [class]="
+              a.tipo === 'ok' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-red-500/10 text-red-400'
+            "
             role="status"
           >
             {{ a.texto }}
@@ -116,7 +131,8 @@
                   <div class="min-w-0">
                     <p class="font-medium truncate">{{ p.cliente?.nombre }}</p>
                     <p class="text-xs text-muted-foreground">
-                      <span class="font-mono">{{ p.codigo }}</span> · {{ p.asesor?.nombre }} {{ p.asesor?.apellido }} ·
+                      <span class="font-mono">{{ p.codigo }}</span> · {{ p.asesor?.nombre }}
+                      {{ p.asesor?.apellido }} ·
                       {{ formatearCOP(p.total) }}
                     </p>
                   </div>
@@ -131,7 +147,9 @@
                   </button>
                 </li>
               } @empty {
-                <li class="px-6 py-8 text-center text-sm text-muted-foreground">No hay pedidos terminados esperando entrega.</li>
+                <li class="px-6 py-8 text-center text-sm text-muted-foreground">
+                  No hay pedidos terminados esperando entrega.
+                </li>
               }
             </ul>
           </div>
@@ -145,11 +163,16 @@
                 <li class="px-6 py-3.5 flex items-center justify-between gap-4">
                   <div class="min-w-0">
                     <p class="font-medium truncate flex items-center gap-1.5">
-                      <svg lucideCheck class="w-4 h-4 text-emerald-400 shrink-0" aria-hidden="true"></svg>
+                      <svg
+                        lucideCheck
+                        class="w-4 h-4 text-emerald-400 shrink-0"
+                        aria-hidden="true"
+                      ></svg>
                       {{ p.cliente?.nombre }}
                     </p>
                     <p class="text-xs text-muted-foreground">
-                      <span class="font-mono">{{ p.codigo }}</span> · {{ p.asesor?.nombre }} {{ p.asesor?.apellido }} ·
+                      <span class="font-mono">{{ p.codigo }}</span> · {{ p.asesor?.nombre }}
+                      {{ p.asesor?.apellido }} ·
                       {{ formatearCOP(p.total) }}
                     </p>
                   </div>
@@ -164,7 +187,9 @@
                   </button>
                 </li>
               } @empty {
-                <li class="px-6 py-8 text-center text-sm text-muted-foreground">Ese día no se marcaron entregas.</li>
+                <li class="px-6 py-8 text-center text-sm text-muted-foreground">
+                  Ese día no se marcaron entregas.
+                </li>
               }
             </ul>
           </div>
@@ -193,15 +218,22 @@
             <tbody class="divide-y divide-border border-t border-border">
               @for (p of r.creados; track p.id) {
                 <tr>
-                  <td class="px-6 py-3.5 text-muted-foreground tabular-nums">{{ horaCorta(p.creadoEn) }}</td>
+                  <td class="px-6 py-3.5 text-muted-foreground tabular-nums">
+                    {{ horaCorta(p.creadoEn) }}
+                  </td>
                   <td class="px-4 py-3.5">
                     <p class="font-medium">{{ p.cliente?.nombre }}</p>
                     <p class="text-xs text-muted-foreground font-mono">{{ p.codigo }}</p>
                   </td>
                   <td class="px-4 py-3.5">{{ p.asesor?.nombre }} {{ p.asesor?.apellido }}</td>
                   <td class="px-4 py-3.5">
-                    @for (item of p.items; track item.productoId) {
-                      <p>{{ item.cantidad }} × {{ item.nombre }}</p>
+                    @for (item of p.items; track item.detalleId) {
+                      <p>
+                        {{ item.cantidad }} × {{ item.nombre }}
+                        @if (item.tela) {
+                          <span class="block text-xs text-muted-foreground">{{ item.tela }}</span>
+                        }
+                      </p>
                     }
                   </td>
                   <td class="px-4 py-3.5"><app-estado-badge [estado]="p.estado" /></td>
@@ -214,7 +246,9 @@
           </table>
         </div>
       } @else {
-        <p class="px-6 py-10 text-center text-sm text-muted-foreground">Ese día no se crearon pedidos.</p>
+        <p class="px-6 py-10 text-center text-sm text-muted-foreground">
+          Ese día no se crearon pedidos.
+        </p>
       }
     </section>
 
@@ -228,16 +262,23 @@
           @for (pago of r.pagos; track $index) {
             <li class="px-6 py-4 flex items-center justify-between gap-4">
               <div>
-                <p class="font-medium">{{ pago.metodo }}{{ pago.comprobante ? ' · ' + pago.comprobante : '' }}</p>
+                <p class="font-medium">
+                  {{ pago.metodo }}{{ pago.comprobante ? ' · ' + pago.comprobante : '' }}
+                </p>
                 <p class="text-xs text-muted-foreground">
-                  <span class="font-mono">{{ pago.pedido.codigo }}</span> · {{ pago.pedido.cliente?.nombre }} ·
-                  {{ pago.pedido.asesor?.nombre }} {{ pago.pedido.asesor?.apellido }}
+                  <span class="font-mono">{{ pago.pedido.codigo }}</span> ·
+                  {{ pago.pedido.cliente?.nombre }} · {{ pago.pedido.asesor?.nombre }}
+                  {{ pago.pedido.asesor?.apellido }}
                 </p>
               </div>
-              <p class="font-semibold text-emerald-400 tabular-nums">{{ formatearCOP(pago.monto) }}</p>
+              <p class="font-semibold text-emerald-400 tabular-nums">
+                {{ formatearCOP(pago.monto) }}
+              </p>
             </li>
           } @empty {
-            <li class="px-6 py-10 text-center text-sm text-muted-foreground">Ese día no se registraron pagos.</li>
+            <li class="px-6 py-10 text-center text-sm text-muted-foreground">
+              Ese día no se registraron pagos.
+            </li>
           }
         </ul>
       </section>
@@ -251,22 +292,30 @@
           <ol class="px-6 py-4 space-y-4">
             @for (m of r.movimientos; track $index) {
               <li class="flex gap-3">
-                <span class="w-2.5 h-2.5 mt-1.5 rounded-full bg-primary shrink-0" aria-hidden="true"></span>
+                <span
+                  class="w-2.5 h-2.5 mt-1.5 rounded-full bg-primary shrink-0"
+                  aria-hidden="true"
+                ></span>
                 <div class="text-sm">
                   <p>
                     <span class="font-mono">{{ m.codigo }}</span> ·
-                    {{ m.estadoAnterior ?? 'Pedido creado' }} → <app-estado-badge [estado]="m.estadoNuevo" />
+                    {{ m.estadoAnterior ?? 'Pedido creado' }} →
+                    <app-estado-badge [estado]="m.estadoNuevo" />
                   </p>
                   @if (m.observacion && m.estadoAnterior) {
                     <p class="text-muted-foreground mt-1">{{ m.observacion }}</p>
                   }
-                  <p class="text-xs text-muted-foreground mt-1">{{ horaCorta(m.fecha) }} · {{ m.usuario }}</p>
+                  <p class="text-xs text-muted-foreground mt-1">
+                    {{ horaCorta(m.fecha) }} · {{ m.usuario }}
+                  </p>
                 </div>
               </li>
             }
           </ol>
         } @else {
-          <p class="px-6 py-10 text-center text-sm text-muted-foreground">Ese día no hubo cambios de estado.</p>
+          <p class="px-6 py-10 text-center text-sm text-muted-foreground">
+            Ese día no hubo cambios de estado.
+          </p>
         }
       </section>
     </div>

@@ -10,6 +10,7 @@ const pedido = (id: number, estado: string, cliente: string, documento: string, 
     clienteId: id,
     usuarioId: 2,
     total: 900000,
+    recargo: 0,
     pagado: 300000,
     saldo: 600000,
     creadoEn: new Date(2026, 10, dia),
@@ -29,6 +30,11 @@ describe('construirFactura', () => {
     expect(f.numero).toBe('RM-00001');
     expect(f.lineas.map((l) => l.precioUnitario)).toEqual([300000, 300000]);
     expect([f.unidades, f.total, f.abonado, f.saldo, f.anulada]).toEqual([3, 900000, 300000, 600000, false]);
+  });
+
+  it('con Addi muestra el valor de los productos y el recargo aparte', () => {
+    const f = construirFactura({ ...pedido(4, 'Confirmado', 'Ana', '123', 1), total: 990000, recargo: 90000 });
+    expect([f.subtotal, f.recargo, f.total]).toEqual([900000, 90000, 990000]);
   });
 
   it('marca como anulada la factura de un pedido rechazado o cancelado', () => {

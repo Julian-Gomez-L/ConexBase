@@ -36,28 +36,17 @@ Todos tienen la contraseña **`123456`**.
 Hay dos vendedores para comprobar que en *Mis Pedidos* cada uno ve solo los
 suyos.
 
-## Antes del primer pedido: categorías y productos
-
-*Crear Pedido* necesita productos. Créalos como **Administrador** en
-**Catálogo**:
-
-1. Pestaña **Categorías**: crea las categorías, por ejemplo *Camas*, *Bases* o *Colchones*.
-2. Pestaña **Productos**: crea cada producto con su **medida** y su **precio**.
-   Cada medida es un producto aparte con su propio precio. Para crear el
-   mismo producto en otra medida, usa el botón **+** de la tabla.
-
 ## Recorrido sugerido
 
 Para probar el sistema completo, sigue un pedido de principio a fin
 cambiando de usuario:
 
-1. **Administrador**: en *Catálogo* crea una categoría y un par de productos con su medida y precio.
-2. **Vendedor** (`vendedor@conexbase.com`): en *Crear Pedido* registra un pedido con un cliente nuevo y un abono.
-3. **Confirmador**: en *Confirmación* confírmalo. Crea otro y recházalo con un motivo.
-4. **Producción**: en *Fabricación* inicia la producción y asigna el producto al tapicero.
-5. **Tapicero**: en *Mis Productos* empieza el trabajo y termínalo.
-6. **Producción**: marca la producción como *Finalizada*, y luego el pedido como *Finalizado*.
-7. **Administrador**: en *Pedidos del Día* → *Entregas*, marca el pedido como *Entregado*. Desde ese momento el asesor ve la comisión en *Mis Comisiones* y en *Comisiones de Asesores*.
+1. **Vendedor** (`vendedor@conexbase.com`): en *Crear Pedido* registra un pedido con un cliente nuevo, la localidad de entrega, uno o dos productos (diseño, descripción, tipo y color de tela, cantidad y valor) y un abono.
+2. **Confirmador**: en *Confirmación* confírmalo. Crea otro y recházalo con un motivo.
+3. **Producción**: en *Fabricación* inicia la producción y asigna el producto al tapicero.
+4. **Tapicero**: en *Mis Productos* empieza el trabajo y termínalo.
+5. **Producción**: marca la producción como *Finalizada*, y luego el pedido como *Finalizado*.
+6. **Administrador**: en *Pedidos del Día* → *Entregas*, marca el pedido como *Entregado*. Desde ese momento el asesor ve la comisión en *Mis Comisiones* y en *Comisiones de Asesores*.
 7. **Vendedor**: en *Mis Comisiones* aparece la comisión de ese pedido.
 8. **Administrador**: revisa *Pedidos del Día* y *Consolidado*. En *Usuarios y Roles* comprueba que solo puede mirar.
 9. **Super Administrador**: en *Usuarios y Roles → Seguridad* genera el código de recuperación.

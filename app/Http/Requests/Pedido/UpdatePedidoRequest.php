@@ -17,7 +17,9 @@ class UpdatePedidoRequest extends FormRequest
             'cliente_id' => ['sometimes', 'exists:clientes,id'],
             'usuario_id' => ['sometimes', 'exists:usuarios,id'],
             'estado' => ['sometimes', 'string'],
+            'localidad' => ['sometimes', 'string', 'max:150'],
             'total' => ['sometimes', 'numeric', 'min:0'],
+            'recargo' => ['sometimes', 'numeric', 'min:0'],
         ];
     }
 
@@ -29,9 +31,12 @@ class UpdatePedidoRequest extends FormRequest
             'usuario_id.exists' => 'El usuario seleccionado no existe.',
 
             'estado.string' => 'El estado debe ser una cadena de texto.',
+            'localidad.max' => 'La localidad no puede tener más de 150 caracteres.',
 
             'total.numeric' => 'El total debe ser un número.',
             'total.min' => 'El total no puede ser negativo.',
+            'recargo.numeric' => 'El recargo debe ser un número.',
+            'recargo.min' => 'El recargo no puede ser negativo.',
         ];
     }
 }

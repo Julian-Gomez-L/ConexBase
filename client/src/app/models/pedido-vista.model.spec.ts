@@ -10,12 +10,48 @@ describe('construirVistas', () => {
     expect(p1.codigo).toBe('RM-00001');
     expect(p1.cliente?.nombre).toBe('Pedro Ramirez');
     expect(p1.asesor?.nombre).toBe('Juan');
+    // Pedido anterior al cambio: el nombre sale del producto del catálogo
     expect(p1.items).toEqual([
-      { productoId: 7, nombre: 'Sofa 3 puestos', cantidad: 2, subtotal: 300000 },
+      {
+        detalleId: 1,
+        productoId: 7,
+        nombre: 'Sofa 3 puestos',
+        descripcion: null,
+        colorTela: null,
+        tipoTela: null,
+        tela: '',
+        cantidad: 2,
+        precioUnitario: 150000,
+        subtotal: 300000,
+      },
     ]);
     expect(p1.total).toBe(300000);
     expect(p1.pagado).toBeCloseTo(150000.5);
     expect(p1.saldo).toBeCloseTo(149999.5);
+  });
+
+  it('pedido con especificaciones: diseño, tela, color, descripción y localidad', () => {
+    const [vista] = construirVistas({
+      ...DATOS,
+      pedidos: [{ ...DATOS.pedidos[0], localidad: 'Suba' }],
+      detalles: [
+        {
+          ...DATOS.detalles[0],
+          producto_id: null,
+          diseno: 'Base capitoneada',
+          descripcion: 'Espaldar alto',
+          tipo_tela: 'Lino',
+          color_tela: 'Gris',
+        },
+      ],
+    });
+    expect(vista.localidad).toBe('Suba');
+    expect(vista.items[0]).toMatchObject({
+      productoId: null,
+      nombre: 'Base capitoneada',
+      descripcion: 'Espaldar alto',
+      tela: 'Tela Lino · color Gris',
+    });
   });
 
   it('ordena del más reciente al más antiguo', () => {

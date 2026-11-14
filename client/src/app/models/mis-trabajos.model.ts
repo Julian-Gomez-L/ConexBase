@@ -1,7 +1,7 @@
 import { normalizarEstado } from '@app/components/estado-badge/estado-badge.component';
 import { desdeFechaISO, fechaISO, sumarDias } from '@app/utils/fecha';
 import { aNumero } from '@app/utils/format';
-import { PedidoVista } from './pedido-vista.model';
+import { itemDeProduccion, PedidoVista } from './pedido-vista.model';
 import { Produccion } from './produccion.model';
 import { TrabajoTapicero } from './trabajo-tapicero.model';
 import { Usuario } from './usuario.model';
@@ -11,6 +11,11 @@ export interface MiTrabajo {
   pedidoCodigo: string;
   cliente: string;
   producto: string;
+  /** "Tela lino · color gris" */
+  tela: string;
+  descripcion: string | null;
+  /** Lugar de entrega del pedido. */
+  localidad: string | null;
   cantidad: number;
   /** Quien registró la producción (encargado de producción). */
   asignadoPor: string;
@@ -51,14 +56,17 @@ export function construirMisTrabajos(
     .map((t): MiTrabajo => {
       const produccion = produccionPorId.get(t.produccion_id);
       const pedido = produccion ? pedidoPorId.get(produccion.pedido_id) : undefined;
-      const item = pedido?.items.find((i) => i.productoId === produccion?.producto_id);
+      const item = produccion ? itemDeProduccion(pedido, produccion) : undefined;
       const encargado = produccion ? usuarioPorId.get(produccion.usuario_id) : undefined;
       const e = normalizarEstado(t.estado);
       return {
         trabajo: t,
         pedidoCodigo: pedido?.codigo ?? '—',
         cliente: pedido?.cliente?.nombre ?? '—',
-        producto: item?.nombre ?? (produccion ? `Producto #${produccion.producto_id}` : '—'),
+        producto: item?.nombre ?? (produccion ? `Producto #${produccion.producto_id ?? produccion.detalle_pedido_id}` : '—'),
+        tela: item?.tela ?? '',
+        descripcion: item?.descripcion ?? null,
+        localidad: pedido?.localidad ?? null,
         cantidad: t.cantidad ?? item?.cantidad ?? 1,
         asignadoPor: encargado ? `${encargado.nombre} ${encargado.apellido}` : '—',
         inicio: t.fecha_inicio ? desdeFechaISO(t.fecha_inicio) : null,

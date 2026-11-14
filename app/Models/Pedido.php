@@ -16,7 +16,9 @@ class Pedido extends Model
         'cliente_id',
         'usuario_id',
         'estado',
+        'localidad',
         'total',
+        'recargo',
     ];
 
     public function cliente()

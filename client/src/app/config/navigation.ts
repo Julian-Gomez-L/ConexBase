@@ -1,5 +1,4 @@
 import {
-  LucideBoxes,
   LucideCalendarDays,
   LucideCheckCircle,
   LucideCircleCheckBig,
@@ -39,7 +38,6 @@ const NAV_ADMINISTRADOR: NavItem[] = [
     icon: LucideCircleDollarSign.icon,
   },
   { path: '/dashboard/consolidado', label: 'Consolidado', icon: LucideFileText.icon },
-  { path: '/dashboard/catalogo', label: 'Catálogo', icon: LucideBoxes.icon },
   { path: '/dashboard/usuarios', label: 'Usuarios y Roles', icon: LucideUsers.icon },
 ];
 

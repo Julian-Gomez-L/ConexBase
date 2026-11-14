@@ -7,11 +7,15 @@
   @if (creado(); as pedido) {
     <!-- Pedido registrado -->
     <div class="bg-card border border-border rounded-lg p-10 text-center max-w-2xl mx-auto">
-      <svg lucideCircleCheck class="w-16 h-16 mx-auto mb-4 text-emerald-400" aria-hidden="true"></svg>
+      <svg
+        lucideCircleCheck
+        class="w-16 h-16 mx-auto mb-4 text-emerald-400"
+        aria-hidden="true"
+      ></svg>
       <h2 class="text-2xl font-semibold mb-2">Pedido registrado</h2>
       <p class="text-muted-foreground mb-1">
-        El pedido <span class="font-mono text-foreground">{{ codigoPedido(pedido.id) }}</span>
-        quedó en estado <span class="text-amber-300">Pendiente</span>.
+        El pedido <span class="font-mono text-foreground">{{ codigoPedido(pedido.id) }}</span> quedó
+        en estado <span class="text-amber-300">Pendiente</span>.
       </p>
       <p class="text-muted-foreground mb-8">
         Total {{ formatearCOP(total()) }} · Abono {{ formatearCOP(abono()) }} · Saldo
@@ -75,7 +79,10 @@
               >
               Cliente
             </h2>
-            <div class="inline-flex p-1 bg-background rounded-lg border border-border text-sm" role="tablist">
+            <div
+              class="inline-flex p-1 bg-background rounded-lg border border-border text-sm"
+              role="tablist"
+            >
               <button
                 type="button"
                 role="tab"
@@ -127,7 +134,9 @@
                 />
               </label>
 
-              <ul class="max-h-64 overflow-y-auto divide-y divide-border border border-border rounded-lg">
+              <ul
+                class="max-h-64 overflow-y-auto divide-y divide-border border border-border rounded-lg"
+              >
                 @for (cliente of clientesFiltrados(); track cliente.id) {
                   <li>
                     <button
@@ -135,7 +144,9 @@
                       (click)="elegirCliente(cliente.id)"
                       [attr.aria-pressed]="clienteId() === cliente.id"
                       class="w-full text-left px-4 py-3 flex items-center justify-between gap-4 transition-colors"
-                      [class]="clienteId() === cliente.id ? 'bg-primary/10' : 'hover:bg-secondary/50'"
+                      [class]="
+                        clienteId() === cliente.id ? 'bg-primary/10' : 'hover:bg-secondary/50'
+                      "
                     >
                       <span>
                         <span class="block font-medium">{{ cliente.nombre }}</span>
@@ -144,23 +155,37 @@
                         </span>
                       </span>
                       @if (clienteId() === cliente.id) {
-                        <svg lucideCircleCheck class="w-5 h-5 text-primary shrink-0" aria-hidden="true"></svg>
+                        <svg
+                          lucideCircleCheck
+                          class="w-5 h-5 text-primary shrink-0"
+                          aria-hidden="true"
+                        ></svg>
                       }
                     </button>
                   </li>
                 } @empty {
                   <li class="px-4 py-6 text-center text-sm text-muted-foreground">
                     No hay clientes que coincidan.
-                    <button type="button" (click)="cambiarModo('nuevo')" class="text-primary hover:underline">
+                    <button
+                      type="button"
+                      (click)="cambiarModo('nuevo')"
+                      class="text-primary hover:underline"
+                    >
                       Registrar uno nuevo
                     </button>
                   </li>
                 }
               </ul>
             } @else {
-              <form [formGroup]="formCliente" class="grid grid-cols-1 sm:grid-cols-2 gap-4" novalidate>
+              <form
+                [formGroup]="formCliente"
+                class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                novalidate
+              >
                 <div>
-                  <label for="documento" class="block text-sm font-medium mb-1.5">Documento *</label>
+                  <label for="documento" class="block text-sm font-medium mb-1.5"
+                    >Documento *</label
+                  >
                   <input
                     id="documento"
                     formControlName="documento"
@@ -170,7 +195,9 @@
                   />
                 </div>
                 <div>
-                  <label for="nombre" class="block text-sm font-medium mb-1.5">Nombre completo *</label>
+                  <label for="nombre" class="block text-sm font-medium mb-1.5"
+                    >Nombre completo *</label
+                  >
                   <input
                     id="nombre"
                     formControlName="nombre"
@@ -199,7 +226,9 @@
                   />
                 </div>
                 <div class="sm:col-span-2">
-                  <label for="direccion" class="block text-sm font-medium mb-1.5">Dirección de entrega</label>
+                  <label for="direccion" class="block text-sm font-medium mb-1.5"
+                    >Dirección de entrega</label
+                  >
                   <input
                     id="direccion"
                     formControlName="direccion"
@@ -209,6 +238,21 @@
                 </div>
               </form>
             }
+
+            <!-- Entrega -->
+            <div class="mt-5 pt-5 border-t border-border">
+              <label for="localidad" class="block text-sm font-medium mb-1.5"
+                >Localidad de entrega *</label
+              >
+              <input
+                id="localidad"
+                [value]="localidad()"
+                (input)="alEscribirLocalidad($event)"
+                maxlength="150"
+                placeholder="Ej.: Suba, Kennedy, Chía, Soacha…"
+                class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
           </div>
         </section>
 
@@ -225,104 +269,168 @@
           </div>
 
           <div class="p-6 space-y-5">
-            <div class="flex flex-col sm:flex-row gap-3">
-              <label class="flex-1">
-                <span class="sr-only">Producto</span>
-                <select
-                  (change)="alElegirProducto($event)"
-                  class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                >
-                  <option value="" [selected]="productoElegido() === null">Selecciona un producto</option>
-                  @for (producto of productosActivos(); track producto.id) {
-                    <option [value]="producto.id" [selected]="productoElegido() === producto.id">
-                      {{ nombreProducto(producto) }} — {{ formatearCOP(+producto.precio) }}
-                    </option>
-                  }
-                </select>
-              </label>
-              <label class="sm:w-28">
-                <span class="sr-only">Cantidad</span>
+            <form
+              [formGroup]="formProducto"
+              (ngSubmit)="agregarProducto()"
+              class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              novalidate
+            >
+              <div class="sm:col-span-2">
+                <label for="diseno" class="block text-sm font-medium mb-1.5">Diseño *</label>
                 <input
+                  id="diseno"
+                  formControlName="diseno"
+                  maxlength="150"
+                  placeholder="Ej.: Base cama capitoneada con espaldar"
+                  class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  [class.border-red-500]="productoInvalido('diseno')"
+                />
+              </div>
+              <div class="sm:col-span-2">
+                <label for="descripcion" class="block text-sm font-medium mb-1.5"
+                  >Descripción</label
+                >
+                <textarea
+                  id="descripcion"
+                  formControlName="descripcion"
+                  rows="2"
+                  maxlength="2000"
+                  placeholder="Medidas, detalles del espaldar, botones, patas…"
+                  class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y"
+                ></textarea>
+              </div>
+              <div>
+                <label for="tipoTela" class="block text-sm font-medium mb-1.5"
+                  >Tipo de tela *</label
+                >
+                <input
+                  id="tipoTela"
+                  formControlName="tipoTela"
+                  maxlength="100"
+                  placeholder="Ej.: Lino, terciopelo, cuerotex"
+                  class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  [class.border-red-500]="productoInvalido('tipoTela')"
+                />
+              </div>
+              <div>
+                <label for="colorTela" class="block text-sm font-medium mb-1.5"
+                  >Color de tela *</label
+                >
+                <input
+                  id="colorTela"
+                  formControlName="colorTela"
+                  maxlength="100"
+                  placeholder="Ej.: Gris oxford"
+                  class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  [class.border-red-500]="productoInvalido('colorTela')"
+                />
+              </div>
+              <div>
+                <label for="cantidad" class="block text-sm font-medium mb-1.5">Cantidad *</label>
+                <input
+                  id="cantidad"
                   type="number"
                   min="1"
-                  [value]="cantidadElegida()"
-                  (input)="alCambiarCantidad($event)"
-                  class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  step="1"
+                  formControlName="cantidad"
+                  class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  [class.border-red-500]="productoInvalido('cantidad')"
                 />
-              </label>
-              <button
-                type="button"
-                (click)="agregarProducto()"
-                [disabled]="productoElegido() === null"
-                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <svg lucidePlus class="w-4 h-4" aria-hidden="true"></svg>
-                Agregar
-              </button>
-            </div>
+              </div>
+              <div>
+                <label for="valorProducto" class="block text-sm font-medium mb-1.5"
+                  >Valor unitario *</label
+                >
+                <input
+                  id="valorProducto"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  placeholder="0"
+                  [value]="valorProducto() ? formatearMilesCampo(valorProducto()) : ''"
+                  (input)="alEscribirValor($event)"
+                  class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 tabular-nums"
+                />
+              </div>
+              @if (errorProducto()) {
+                <p role="alert" class="sm:col-span-2 text-sm text-red-400">{{ errorProducto() }}</p>
+              }
+              <div class="sm:col-span-2 flex justify-end">
+                <button
+                  type="submit"
+                  class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90"
+                >
+                  <svg lucidePlus class="w-4 h-4" aria-hidden="true"></svg>
+                  Agregar producto
+                </button>
+              </div>
+            </form>
 
             @if (lineas().length) {
-              <div class="border border-border rounded-lg overflow-hidden">
-                <table class="w-full text-sm">
-                  <thead class="bg-secondary/50 text-muted-foreground text-xs">
-                    <tr>
-                      <th class="text-left font-medium px-4 py-2.5">Producto</th>
-                      <th class="text-right font-medium px-4 py-2.5 hidden sm:table-cell">Precio</th>
-                      <th class="text-center font-medium px-4 py-2.5">Cantidad</th>
-                      <th class="text-right font-medium px-4 py-2.5">Subtotal</th>
-                      <th class="px-2 py-2.5"><span class="sr-only">Quitar</span></th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-border">
-                    @for (linea of lineas(); track linea.productoId) {
-                      <tr>
-                        <td class="px-4 py-3">{{ linea.nombre }}</td>
-                        <td class="px-4 py-3 text-right text-muted-foreground hidden sm:table-cell">
-                          {{ formatearCOP(linea.precioUnitario) }}
-                        </td>
-                        <td class="px-4 py-3">
-                          <div class="flex items-center justify-center gap-2">
-                            <button
-                              type="button"
-                              (click)="cambiarCantidad(linea.productoId, -1)"
-                              [disabled]="linea.cantidad <= 1"
-                              class="p-1 rounded border border-border hover:bg-secondary disabled:opacity-30"
-                              [attr.aria-label]="'Quitar una unidad de ' + linea.nombre"
-                            >
-                              <svg lucideMinus class="w-3.5 h-3.5" aria-hidden="true"></svg>
-                            </button>
-                            <span class="w-6 text-center tabular-nums">{{ linea.cantidad }}</span>
-                            <button
-                              type="button"
-                              (click)="cambiarCantidad(linea.productoId, 1)"
-                              class="p-1 rounded border border-border hover:bg-secondary"
-                              [attr.aria-label]="'Agregar una unidad de ' + linea.nombre"
-                            >
-                              <svg lucidePlus class="w-3.5 h-3.5" aria-hidden="true"></svg>
-                            </button>
-                          </div>
-                        </td>
-                        <td class="px-4 py-3 text-right font-medium tabular-nums">
-                          {{ formatearCOP(linea.precioUnitario * linea.cantidad) }}
-                        </td>
-                        <td class="px-2 py-3 text-right">
-                          <button
-                            type="button"
-                            (click)="quitarProducto(linea.productoId)"
-                            class="p-1.5 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
-                            [attr.aria-label]="'Quitar ' + linea.nombre"
-                          >
-                            <svg lucideTrash2 class="w-4 h-4" aria-hidden="true"></svg>
-                          </button>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
+              <ul class="space-y-3">
+                @for (linea of lineas(); track linea.clave) {
+                  <li
+                    class="border border-border rounded-lg p-4 flex flex-col sm:flex-row sm:items-start gap-4"
+                  >
+                    <div class="flex-1 min-w-0 space-y-1">
+                      <p class="font-medium">{{ linea.diseno }}</p>
+                      <p class="text-xs text-muted-foreground">
+                        Tela {{ linea.tipoTela }} · color {{ linea.colorTela }}
+                      </p>
+                      @if (linea.descripcion) {
+                        <p class="text-xs text-muted-foreground whitespace-pre-line">
+                          {{ linea.descripcion }}
+                        </p>
+                      }
+                      <p class="text-xs text-muted-foreground">
+                        {{ formatearCOP(linea.precioUnitario) }} c/u
+                      </p>
+                    </div>
+                    <div class="flex items-center gap-4 sm:gap-5">
+                      <div class="flex items-center gap-2">
+                        <button
+                          type="button"
+                          (click)="cambiarCantidad(linea.clave, -1)"
+                          [disabled]="linea.cantidad <= 1"
+                          class="p-1 rounded border border-border hover:bg-secondary disabled:opacity-30"
+                          [attr.aria-label]="'Quitar una unidad de ' + linea.diseno"
+                        >
+                          <svg lucideMinus class="w-3.5 h-3.5" aria-hidden="true"></svg>
+                        </button>
+                        <span class="w-6 text-center tabular-nums">{{ linea.cantidad }}</span>
+                        <button
+                          type="button"
+                          (click)="cambiarCantidad(linea.clave, 1)"
+                          class="p-1 rounded border border-border hover:bg-secondary"
+                          [attr.aria-label]="'Agregar una unidad de ' + linea.diseno"
+                        >
+                          <svg lucidePlus class="w-3.5 h-3.5" aria-hidden="true"></svg>
+                        </button>
+                      </div>
+                      <p class="w-28 text-right font-medium tabular-nums">
+                        {{ formatearCOP(linea.precioUnitario * linea.cantidad) }}
+                      </p>
+                      <button
+                        type="button"
+                        (click)="quitarProducto(linea.clave)"
+                        class="p-1.5 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+                        [attr.aria-label]="'Quitar ' + linea.diseno"
+                      >
+                        <svg lucideTrash2 class="w-4 h-4" aria-hidden="true"></svg>
+                      </button>
+                    </div>
+                  </li>
+                }
+              </ul>
             } @else {
-              <div class="py-8 text-center text-muted-foreground border border-dashed border-border rounded-lg">
-                <svg lucideShoppingCart class="w-10 h-10 mx-auto mb-2 opacity-30" aria-hidden="true"></svg>
+              <div
+                class="py-8 text-center text-muted-foreground border border-dashed border-border rounded-lg"
+              >
+                <svg
+                  lucideShoppingCart
+                  class="w-10 h-10 mx-auto mb-2 opacity-30"
+                  aria-hidden="true"
+                ></svg>
                 <p class="text-sm">Aún no hay productos en el pedido</p>
               </div>
             }
@@ -338,10 +446,16 @@
                 >3</span
               >
               Abono inicial
-              <span class="text-sm font-normal text-muted-foreground">(opcional)</span>
+              <span class="text-sm font-normal text-muted-foreground">{{
+                cobro().pagoAnticipado ? '(pago completo)' : '(opcional)'
+              }}</span>
             </h2>
           </div>
-          <form [formGroup]="formAbono" class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4" novalidate>
+          <form
+            [formGroup]="formAbono"
+            class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4"
+            novalidate
+          >
             <div>
               <label for="monto" class="block text-sm font-medium mb-1.5">Monto</label>
               <input
@@ -350,9 +464,10 @@
                 inputmode="numeric"
                 autocomplete="off"
                 placeholder="0"
-                [value]="montoTexto()"
+                [value]="cobro().pagoAnticipado ? formatearMilesCampo(cobro().abono) : montoTexto()"
+                [readOnly]="cobro().pagoAnticipado"
                 (input)="alEscribirMonto($event)"
-                class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 read-only:opacity-70 read-only:cursor-not-allowed"
               />
             </div>
             <div>
@@ -372,10 +487,23 @@
               <input
                 id="comprobante"
                 formControlName="comprobante"
-                placeholder="Nº de transacción"
+                [placeholder]="
+                  cobro().pagoAnticipado
+                    ? 'Nº de transacción de Addi (obligatorio)'
+                    : 'Nº de transacción'
+                "
                 class="w-full px-3 py-2.5 bg-input-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
             </div>
+            @if (cobro().pagoAnticipado) {
+              <p
+                class="sm:col-span-3 text-sm text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-3"
+              >
+                Con Addi el cliente paga <strong>todo por anticipado</strong>, con un recargo del
+                {{ porcentajeAddi }} % sobre los productos ({{ formatearCOP(cobro().recargo) }}). El
+                abono es el total del pedido: {{ formatearCOP(cobro().total) }}.
+              </p>
+            }
           </form>
         </section>
       </div>
@@ -393,11 +521,28 @@
           }
         </div>
 
+        <div class="space-y-1">
+          <p class="text-xs text-muted-foreground">Localidad de entrega</p>
+          <p class="text-sm">{{ localidad().trim() || 'Sin indicar' }}</p>
+        </div>
+
         <dl class="space-y-2 text-sm border-t border-border pt-4">
           <div class="flex justify-between">
             <dt class="text-muted-foreground">Productos</dt>
-            <dd class="tabular-nums">{{ unidades() }} {{ unidades() === 1 ? 'unidad' : 'unidades' }}</dd>
+            <dd class="tabular-nums">
+              {{ unidades() }} {{ unidades() === 1 ? 'unidad' : 'unidades' }}
+            </dd>
           </div>
+          @if (cobro().recargo) {
+            <div class="flex justify-between">
+              <dt class="text-muted-foreground">Valor productos</dt>
+              <dd class="tabular-nums">{{ formatearCOP(subtotal()) }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-muted-foreground">Recargo Addi ({{ porcentajeAddi }} %)</dt>
+              <dd class="tabular-nums">{{ formatearCOP(cobro().recargo) }}</dd>
+            </div>
+          }
           <div class="flex justify-between">
             <dt class="text-muted-foreground">Abono</dt>
             <dd class="tabular-nums">{{ formatearCOP(abono()) }}</dd>
@@ -410,7 +555,9 @@
 
         <div class="border-t border-border pt-4 flex items-end justify-between">
           <span class="text-muted-foreground">Total</span>
-          <span class="text-3xl font-semibold text-primary tabular-nums">{{ formatearCOP(total()) }}</span>
+          <span class="text-3xl font-semibold text-primary tabular-nums">{{
+            formatearCOP(total())
+          }}</span>
         </div>
 
         @if (error()) {

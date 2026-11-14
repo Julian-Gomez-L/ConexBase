@@ -21,7 +21,8 @@ class UpdateProduccionRequest extends FormRequest
             'estado' => ['sometimes', 'string'],
             'observaciones' => ['nullable', 'string'],
             'pedido_id' => ['sometimes', 'integer', 'exists:pedidos,id'],
-            'producto_id' => ['sometimes', 'integer', 'exists:productos,id'],
+            'producto_id' => ['sometimes', 'nullable', 'integer', 'exists:productos,id'],
+            'detalle_pedido_id' => ['sometimes', 'nullable', 'integer', 'exists:detalle_pedidos,id'],
             'usuario_id' => ['sometimes', 'integer', 'exists:usuarios,id'],
         ];
     }

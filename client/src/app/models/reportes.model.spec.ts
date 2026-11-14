@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { itemPrueba } from '@app/testing/datos-prueba';
 import { HistorialPedido, Usuario } from '@app/models';
 import { PedidoVista } from './pedido-vista.model';
 import { consolidadoCsv, consolidar, entregasDelDia, resumenDelDia } from './reportes.model';
@@ -16,13 +17,15 @@ const vista = (
   estado,
   usuarioId,
   clienteId: 1,
+  localidad: null,
+  recargo: 0,
   total,
   pagado,
   saldo: total - pagado,
   creadoEn: new Date(creado),
   cliente: { id: 1, documento: '1', nombre: 'Ana; "la grande"', telefono: '', correo: '', direccion: null, estado: true, created_at: null, updated_at: null },
   asesor: { id: usuarioId, documento: '', nombre: usuarioId === 2 ? 'Juan' : 'Vale', apellido: 'X', correo: '', rol_id: 2, estado: true, created_at: null, updated_at: null },
-  items: [{ productoId: 1, nombre: 'Sofa', cantidad: 2, subtotal: total }],
+  items: [itemPrueba({ productoId: 1, nombre: 'Sofa', cantidad: 2, subtotal: total })],
   abonos: pagado ? [{ monto: pagado, metodo: 'Efectivo', comprobante: null, fecha: creado.slice(0, 10) }] : [],
   rechazo: null,
 });

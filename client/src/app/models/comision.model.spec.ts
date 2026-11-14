@@ -10,6 +10,8 @@ const pedido = (id: number, estado: string, total: number, usuarioId = 2): Pedid
   estado,
   usuarioId,
   clienteId: 1,
+  localidad: null,
+  recargo: 0,
   total,
   pagado: 0,
   saldo: total,

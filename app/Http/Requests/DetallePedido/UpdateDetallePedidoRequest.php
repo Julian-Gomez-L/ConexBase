@@ -15,7 +15,11 @@ class UpdateDetallePedidoRequest extends FormRequest
     {
         return [
             'pedido_id' => ['sometimes', 'exists:pedidos,id'],
-            'producto_id' => ['sometimes', 'exists:productos,id'],
+            'producto_id' => ['sometimes', 'nullable', 'exists:productos,id'],
+            'diseno' => ['sometimes', 'nullable', 'string', 'max:150'],
+            'descripcion' => ['sometimes', 'nullable', 'string', 'max:2000'],
+            'color_tela' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'tipo_tela' => ['sometimes', 'nullable', 'string', 'max:100'],
             'cantidad' => ['sometimes', 'integer', 'min:1'],
             'precio_unitario' => ['sometimes', 'numeric', 'min:0'],
             'subtotal' => ['sometimes', 'numeric', 'min:0'],
@@ -27,6 +31,10 @@ class UpdateDetallePedidoRequest extends FormRequest
         return [
             'pedido_id.exists' => 'El pedido seleccionado no existe.',
             'producto_id.exists' => 'El producto seleccionado no existe.',
+            'diseno.max' => 'El diseño no puede tener más de 150 caracteres.',
+            'descripcion.max' => 'La descripción no puede tener más de 2000 caracteres.',
+            'color_tela.max' => 'El color de la tela no puede tener más de 100 caracteres.',
+            'tipo_tela.max' => 'El tipo de tela no puede tener más de 100 caracteres.',
 
             'cantidad.integer' => 'La cantidad debe ser un número entero.',
             'cantidad.min' => 'La cantidad debe ser mínimo 1.',

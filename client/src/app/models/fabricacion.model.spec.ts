@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { itemPrueba } from '@app/testing/datos-prueba';
 import { construirTablero } from './fabricacion.model';
 import { HistorialPedido } from './historial-pedido.model';
 import { PedidoVista } from './pedido-vista.model';
@@ -15,13 +16,15 @@ const pedido = (id: number, estado: string, items: [number, string, number][] = 
   estado,
   usuarioId: 2,
   clienteId: 1,
+  localidad: null,
+  recargo: 0,
   total: 100,
   pagado: 0,
   saldo: 100,
   creadoEn: new Date(2026, 9, id),
   cliente: null,
   asesor: null,
-  items: items.map(([productoId, nombre, cantidad]) => ({ productoId, nombre, cantidad, subtotal: 0 })),
+  items: items.map(([productoId, nombre, cantidad]) => itemPrueba({ productoId, nombre, cantidad })),
   abonos: [],
   rechazo: null,
 });
@@ -30,6 +33,7 @@ const produccion = (id: number, pedidoId: number, productoId: number, estado: st
   id,
   pedido_id: pedidoId,
   producto_id: productoId,
+  detalle_pedido_id: null,
   usuario_id: 3,
   fecha_inicio: '2026-10-12',
   fecha_fin: null,
@@ -145,5 +149,22 @@ describe('reparto de una producción entre varios tapiceros', () => {
     const trabajos = [trabajo(30, 20, 'En proceso', 4, 4), trabajo(31, 20, 'Pendiente', 2, 5)];
     const [camas] = construirTablero(vistas, producciones, trabajos, usuarios, roles, []).enFabricacion[0].producciones;
     expect(camas.porAsignar).toBe(0);
+  });
+});
+
+describe('producciones ligadas al detalle del pedido (sin catálogo)', () => {
+  it('une la producción con su producto por detalle_pedido_id y muestra las especificaciones', () => {
+    const v = pedido(11, 'En producción');
+    v.items = [
+      itemPrueba({ detalleId: 50, nombre: 'Base capitoneada', cantidad: 2, tela: 'Tela lino · color gris', descripcion: 'Con espaldar' }),
+      itemPrueba({ detalleId: 51, nombre: 'Cabecero', cantidad: 1 }),
+    ];
+    const pr = { ...produccion(70, 11, 0, 'Pendiente'), producto_id: null, detalle_pedido_id: 51 };
+    const [vista] = construirTablero([v], [pr], [], [], roles, []).enFabricacion[0].producciones;
+    expect([vista.producto, vista.cantidad]).toEqual(['Cabecero', 1]);
+
+    const pr2 = { ...produccion(71, 11, 0, 'Pendiente'), producto_id: null, detalle_pedido_id: 50 };
+    const [vista2] = construirTablero([v], [pr2], [], [], roles, []).enFabricacion[0].producciones;
+    expect([vista2.producto, vista2.especificaciones]).toEqual(['Base capitoneada', 'Tela lino · color gris · Con espaldar']);
   });
 });

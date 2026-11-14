@@ -36,8 +36,8 @@ describe('CrearPedidoService', () => {
   it('calcula el total con precio × cantidad', () => {
     expect(
       CrearPedidoService.total([
-        { productoId: 1, cantidad: 1, precioUnitario: 800000 },
-        { productoId: 2, cantidad: 2, precioUnitario: 250000 },
+        { diseno: 'Base doble', descripcion: null, colorTela: 'Gris', tipoTela: 'Lino', cantidad: 1, precioUnitario: 800000 },
+        { diseno: 'Cabecero', descripcion: null, colorTela: 'Gris', tipoTela: 'Lino', cantidad: 2, precioUnitario: 250000 },
       ]),
     ).toBe(1300000);
   });
@@ -47,9 +47,11 @@ describe('CrearPedidoService', () => {
     servicio
       .crear({
         cliente: { documento: '1', nombre: 'Diana', telefono: '3', correo: 'd@x.com', direccion: null },
+        localidad: 'Suba',
+        recargo: 0,
         lineas: [
-          { productoId: 3, cantidad: 1, precioUnitario: 800000 },
-          { productoId: 2, cantidad: 2, precioUnitario: 250000 },
+          { diseno: 'Base doble', descripcion: null, colorTela: 'Gris', tipoTela: 'Lino', cantidad: 1, precioUnitario: 800000 },
+          { diseno: 'Cabecero', descripcion: null, colorTela: 'Gris', tipoTela: 'Lino', cantidad: 2, precioUnitario: 250000 },
         ],
         abono: { monto: 500000, metodo: 'Efectivo', comprobante: null },
       })
@@ -60,11 +62,26 @@ describe('CrearPedidoService', () => {
     cliente.flush(ok({ id: 6 }));
 
     const pedido = http.expectOne(`${api}/pedidos`);
-    expect(pedido.request.body).toEqual({ cliente_id: 6, usuario_id: 2, estado: 'Pendiente', total: '1300000' });
+    expect(pedido.request.body).toEqual({
+      cliente_id: 6,
+      usuario_id: 2,
+      estado: 'Pendiente',
+      localidad: 'Suba',
+      total: '1300000',
+      recargo: '0',
+    });
     pedido.flush(ok({ id: 8 }));
 
     const detalles = http.match(`${api}/detalle-pedidos`);
     expect(detalles.map((d) => d.request.body.subtotal)).toEqual(['800000', '500000']);
+    expect(detalles[1].request.body).toMatchObject({
+      producto_id: null,
+      diseno: 'Cabecero',
+      tipo_tela: 'Lino',
+      color_tela: 'Gris',
+      cantidad: 2,
+      precio_unitario: '250000',
+    });
     detalles.forEach((d) => d.flush(ok({ id: 1 })));
 
     const pago = http.expectOne(`${api}/pagos`);
@@ -84,9 +101,31 @@ describe('CrearPedidoService', () => {
     http.verify();
   });
 
+  it('con Addi: el total incluye el recargo y el pago es por el total', () => {
+    servicio
+      .crear({
+        cliente: 4,
+        localidad: 'Kennedy',
+        recargo: 100000,
+        lineas: [{ diseno: 'Base doble', descripcion: null, colorTela: 'Gris', tipoTela: 'Lino', cantidad: 1, precioUnitario: 1000000 }],
+        abono: { monto: 1100000, metodo: 'Addi', comprobante: 'ADDI-123' },
+      })
+      .subscribe();
+
+    const pedido = http.expectOne(`${api}/pedidos`);
+    expect(pedido.request.body).toMatchObject({ total: '1100000', recargo: '100000' });
+    pedido.flush(ok({ id: 10 }));
+    http.expectOne(`${api}/detalle-pedidos`).flush(ok({ id: 1 }));
+    const pago = http.expectOne(`${api}/pagos`);
+    expect(pago.request.body).toMatchObject({ monto: '1100000', metodo: 'Addi', comprobante: 'ADDI-123' });
+    pago.flush(ok({ id: 1 }));
+    http.expectOne(`${api}/historial-pedidos`).flush(ok({ id: 1 }));
+    http.verify();
+  });
+
   it('con cliente existente y sin abono: no crea cliente ni pago', () => {
     servicio
-      .crear({ cliente: 4, lineas: [{ productoId: 1, cantidad: 1, precioUnitario: 100 }], abono: null })
+      .crear({ cliente: 4, localidad: 'Chía', recargo: 0, lineas: [{ diseno: 'Puff', descripcion: null, colorTela: 'Gris', tipoTela: 'Lino', cantidad: 1, precioUnitario: 100 }], abono: null })
       .subscribe();
 
     http.expectOne(`${api}/pedidos`).flush(ok({ id: 9 }));

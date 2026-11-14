@@ -2,7 +2,7 @@ import { normalizarEstado } from '@app/components/estado-badge/estado-badge.comp
 import { resolverRol } from '@app/config/roles';
 import { estaActivo } from './api.model';
 import { HistorialPedido } from './historial-pedido.model';
-import { fechaMysql, PedidoVista } from './pedido-vista.model';
+import { fechaMysql, itemDeProduccion, PedidoVista } from './pedido-vista.model';
 import { Produccion } from './produccion.model';
 import { Rol } from './rol.model';
 import { TrabajoTapicero } from './trabajo-tapicero.model';
@@ -24,6 +24,8 @@ export interface TrabajoVista {
 export interface ProduccionVista {
   produccion: Produccion;
   producto: string;
+  /** "Tela lino · color gris · Espaldar capitoneado" */
+  especificaciones: string;
   cantidad: number;
   terminada: boolean;
   /** Trabajos de tapicería de esta producción (el último primero). */
@@ -103,7 +105,7 @@ export function construirTablero(
       .filter((pr) => pr.pedido_id === pedido.id)
       .sort((a, b) => a.id - b.id)
       .map((pr): ProduccionVista => {
-        const item = pedido.items.find((i) => i.productoId === pr.producto_id);
+        const item = itemDeProduccion(pedido, pr);
         const cantidad = item?.cantidad ?? 1;
         const suyos = trabajos
           .filter((t) => t.produccion_id === pr.id)
@@ -116,7 +118,8 @@ export function construirTablero(
         const asignadas = suyos.reduce((s, t) => s + t.cantidad, 0);
         return {
           produccion: pr,
-          producto: item?.nombre ?? `Producto #${pr.producto_id}`,
+          producto: item?.nombre ?? `Producto #${pr.producto_id ?? pr.detalle_pedido_id}`,
+          especificaciones: item ? [item.tela, item.descripcion].filter(Boolean).join(' · ') : '',
           cantidad,
           terminada: normalizarEstado(pr.estado).startsWith('finaliz'),
           trabajos: suyos,

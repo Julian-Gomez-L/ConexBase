@@ -20,10 +20,14 @@ export interface ClienteNuevo {
   direccion: string | null;
 }
 
+/** Un producto del pedido, descrito por sus especificaciones (ya no hay catálogo). */
 export interface LineaPedido {
-  productoId: number;
+  diseno: string;
+  descripcion: string | null;
+  colorTela: string;
+  tipoTela: string;
   cantidad: number;
-  /** Precio del producto al momento de la venta. */
+  /** Valor de cada unidad, que acuerda el asesor con el cliente. */
   precioUnitario: number;
 }
 
@@ -36,7 +40,11 @@ export interface Abono {
 export interface NuevoPedido {
   /** ID de un cliente existente, o los datos para registrarlo. */
   cliente: number | ClienteNuevo;
+  /** Lugar de entrega (texto libre). */
+  localidad: string;
   lineas: LineaPedido[];
+  /** Recargo por el método de pago (Addi: 10 %); se suma al total. */
+  recargo: number;
   abono: Abono | null;
 }
 
@@ -51,7 +59,7 @@ export const ESTADO_INICIAL = 'Pendiente';
  *   4. el abono, si lo hay
  *   5. la primera entrada del historial (∅ → Pendiente)
  *
- * El total se calcula aquí con el precio de cada producto; el pedido queda
+ * El total se calcula aquí con el valor de cada producto; el pedido queda
  * a nombre del usuario de la sesión, no de un valor que escriba el usuario.
  */
 @Injectable({ providedIn: 'root' })
@@ -71,7 +79,7 @@ export class CrearPedidoService {
     const asesorId = this.auth.sesion()?.usuarioId;
     if (!asesorId) throw new Error('No hay una sesión activa.');
 
-    const total = CrearPedidoService.total(datos.lineas);
+    const total = CrearPedidoService.total(datos.lineas) + datos.recargo;
     const hoy = ahoraMysql();
 
     const cliente$: Observable<number> =
@@ -82,7 +90,14 @@ export class CrearPedidoService {
     return cliente$.pipe(
       switchMap((clienteId) =>
         this.pedidos
-          .crear({ cliente_id: clienteId, usuario_id: asesorId, estado: ESTADO_INICIAL, total: String(total) })
+          .crear({
+            cliente_id: clienteId,
+            usuario_id: asesorId,
+            estado: ESTADO_INICIAL,
+            localidad: datos.localidad,
+            total: String(total),
+            recargo: String(datos.recargo),
+          })
           .pipe(map((pedido) => ({ pedido, clienteId }))),
       ),
       switchMap(({ pedido, clienteId }) => {
@@ -90,7 +105,11 @@ export class CrearPedidoService {
           datos.lineas.map((l) =>
             this.detalles.crear({
               pedido_id: pedido.id,
-              producto_id: l.productoId,
+              producto_id: null,
+              diseno: l.diseno,
+              descripcion: l.descripcion,
+              color_tela: l.colorTela,
+              tipo_tela: l.tipoTela,
               cantidad: l.cantidad,
               precio_unitario: String(l.precioUnitario),
               subtotal: String(l.precioUnitario * l.cantidad),

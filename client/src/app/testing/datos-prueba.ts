@@ -86,3 +86,18 @@ export const DATOS = {
     },
   ] as Pago[],
 };
+
+/** Un producto del pedido (ItemVista) para pruebas; solo se pasa lo que importa. */
+export const itemPrueba = (
+  datos: Partial<import('@app/models/pedido-vista.model').ItemVista> & { nombre: string; cantidad: number },
+): import('@app/models/pedido-vista.model').ItemVista => ({
+  detalleId: 0,
+  productoId: null,
+  descripcion: null,
+  colorTela: null,
+  tipoTela: null,
+  tela: '',
+  precioUnitario: 0,
+  subtotal: 0,
+  ...datos,
+});

@@ -6,9 +6,23 @@
 
   <!-- Métricas -->
   <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-    <app-stat-card etiqueta="Pendientes por revisar" [valor]="resumen().pendientes" [icono]="iconoReloj" variante="alerta" />
-    <app-stat-card etiqueta="Valor pendiente" [valor]="resumen().valorPendiente" [icono]="iconoDinero" />
-    <app-stat-card etiqueta="Confirmados esperando fabricación" [valor]="resumen().confirmados" [icono]="iconoCheck" variante="exito" />
+    <app-stat-card
+      etiqueta="Pendientes por revisar"
+      [valor]="resumen().pendientes"
+      [icono]="iconoReloj"
+      variante="alerta"
+    />
+    <app-stat-card
+      etiqueta="Valor pendiente"
+      [valor]="resumen().valorPendiente"
+      [icono]="iconoDinero"
+    />
+    <app-stat-card
+      etiqueta="Confirmados esperando fabricación"
+      [valor]="resumen().confirmados"
+      [icono]="iconoCheck"
+      variante="exito"
+    />
     <app-stat-card etiqueta="Rechazados" [valor]="resumen().rechazados" [icono]="iconoX" />
   </div>
 
@@ -30,14 +44,21 @@
     <div
       class="px-6 py-4 border-b border-border bg-secondary flex flex-col md:flex-row md:items-center md:justify-between gap-4"
     >
-      <div class="inline-flex p-1 bg-background rounded-lg border border-border text-sm self-start" role="tablist">
+      <div
+        class="inline-flex p-1 bg-background rounded-lg border border-border text-sm self-start"
+        role="tablist"
+      >
         <button
           type="button"
           role="tab"
           [attr.aria-selected]="pestana() === 'pendientes'"
           (click)="pestana.set('pendientes')"
           class="px-3 py-1.5 rounded-md transition-colors"
-          [class]="pestana() === 'pendientes' ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:text-foreground'"
+          [class]="
+            pestana() === 'pendientes'
+              ? 'bg-primary text-primary-foreground font-medium'
+              : 'text-muted-foreground hover:text-foreground'
+          "
         >
           Pendientes ({{ resumen().pendientes }})
         </button>
@@ -47,14 +68,22 @@
           [attr.aria-selected]="pestana() === 'rechazados'"
           (click)="pestana.set('rechazados')"
           class="px-3 py-1.5 rounded-md transition-colors"
-          [class]="pestana() === 'rechazados' ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:text-foreground'"
+          [class]="
+            pestana() === 'rechazados'
+              ? 'bg-primary text-primary-foreground font-medium'
+              : 'text-muted-foreground hover:text-foreground'
+          "
         >
           Rechazados ({{ resumen().rechazados }})
         </button>
       </div>
       <label class="relative">
         <span class="sr-only">Buscar por código, cliente o documento</span>
-        <svg lucideSearch class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true"></svg>
+        <svg
+          lucideSearch
+          class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        ></svg>
         <input
           type="search"
           [value]="busqueda()"
@@ -92,12 +121,15 @@
             <div class="flex flex-wrap justify-between gap-3">
               <div>
                 <div class="flex flex-wrap items-center gap-3">
-                  <h2 class="text-lg font-semibold">{{ pedido.cliente?.nombre ?? 'Cliente #' + pedido.clienteId }}</h2>
+                  <h2 class="text-lg font-semibold">
+                    {{ pedido.cliente?.nombre ?? 'Cliente #' + pedido.clienteId }}
+                  </h2>
                   <app-estado-badge [estado]="pedido.estado" />
                 </div>
                 <p class="text-sm text-muted-foreground mt-1">
                   <span class="font-mono">{{ pedido.codigo }}</span> · Creado el
-                  {{ fechaCorta(pedido.creadoEn) }} por {{ pedido.asesor?.nombre }} {{ pedido.asesor?.apellido }}
+                  {{ fechaCorta(pedido.creadoEn) }} por {{ pedido.asesor?.nombre }}
+                  {{ pedido.asesor?.apellido }}
                 </p>
               </div>
               <p class="text-2xl font-semibold text-primary">{{ formatearCOP(pedido.total) }}</p>
@@ -110,15 +142,27 @@
                   <p>CC {{ c.documento }}</p>
                   <p>{{ c.telefono }} · {{ c.correo }}</p>
                   <p>{{ c.direccion ?? 'Sin dirección de entrega' }}</p>
-                } @else {
+                }
+                @if (pedido.localidad) {
+                  <p>Localidad: {{ pedido.localidad }}</p>
+                }
+                @if (!pedido.cliente) {
                   <p class="text-muted-foreground">Cliente no disponible</p>
                 }
               </div>
               <div>
                 <p class="text-xs text-muted-foreground mb-1.5">Productos</p>
-                @for (item of pedido.items; track item.productoId) {
+                @for (item of pedido.items; track item.detalleId) {
                   <p class="flex justify-between gap-3">
-                    <span>{{ item.cantidad }} × {{ item.nombre }}</span>
+                    <span>
+                      {{ item.cantidad }} × {{ item.nombre }}
+                      @if (item.tela || item.descripcion) {
+                        <span class="block text-xs text-muted-foreground"
+                          >{{ item.tela }}{{ item.tela && item.descripcion ? ' · ' : ''
+                          }}{{ item.descripcion }}</span
+                        >
+                      }
+                    </span>
                     <span class="tabular-nums">{{ formatearCOP(item.subtotal) }}</span>
                   </p>
                 } @empty {
@@ -135,13 +179,19 @@
                 } @empty {
                   <p class="text-muted-foreground">Sin abonos</p>
                 }
-                <p>Saldo <strong class="font-semibold">{{ formatearCOP(pedido.saldo) }}</strong></p>
+                <p>
+                  Saldo <strong class="font-semibold">{{ formatearCOP(pedido.saldo) }}</strong>
+                </p>
               </div>
             </div>
 
             @if (pedido.rechazo; as r) {
-              <div class="bg-orange-500/10 border border-orange-500/30 rounded-lg px-4 py-3 text-sm">
-                <p class="text-xs font-medium text-orange-300 mb-1">Motivo del rechazo · {{ fechaCorta(r.fecha) }}</p>
+              <div
+                class="bg-orange-500/10 border border-orange-500/30 rounded-lg px-4 py-3 text-sm"
+              >
+                <p class="text-xs font-medium text-orange-300 mb-1">
+                  Motivo del rechazo · {{ fechaCorta(r.fecha) }}
+                </p>
                 <p>{{ r.motivo }}</p>
               </div>
             }
@@ -149,7 +199,9 @@
             @if (pestana() === 'pendientes') {
               @if (rechazandoId() === pedido.id) {
                 <div class="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4 space-y-3">
-                  <label [for]="'motivo-' + pedido.id" class="block text-sm font-medium">Motivo del rechazo *</label>
+                  <label [for]="'motivo-' + pedido.id" class="block text-sm font-medium"
+                    >Motivo del rechazo *</label
+                  >
                   <textarea
                     [id]="'motivo-' + pedido.id"
                     rows="3"
@@ -161,7 +213,9 @@
                   @if (errorMotivo()) {
                     <p class="text-sm text-red-400" role="alert">{{ errorMotivo() }}</p>
                   } @else {
-                    <p class="text-xs text-muted-foreground">El asesor verá este motivo para corregir el pedido.</p>
+                    <p class="text-xs text-muted-foreground">
+                      El asesor verá este motivo para corregir el pedido.
+                    </p>
                   }
                   <div class="flex flex-wrap justify-end gap-3">
                     <button
@@ -207,8 +261,18 @@
           </article>
         } @empty {
           <div class="p-12 text-center text-muted-foreground">
-            <svg lucideCircleCheck class="w-14 h-14 mx-auto mb-4 opacity-30" aria-hidden="true"></svg>
-            <p>{{ pestana() === 'pendientes' ? 'No hay pedidos pendientes por revisar.' : 'No hay pedidos rechazados.' }}</p>
+            <svg
+              lucideCircleCheck
+              class="w-14 h-14 mx-auto mb-4 opacity-30"
+              aria-hidden="true"
+            ></svg>
+            <p>
+              {{
+                pestana() === 'pendientes'
+                  ? 'No hay pedidos pendientes por revisar.'
+                  : 'No hay pedidos rechazados.'
+              }}
+            </p>
           </div>
         }
       }
@@ -216,6 +280,7 @@
   </section>
 
   <p class="text-xs text-muted-foreground">
-    Al confirmar o rechazar, el cambio de estado queda en el historial del pedido con tu nombre y la fecha.
+    Al confirmar o rechazar, el cambio de estado queda en el historial del pedido con tu nombre y la
+    fecha.
   </p>
 </div>

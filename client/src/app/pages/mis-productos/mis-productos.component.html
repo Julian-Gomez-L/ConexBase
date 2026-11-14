@@ -1,5 +1,8 @@
 <div class="space-y-6 max-w-4xl">
-  <app-page-header titulo="Mis Productos" subtitulo="Los trabajos de tapicería que tienes asignados" />
+  <app-page-header
+    titulo="Mis Productos"
+    subtitulo="Los trabajos de tapicería que tienes asignados"
+  />
 
   @if (aviso(); as a) {
     <p
@@ -21,7 +24,10 @@
         <div class="bg-card border border-border rounded-lg h-32 animate-pulse"></div>
       }
     </div>
-    <div class="bg-card border border-border rounded-lg h-72 animate-pulse" aria-hidden="true"></div>
+    <div
+      class="bg-card border border-border rounded-lg h-72 animate-pulse"
+      aria-hidden="true"
+    ></div>
   } @else if (error(); as e) {
     <div class="bg-card border border-border rounded-lg p-12 text-center" role="alert">
       <p class="text-red-400 mb-4">{{ e.message }}</p>
@@ -36,7 +42,12 @@
     </div>
   } @else if (datos(); as d) {
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-      <app-stat-card etiqueta="En proceso" [valor]="d.resumen.enProceso" [icono]="iconoTijeras" variante="alerta" />
+      <app-stat-card
+        etiqueta="En proceso"
+        [valor]="d.resumen.enProceso"
+        [icono]="iconoTijeras"
+        variante="alerta"
+      />
       <app-stat-card etiqueta="Por empezar" [valor]="d.resumen.porEmpezar" [icono]="iconoReloj" />
       <app-stat-card
         etiqueta="Terminados este mes"
@@ -67,7 +78,12 @@
           <dl class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
             <div>
               <dt class="text-xs text-muted-foreground mb-1">Producto</dt>
-              <dd>{{ m.cantidad }} × {{ m.producto }}</dd>
+              <dd>
+                {{ m.cantidad }} × {{ m.producto }}
+                @if (m.tela) {
+                  <span class="block text-xs text-muted-foreground">{{ m.tela }}</span>
+                }
+              </dd>
             </div>
             <div>
               <dt class="text-xs text-muted-foreground mb-1">Asignado el</dt>
@@ -79,8 +95,27 @@
             </div>
           </dl>
 
+          @if (m.descripcion || m.localidad) {
+            <div class="text-sm space-y-1 bg-secondary/50 rounded-lg px-4 py-3">
+              @if (m.descripcion) {
+                <p class="whitespace-pre-line">
+                  <span class="text-xs text-muted-foreground">Descripción:</span>
+                  {{ m.descripcion }}
+                </p>
+              }
+              @if (m.localidad) {
+                <p>
+                  <span class="text-xs text-muted-foreground">Localidad de entrega:</span>
+                  {{ m.localidad }}
+                </p>
+              }
+            </div>
+          }
+
           <div class="space-y-2">
-            <label [for]="'obs-' + m.trabajo.id" class="block text-sm font-medium">Observaciones</label>
+            <label [for]="'obs-' + m.trabajo.id" class="block text-sm font-medium"
+              >Observaciones</label
+            >
             <textarea
               [id]="'obs-' + m.trabajo.id"
               rows="2"
@@ -126,12 +161,13 @@
           </div>
         </article>
       } @empty {
-        <div class="bg-card border border-dashed border-border rounded-lg p-10 text-center text-muted-foreground">
+        <div
+          class="bg-card border border-dashed border-border rounded-lg p-10 text-center text-muted-foreground"
+        >
           <svg lucideScissors class="w-12 h-12 mx-auto mb-3 opacity-30" aria-hidden="true"></svg>
           <p>No tienes trabajos pendientes. Cuando Producción te asigne uno, aparecerá aquí.</p>
         </div>
       }
     </section>
-
   }
 </div>

@@ -21,9 +21,12 @@ class TrabajosTapicerosRepository extends BaseRepository implements TrabajosTapi
             return 0;
         }
 
-        $cantidad = DetallePedido::where('pedido_id', $produccion->pedido_id)
-            ->where('producto_id', $produccion->producto_id)
-            ->sum('cantidad');
+        // Producciones nuevas: ligadas al detalle. Las viejas: por producto del catálogo.
+        $cantidad = $produccion->detalle_pedido_id
+            ? DetallePedido::whereKey($produccion->detalle_pedido_id)->value('cantidad')
+            : DetallePedido::where('pedido_id', $produccion->pedido_id)
+                ->where('producto_id', $produccion->producto_id)
+                ->sum('cantidad');
 
         return max(1, (int) $cantidad);
     }

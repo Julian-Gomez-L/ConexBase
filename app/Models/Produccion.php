@@ -21,6 +21,7 @@ class Produccion extends Model
         'observaciones',
         'pedido_id',
         'producto_id',
+        'detalle_pedido_id',
         'usuario_id',
     ];
 

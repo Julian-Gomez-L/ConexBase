@@ -26,6 +26,7 @@ const produccion: Produccion = {
   id: 1,
   pedido_id: 2,
   producto_id: 5,
+  detalle_pedido_id: null,
   usuario_id: 3,
   fecha_inicio: '2026-10-12',
   fecha_fin: null,
@@ -38,7 +39,7 @@ const pedido = {
   id: 2,
   codigo: 'RM-00002',
   cliente: { nombre: 'Laura Torres' },
-  items: [{ productoId: 5, nombre: 'Silla comedor', cantidad: 2, subtotal: 0 }],
+  items: [{ productoId: 5, nombre: 'Silla comedor', cantidad: 2, subtotal: 0, detalleId: 1, tela: '' }],
 } as unknown as PedidoVista;
 
 const usuarios = [{ id: 3, nombre: 'Andres', apellido: 'Gomez' }] as Usuario[];
