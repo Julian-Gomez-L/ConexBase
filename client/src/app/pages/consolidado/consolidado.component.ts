@@ -18,6 +18,7 @@ import { AuthService } from '@app/services/auth.service';
 import { PedidosFacadeService } from '@app/services/pedidos-facade.service';
 import { fechaISO } from '@app/utils/fecha';
 import { formatearCOP } from '@app/utils/format';
+import { refrescoAutomatico } from '@app/utils/refresco';
 
 /** Color de la barra de cada estado (misma paleta que los badges). */
 const COLOR_ESTADO: Record<string, string> = {
@@ -52,6 +53,9 @@ export class ConsolidadoComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
+  /** Estados al día sin recargar la página (cada 15 s y al volver a la pestaña). */
+  private readonly refresco = refrescoAutomatico(() => this.cargar(true));
+
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
   private readonly pedidos = signal<PedidoVista[]>([]);
@@ -73,9 +77,12 @@ export class ConsolidadoComponent implements OnInit {
     this.cargar();
   }
 
-  protected cargar(): void {
-    this.cargando.set(true);
-    this.error.set(null);
+  protected cargar(silencioso = false): void {
+    // En el refresco automático no se muestra el esqueleto de carga
+    if (!silencioso) {
+      this.cargando.set(true);
+      this.error.set(null);
+    }
     this.facade
       .listarVista()
       .pipe(
@@ -84,7 +91,9 @@ export class ConsolidadoComponent implements OnInit {
       )
       .subscribe({
         next: (vistas) => this.pedidos.set(vistas),
-        error: (e: AppError) => this.error.set(e),
+        error: (e: AppError) => {
+          if (!silencioso) this.error.set(e); // un fallo del refresco no tapa la pantalla
+        },
       });
   }
 

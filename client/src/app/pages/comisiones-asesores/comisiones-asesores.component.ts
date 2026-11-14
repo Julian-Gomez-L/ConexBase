@@ -28,6 +28,7 @@ import { RolesService } from '@app/services/api';
 import { PedidosFacadeService } from '@app/services/pedidos-facade.service';
 import { fechaCorta } from '@app/utils/fecha';
 import { formatearCOP } from '@app/utils/format';
+import { refrescoAutomatico } from '@app/utils/refresco';
 
 /**
  * Comisiones de Asesores (Administrador).
@@ -44,6 +45,9 @@ export class ComisionesAsesoresComponent implements OnInit {
   private readonly facade = inject(PedidosFacadeService);
   private readonly rolesApi = inject(RolesService);
   private readonly destroyRef = inject(DestroyRef);
+
+  /** Estados al día sin recargar la página (cada 15 s y al volver a la pestaña). */
+  private readonly refresco = refrescoAutomatico(() => this.cargar(true));
 
   protected readonly porcentaje = `${+(TASA_COMISION * 100).toFixed(2)} %`;
   protected readonly cargando = signal(true);
@@ -83,9 +87,12 @@ export class ComisionesAsesoresComponent implements OnInit {
     this.cargar();
   }
 
-  protected cargar(): void {
-    this.cargando.set(true);
-    this.error.set(null);
+  protected cargar(silencioso = false): void {
+    // En el refresco automático no se muestra el esqueleto de carga
+    if (!silencioso) {
+      this.cargando.set(true);
+      this.error.set(null);
+    }
     forkJoin({ base: this.facade.listarConDatos(), roles: this.rolesApi.listar() })
       .pipe(
         finalize(() => this.cargando.set(false)),
@@ -99,7 +106,9 @@ export class ComisionesAsesoresComponent implements OnInit {
             usuarios: base.datos.usuarios,
             roles,
           }),
-        error: (e: AppError) => this.error.set(e),
+        error: (e: AppError) => {
+          if (!silencioso) this.error.set(e); // un fallo del refresco no tapa la pantalla
+        },
       });
   }
 

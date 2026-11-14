@@ -96,3 +96,34 @@
     cursor: pointer;
   }
 }
+
+/* ── Impresión de facturas ───────────────────────────────────────────────
+   Al imprimir, solo se ve el elemento con la clase `.zona-impresion`
+   (pages/facturas). El menú, el encabezado y lo demás quedan ocultos. */
+@media print {
+  @page {
+    size: letter;
+    margin: 12mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .zona-impresion,
+  .zona-impresion * {
+    visibility: visible;
+  }
+  .zona-impresion {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

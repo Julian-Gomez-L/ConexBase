@@ -18,6 +18,7 @@ import { finalize } from 'rxjs';
 import { AppError } from '@app/models';
 import { esActivo } from '@app/models/reportes.model';
 import { abreviarCOP, formatearCOP } from '@app/utils/format';
+import { refrescoAutomatico } from '@app/utils/refresco';
 import {
   EstadoBadgeComponent,
   normalizarEstado,
@@ -37,6 +38,9 @@ import { PedidosFacadeService } from '@app/services/pedidos-facade.service';
 export class DashboardComponent implements OnInit {
   private readonly facade = inject(PedidosFacadeService);
   private readonly destroyRef = inject(DestroyRef);
+
+  /** Estados al día sin recargar la página (cada 15 s y al volver a la pestaña). */
+  private readonly refresco = refrescoAutomatico(() => this.cargar(true));
 
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
@@ -75,6 +79,10 @@ export class DashboardComponent implements OnInit {
   protected readonly formatearCOP = formatearCOP;
 
   ngOnInit(): void {
+    this.cargar();
+  }
+
+  private cargar(silencioso = false): void {
     this.facade
       .listarVista()
       .pipe(
@@ -82,8 +90,13 @@ export class DashboardComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (datos) => this.pedidos.set(datos),
-        error: (e: AppError) => this.error.set(e),
+        next: (datos) => {
+          this.pedidos.set(datos);
+          this.error.set(null);
+        },
+        error: (e: AppError) => {
+          if (!silencioso) this.error.set(e); // un fallo del refresco no tapa la pantalla
+        },
       });
   }
 }

@@ -30,6 +30,7 @@ import { PageHeaderComponent } from '@app/components/page-header/page-header.com
 import { StatCardComponent } from '@app/components/stat-card/stat-card.component';
 import { PedidosFacadeService } from '@app/services/pedidos-facade.service';
 import { PedidoVista } from '@app/models/pedido-vista.model';
+import { refrescoAutomatico } from '@app/utils/refresco';
 
 /**
  * Listado de pedidos (réplica de MyOrders.tsx / Sales.tsx), conectado a la API REST.
@@ -64,6 +65,9 @@ export class PedidosComponent implements OnInit {
   private readonly facade = inject(PedidosFacadeService);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+
+  /** Estados al día sin recargar la página (cada 15 s y al volver a la pestaña). */
+  private readonly refresco = refrescoAutomatico(() => this.cargar(true));
 
   // Estado de la pantalla
   protected readonly cargando = signal(true);
@@ -114,9 +118,12 @@ export class PedidosComponent implements OnInit {
     this.cargar();
   }
 
-  protected cargar(): void {
-    this.cargando.set(true);
-    this.error.set(null);
+  protected cargar(silencioso = false): void {
+    // En el refresco automático no se muestra el esqueleto de carga
+    if (!silencioso) {
+      this.cargando.set(true);
+      this.error.set(null);
+    }
     this.facade
       .listarVista()
       .pipe(
@@ -125,7 +132,9 @@ export class PedidosComponent implements OnInit {
       )
       .subscribe({
         next: (datos) => this.pedidos.set(datos),
-        error: (e: AppError) => this.error.set(e),
+        error: (e: AppError) => {
+          if (!silencioso) this.error.set(e); // un fallo del refresco no tapa la pantalla
+        },
       });
   }
 

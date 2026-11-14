@@ -27,6 +27,7 @@ import { HistorialPedidosService } from '@app/services/api';
 import { AuthService } from '@app/services/auth.service';
 import { PedidosFacadeService } from '@app/services/pedidos-facade.service';
 import { formatearCOP } from '@app/utils/format';
+import { refrescoAutomatico } from '@app/utils/refresco';
 
 /**
  * Mis Comisiones (asesor comercial).
@@ -45,6 +46,9 @@ export class MisComisionesComponent implements OnInit {
   private readonly historialApi = inject(HistorialPedidosService);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+
+  /** Estados al día sin recargar la página (cada 15 s y al volver a la pestaña). */
+  private readonly refresco = refrescoAutomatico(() => this.cargar(true));
 
   protected readonly porcentaje = `${+(TASA_COMISION * 100).toFixed(2)} %`;
   protected readonly cargando = signal(true);
@@ -68,11 +72,14 @@ export class MisComisionesComponent implements OnInit {
     this.cargar();
   }
 
-  protected cargar(): void {
+  protected cargar(silencioso = false): void {
     const asesorId = this.auth.sesion()?.usuarioId;
     if (!asesorId) return;
-    this.cargando.set(true);
-    this.error.set(null);
+    // En el refresco automático no se muestra el esqueleto de carga
+    if (!silencioso) {
+      this.cargando.set(true);
+      this.error.set(null);
+    }
     forkJoin({ pedidos: this.facade.listarVista(), historial: this.historialApi.listar() })
       .pipe(
         finalize(() => this.cargando.set(false)),
@@ -81,7 +88,9 @@ export class MisComisionesComponent implements OnInit {
       .subscribe({
         next: ({ pedidos, historial }) =>
           this.resumen.set(calcularComisiones(pedidos, historial, asesorId, TASA_COMISION)),
-        error: (e: AppError) => this.error.set(e),
+        error: (e: AppError) => {
+          if (!silencioso) this.error.set(e); // un fallo del refresco no tapa la pantalla
+        },
       });
   }
 

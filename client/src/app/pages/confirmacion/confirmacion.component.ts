@@ -31,6 +31,7 @@ import { CambioEstadoService } from '@app/services/cambio-estado.service';
 import { PedidosFacadeService } from '@app/services/pedidos-facade.service';
 import { fechaCorta } from '@app/utils/fecha';
 import { abreviarCOP, formatearCOP } from '@app/utils/format';
+import { refrescoAutomatico } from '@app/utils/refresco';
 
 /** Largo mínimo del motivo de rechazo (para que el asesor sepa qué corregir). */
 const MIN_MOTIVO = 5;
@@ -59,6 +60,9 @@ export class ConfirmacionComponent implements OnInit {
   private readonly facade = inject(PedidosFacadeService);
   private readonly cambioEstado = inject(CambioEstadoService);
   private readonly destroyRef = inject(DestroyRef);
+
+  /** Estados al día sin recargar la página (cada 15 s y al volver a la pestaña). */
+  private readonly refresco = refrescoAutomatico(() => this.cargar(true), () => this.guardandoId() !== null);
 
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
@@ -108,9 +112,12 @@ export class ConfirmacionComponent implements OnInit {
     this.cargar();
   }
 
-  protected cargar(): void {
-    this.cargando.set(true);
-    this.error.set(null);
+  protected cargar(silencioso = false): void {
+    // En el refresco automático no se muestra el esqueleto de carga
+    if (!silencioso) {
+      this.cargando.set(true);
+      this.error.set(null);
+    }
     this.facade
       .listarVista()
       .pipe(
@@ -119,7 +126,9 @@ export class ConfirmacionComponent implements OnInit {
       )
       .subscribe({
         next: (datos) => this.pedidos.set(datos),
-        error: (e: AppError) => this.error.set(e),
+        error: (e: AppError) => {
+          if (!silencioso) this.error.set(e); // un fallo del refresco no tapa la pantalla
+        },
       });
   }
 

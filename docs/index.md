@@ -50,11 +50,11 @@ Cada persona entra con un rol y ve solo el menú y las pantallas de ese rol.
 | Rol | Qué hace en ConexBase | Pantallas |
 |---|---|---|
 | **Super Administrador** | Todo lo del Administrador y, además, crea y edita usuarios y roles y maneja el código de recuperación. | Las mismas del Administrador |
-| **Administrador** | Supervisa todo, gestiona el catálogo de productos y ve las comisiones de todos. Ve los usuarios, pero no los modifica. | Panel General, Ventas, Confirmación, Fabricación, Pedidos del Día, Comisiones de Asesores, Consolidado, Catálogo, Usuarios y Roles |
+| **Administrador** | Supervisa todo, confirma las entregas, revisa el trabajo de los tapiceros, gestiona el catálogo de productos y ve las comisiones de todos. Ve los usuarios, pero no los modifica. | Panel General, Ventas, Confirmación, Fabricación, Pagos a Tapiceros, Facturas, Pedidos del Día, Comisiones de Asesores, Consolidado, Catálogo, Usuarios y Roles |
 | **Vendedor** (asesor comercial) | Registra pedidos con su abono y consulta sus comisiones. | Crear Pedido, Mis Pedidos, Mis Comisiones, Ventas Confirmadas, Consolidado, Pedidos del Día |
 | **Confirmador** | Revisa los pedidos nuevos y los confirma o rechaza. | Confirmación, Pedidos del Día, Consolidado |
-| **Encargado de Producción** | Inicia la fabricación, asigna tapiceros, finaliza y entrega. | Fabricación, Pedidos del Día, Consolidado |
-| **Tapicero** | Ve los trabajos que le asignaron y reporta su avance. | Mis Productos |
+| **Encargado de Producción** | Inicia la fabricación, reparte el trabajo entre tapiceros, pone el valor de lo que hicieron, finaliza e imprime facturas. | Fabricación, Pagos a Tapiceros, Facturas, Pedidos del Día, Consolidado |
+| **Tapicero** | Ve los trabajos que le asignaron, reporta su avance y ve lo que terminó con su valor. | Mis Productos, Productos Terminados |
 
 ## Estado del proyecto
 

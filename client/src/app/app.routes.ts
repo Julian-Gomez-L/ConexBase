@@ -133,6 +133,12 @@ export const routes: Routes = [
           import('@app/pages/pagos-tapiceros/pagos-tapiceros.component').then((m) => m.PagosTapicerosComponent),
       },
       {
+        path: 'facturas',
+        canMatch: [rolesPermitidos('administrador', 'produccion')],
+        title: 'Facturas · ConexBase',
+        loadComponent: () => import('@app/pages/facturas/facturas.component').then((m) => m.FacturasComponent),
+      },
+      {
         path: 'comisiones-asesores',
         canMatch: [rolesPermitidos('administrador')],
         title: 'Comisiones de Asesores · ConexBase',

@@ -26,6 +26,7 @@ import { ProduccionesService, TrabajosTapicerosService } from '@app/services/api
 import { AuthService } from '@app/services/auth.service';
 import { PedidosFacadeService } from '@app/services/pedidos-facade.service';
 import { fechaCorta, fechaISO } from '@app/utils/fecha';
+import { refrescoAutomatico } from '@app/utils/refresco';
 
 /**
  * Mis Productos (Tapicero): los trabajos de tapicería asignados a quien
@@ -53,6 +54,9 @@ export class MisProductosComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
+  /** Estados al día sin recargar la página (cada 15 s y al volver a la pestaña). */
+  private readonly refresco = refrescoAutomatico(() => this.cargar(true), () => this.guardandoId() !== null);
+
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
   protected readonly datos = signal<MisTrabajos | null>(null);
@@ -65,11 +69,14 @@ export class MisProductosComponent implements OnInit {
     this.cargar();
   }
 
-  protected cargar(): void {
+  protected cargar(silencioso = false): void {
     const yo = this.auth.sesion()?.usuarioId;
     if (!yo) return;
-    this.cargando.set(true);
-    this.error.set(null);
+    // En el refresco automático no se muestra el esqueleto de carga
+    if (!silencioso) {
+      this.cargando.set(true);
+      this.error.set(null);
+    }
     forkJoin({
       base: this.facade.listarConDatos(),
       trabajos: this.trabajosApi.listar(),
@@ -84,9 +91,11 @@ export class MisProductosComponent implements OnInit {
           this.datos.set(
             construirMisTrabajos(trabajos, producciones, base.vistas, base.datos.usuarios, yo),
           );
-          this.borradores.set({});
+          if (!silencioso) this.borradores.set({}); // no se pierde lo que el tapicero está escribiendo
         },
-        error: (e: AppError) => this.error.set(e),
+        error: (e: AppError) => {
+          if (!silencioso) this.error.set(e); // un fallo del refresco no tapa la pantalla
+        },
       });
   }
 

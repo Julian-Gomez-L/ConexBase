@@ -10,6 +10,7 @@ import {
   LucideLayoutDashboard,
   LucidePackage,
   LucidePlusCircle,
+  LucideReceipt,
   LucideScissors,
   LucideShoppingCart,
   LucideUsers,
@@ -30,6 +31,7 @@ const NAV_ADMINISTRADOR: NavItem[] = [
   { path: '/dashboard/confirmacion', label: 'Confirmación', icon: LucideCheckCircle.icon },
   { path: '/dashboard/fabricacion', label: 'Fabricación', icon: LucideFactory.icon },
   { path: '/dashboard/pagos-tapiceros', label: 'Pagos a Tapiceros', icon: LucideWallet.icon },
+  { path: '/dashboard/facturas', label: 'Facturas', icon: LucideReceipt.icon },
   { path: '/dashboard/pedidos-del-dia', label: 'Pedidos del Día', icon: LucideCalendarDays.icon },
   {
     path: '/dashboard/comisiones-asesores',
@@ -70,6 +72,7 @@ export const NAV_BY_ROLE: Record<AppRole, NavItem[]> = {
   produccion: [
     { path: '/dashboard/fabricacion', label: 'Fabricación', icon: LucideFactory.icon },
     { path: '/dashboard/pagos-tapiceros', label: 'Pagos a Tapiceros', icon: LucideWallet.icon },
+    { path: '/dashboard/facturas', label: 'Facturas', icon: LucideReceipt.icon },
     { path: '/dashboard/pedidos-del-dia', label: 'Pedidos del Día', icon: LucideCalendarDays.icon },
     { path: '/dashboard/consolidado', label: 'Consolidado', icon: LucideFileText.icon },
   ],

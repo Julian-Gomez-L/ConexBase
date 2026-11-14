@@ -42,6 +42,7 @@ import { CambioEstadoService } from '@app/services/cambio-estado.service';
 import { PedidosFacadeService } from '@app/services/pedidos-facade.service';
 import { desdeFechaISO, fechaCorta, fechaISO } from '@app/utils/fecha';
 import { formatearCOP } from '@app/utils/format';
+import { refrescoAutomatico } from '@app/utils/refresco';
 
 /** Formulario abierto sobre una producción. */
 type Edicion =
@@ -87,6 +88,9 @@ export class FabricacionComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
+  /** Estados al día sin recargar la página (cada 15 s y al volver a la pestaña). */
+  private readonly refresco = refrescoAutomatico(() => this.cargar(true), () => this.guardando() !== null);
+
   protected readonly estadosProduccion = ESTADOS_PRODUCCION;
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
@@ -110,9 +114,12 @@ export class FabricacionComponent implements OnInit {
     this.cargar();
   }
 
-  protected cargar(): void {
-    this.cargando.set(true);
-    this.error.set(null);
+  protected cargar(silencioso = false): void {
+    // En el refresco automático no se muestra el esqueleto de carga
+    if (!silencioso) {
+      this.cargando.set(true);
+      this.error.set(null);
+    }
     forkJoin({
       base: this.facade.listarConDatos(),
       producciones: this.produccionesApi.listar(),
@@ -135,7 +142,9 @@ export class FabricacionComponent implements OnInit {
               base.datos.historial,
             ),
           ),
-        error: (e: AppError) => this.error.set(e),
+        error: (e: AppError) => {
+          if (!silencioso) this.error.set(e); // un fallo del refresco no tapa la pantalla
+        },
       });
   }
 

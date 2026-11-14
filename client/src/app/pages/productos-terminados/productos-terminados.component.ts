@@ -18,6 +18,7 @@ import { AuthService } from '@app/services/auth.service';
 import { PedidosFacadeService } from '@app/services/pedidos-facade.service';
 import { etiquetaSemana, fechaCorta, lunesDe, sumarDias } from '@app/utils/fecha';
 import { formatearCOP } from '@app/utils/format';
+import { refrescoAutomatico } from '@app/utils/refresco';
 
 /**
  * Productos Terminados (Tapicero): por semana (lunes a domingo), lo que
@@ -37,6 +38,9 @@ export class ProductosTerminadosComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
+  /** Estados al día sin recargar la página (cada 15 s y al volver a la pestaña). */
+  private readonly refresco = refrescoAutomatico(() => this.cargar(true));
+
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
   protected readonly datos = signal<MisTrabajos | null>(null);
@@ -54,11 +58,14 @@ export class ProductosTerminadosComponent implements OnInit {
     this.cargar();
   }
 
-  protected cargar(): void {
+  protected cargar(silencioso = false): void {
     const yo = this.auth.sesion()?.usuarioId;
     if (!yo) return;
-    this.cargando.set(true);
-    this.error.set(null);
+    // En el refresco automático no se muestra el esqueleto de carga
+    if (!silencioso) {
+      this.cargando.set(true);
+      this.error.set(null);
+    }
     forkJoin({
       base: this.facade.listarConDatos(),
       trabajos: this.trabajosApi.listar(),
@@ -71,7 +78,9 @@ export class ProductosTerminadosComponent implements OnInit {
       .subscribe({
         next: ({ base, trabajos, producciones }) =>
           this.datos.set(construirMisTrabajos(trabajos, producciones, base.vistas, base.datos.usuarios, yo)),
-        error: (e: AppError) => this.error.set(e),
+        error: (e: AppError) => {
+          if (!silencioso) this.error.set(e); // un fallo del refresco no tapa la pantalla
+        },
       });
   }
 

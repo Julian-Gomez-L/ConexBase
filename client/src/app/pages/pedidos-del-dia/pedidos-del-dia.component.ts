@@ -33,6 +33,7 @@ import { CambioEstadoService } from '@app/services/cambio-estado.service';
 import { PedidosFacadeService } from '@app/services/pedidos-facade.service';
 import { desdeFechaISO, fechaISO, fechaLarga, horaCorta } from '@app/utils/fecha';
 import { formatearCOP } from '@app/utils/format';
+import { refrescoAutomatico } from '@app/utils/refresco';
 
 /**
  * Pedidos del Día (Administrador, Vendedor, Confirmador y Producción).
@@ -66,6 +67,9 @@ export class PedidosDelDiaComponent implements OnInit {
   private readonly cambioEstado = inject(CambioEstadoService);
   private readonly destroyRef = inject(DestroyRef);
 
+  /** Estados al día sin recargar la página (cada 15 s y al volver a la pestaña). */
+  private readonly refresco = refrescoAutomatico(() => this.cargar(true), () => this.guardando() !== null);
+
   protected readonly cargando = signal(true);
   protected readonly error = signal<AppError | null>(null);
   private readonly pedidos = signal<PedidoVista[]>([]);
@@ -96,9 +100,12 @@ export class PedidosDelDiaComponent implements OnInit {
     this.cargar();
   }
 
-  protected cargar(): void {
-    this.cargando.set(true);
-    this.error.set(null);
+  protected cargar(silencioso = false): void {
+    // En el refresco automático no se muestra el esqueleto de carga
+    if (!silencioso) {
+      this.cargando.set(true);
+      this.error.set(null);
+    }
     this.facade
       .listarConDatos()
       .pipe(
@@ -111,7 +118,9 @@ export class PedidosDelDiaComponent implements OnInit {
           this.historial.set(datos.historial);
           this.usuarios.set(datos.usuarios);
         },
-        error: (e: AppError) => this.error.set(e),
+        error: (e: AppError) => {
+          if (!silencioso) this.error.set(e); // un fallo del refresco no tapa la pantalla
+        },
       });
   }
 

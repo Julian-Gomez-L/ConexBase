@@ -30,6 +30,7 @@ import { AuthService } from '@app/services/auth.service';
 import { PedidosFacadeService } from '@app/services/pedidos-facade.service';
 import { etiquetaSemana, fechaCorta, lunesDe, sumarDias } from '@app/utils/fecha';
 import { formatearCOP, formatearMiles, leerMiles } from '@app/utils/format';
+import { refrescoAutomatico } from '@app/utils/refresco';
 
 interface Borrador {
   valor: number | null;
@@ -64,6 +65,9 @@ export class PagosTapicerosComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
+  /** Estados al día sin recargar la página (cada 15 s y al volver a la pestaña). */
+  private readonly refresco = refrescoAutomatico(() => this.cargar(true), () => this.guardandoId() !== null);
+
   /** El gerente: marca "Revisado" y puede cambiar valores ya revisados. */
   protected readonly esGerente = this.auth.rol() === 'administrador' || this.auth.rol() === 'superadmin';
 
@@ -93,9 +97,12 @@ export class PagosTapicerosComponent implements OnInit {
     this.cargar();
   }
 
-  protected cargar(): void {
-    this.cargando.set(true);
-    this.error.set(null);
+  protected cargar(silencioso = false): void {
+    // En el refresco automático no se muestra el esqueleto de carga
+    if (!silencioso) {
+      this.cargando.set(true);
+      this.error.set(null);
+    }
     forkJoin({
       base: this.facade.listarConDatos(),
       trabajos: this.trabajosApi.listar(),
@@ -111,9 +118,11 @@ export class PagosTapicerosComponent implements OnInit {
           this.producciones.set(producciones);
           this.vistas.set(base.vistas);
           this.usuarios.set(base.datos.usuarios);
-          this.borradores.set({});
+          if (!silencioso) this.borradores.set({}); // no se pierden los valores que se están escribiendo
         },
-        error: (e: AppError) => this.error.set(e),
+        error: (e: AppError) => {
+          if (!silencioso) this.error.set(e); // un fallo del refresco no tapa la pantalla
+        },
       });
   }
 
