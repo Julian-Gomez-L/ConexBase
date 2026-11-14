@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { construirMisTrabajos } from './mis-trabajos.model';
+import { construirMisTrabajos, trabajosDeLaSemana } from './mis-trabajos.model';
+import { pagosDeLaSemana } from './pagos-tapiceros.model';
+import { lunesDe } from '@app/utils/fecha';
 import { PedidoVista } from './pedido-vista.model';
 import { Produccion } from './produccion.model';
 import { TrabajoTapicero } from './trabajo-tapicero.model';
@@ -70,5 +72,49 @@ describe('construirMisTrabajos', () => {
 
   it('cuenta en proceso, por empezar y terminados del mes', () => {
     expect(r.resumen).toEqual({ enProceso: 1, porEmpezar: 1, terminadosEsteMes: 1 });
+  });
+});
+
+describe('trabajos de la semana y pagos a tapiceros', () => {
+  const conPago = (t: TrabajoTapicero, valor: string | null, revisado = false): TrabajoTapicero => ({
+    ...t,
+    valor,
+    observacion_valor: valor ? 'ok' : null,
+    revisado_en: revisado ? '2026-11-14 10:00:00' : null,
+  });
+  // Semana del lunes 9 al domingo 15 de noviembre de 2026
+  const trabajos = [
+    conPago(trabajo(1, 1, 4, 'Finalizado', '2026-11-05', '2026-11-09'), '120000.00', true),
+    conPago(trabajo(2, 1, 4, 'Finalizado', '2026-11-10', '2026-11-15'), '80000.00'),
+    conPago(trabajo(3, 1, 4, 'Finalizado', '2026-11-10', '2026-11-12'), null),
+    conPago(trabajo(4, 1, 4, 'Finalizado', '2026-11-01', '2026-11-08'), '50000.00'), // semana anterior
+    conPago(trabajo(5, 1, 4, 'En proceso', '2026-11-12'), null),
+    conPago(trabajo(6, 1, 9, 'Finalizado', '2026-11-10', '2026-11-11'), '30000.00'),
+  ];
+  const tapiceros = [
+    ...usuarios,
+    { id: 4, nombre: 'Miguel', apellido: 'Martinez' },
+    { id: 9, nombre: 'Carlos', apellido: 'Rojas' },
+  ] as Usuario[];
+  const lunes = lunesDe(new Date(2026, 10, 14));
+
+  it('la semana va de lunes a domingo', () => {
+    expect([lunes.getDate(), lunes.getDay()]).toEqual([9, 1]);
+  });
+
+  it('suma lo que hizo el tapicero en la semana; sin valor no suma', () => {
+    const { terminados } = construirMisTrabajos(trabajos, [produccion], [pedido], tapiceros, 4);
+    const s = trabajosDeLaSemana(terminados, lunes);
+    expect(s.trabajos.map((m) => m.trabajo.id).sort()).toEqual([1, 2, 3]);
+    expect([s.total, s.sinValor, s.revisados]).toEqual([200000, 1, 1]);
+  });
+
+  it('agrupa por tapicero con su total y el total general', () => {
+    const p = pagosDeLaSemana(trabajos, [produccion], [pedido], tapiceros, lunes);
+    expect(p.filas.map((f) => [f.nombre, f.total])).toEqual([
+      ['Carlos Rojas', 30000],
+      ['Miguel Martinez', 200000],
+    ]);
+    expect([p.total, p.trabajos, p.sinValor]).toEqual([230000, 4, 1]);
   });
 });

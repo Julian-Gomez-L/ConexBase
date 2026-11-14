@@ -185,6 +185,12 @@ sequenceDiagram
     P->>API: (Administrador) cambiar estado → Entregado (+ historial)
 ```
 
+**Pago de los tapiceros.** Cuando el tapicero termina un trabajo, Producción
+le pone el valor (y una observación opcional) en *Pagos a Tapiceros*; el
+gerente (Administrador) lo marca *Revisado*. El tapicero ve en *Mis
+Productos → Productos terminados* el valor de cada trabajo y el total de la
+semana.
+
 Hay tres niveles de estado distintos, cada uno en su tabla:
 
 | Tabla | Estados | Quién los cambia |

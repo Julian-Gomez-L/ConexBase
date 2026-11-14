@@ -12,4 +12,11 @@ export interface TrabajoTapicero extends RegistroBase {
   /** Pendiente | En proceso | Finalizado */
   estado: string;
   observaciones: string | null;
+  /** Lo que se le paga al tapicero por este trabajo ("150000.00"). Lo ponen Producción o el Administrador. */
+  valor?: string | null;
+  /** Nota opcional de quien puso el valor. */
+  observacion_valor?: string | null;
+  /** DATETIME en que el gerente (Administrador) lo marcó revisado; null = sin revisar. */
+  revisado_en?: string | null;
+  revisado_por?: number | null;
 }

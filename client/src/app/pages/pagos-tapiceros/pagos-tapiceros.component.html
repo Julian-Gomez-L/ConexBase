@@ -1,0 +1,183 @@
+<div class="space-y-6">
+  <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+    <app-page-header
+      titulo="Pagos a Tapiceros"
+      subtitulo="Valor de cada producto terminado y lo que hizo cada tapicero en la semana"
+    />
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        (click)="moverSemana(-1)"
+        aria-label="Semana anterior"
+        class="w-11 h-11 flex items-center justify-center bg-card border border-border rounded-lg hover:bg-secondary"
+      >
+        <svg lucideChevronLeft class="w-4 h-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        type="button"
+        (click)="moverSemana(1)"
+        [disabled]="esSemanaActual()"
+        aria-label="Semana siguiente"
+        class="w-11 h-11 flex items-center justify-center bg-card border border-border rounded-lg hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <svg lucideChevronRight class="w-4 h-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        type="button"
+        (click)="lunes.set(lunesDeHoy)"
+        [disabled]="esSemanaActual()"
+        class="h-11 px-4 border border-primary/35 text-primary rounded-lg text-sm font-medium hover:bg-primary/10 disabled:opacity-40"
+      >
+        Esta semana
+      </button>
+    </div>
+  </div>
+
+  <p class="text-lg font-medium">{{ tituloSemana() }}</p>
+
+  @if (aviso(); as a) {
+    <p
+      role="status"
+      class="text-sm rounded-lg px-4 py-3 border"
+      [class]="
+        a.tipo === 'ok'
+          ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20'
+          : 'text-red-400 bg-red-500/10 border-red-500/20'
+      "
+    >
+      {{ a.texto }}
+    </p>
+  }
+
+  @if (error(); as e) {
+    <div class="bg-card border border-border rounded-lg p-12 text-center" role="alert">
+      <p class="text-red-400 mb-4">{{ e.message }}</p>
+      <button
+        type="button"
+        (click)="cargar()"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90"
+      >
+        <svg lucideRefreshCw class="w-4 h-4" aria-hidden="true"></svg>
+        Reintentar
+      </button>
+    </div>
+  } @else if (cargando() && !trabajosCargados()) {
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6" aria-hidden="true">
+      @for (n of [1, 2, 3]; track n) {
+        <div class="bg-card border border-border rounded-lg h-32 animate-pulse"></div>
+      }
+    </div>
+  } @else {
+    @let p = pagos();
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <app-stat-card etiqueta="Total de la semana" [valor]="formatearCOP(p.total)" [icono]="iconoDinero" variante="exito" />
+      <app-stat-card etiqueta="Productos terminados" [valor]="p.trabajos" [icono]="iconoTijeras" />
+      <app-stat-card etiqueta="Sin valor" [valor]="p.sinValor" [icono]="iconoDinero" variante="alerta" />
+    </div>
+
+    @for (fila of p.filas; track fila.tapicero.id) {
+      <section class="bg-card border border-border rounded-lg overflow-hidden" [attr.aria-label]="fila.nombre">
+        <div class="px-6 py-4 border-b border-border bg-secondary flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-semibold">{{ fila.nombre }}</h2>
+            <p class="text-xs text-muted-foreground">
+              {{ fila.trabajos.length }} {{ fila.trabajos.length === 1 ? 'producto' : 'productos' }} ·
+              {{ fila.revisados }} revisados
+              @if (fila.sinValor) {
+                · <span class="text-amber-300">{{ fila.sinValor }} sin valor</span>
+              }
+            </p>
+          </div>
+          <p class="text-xl font-semibold text-primary tabular-nums">{{ formatearCOP(fila.total) }}</p>
+        </div>
+
+        <ul class="divide-y divide-border">
+          @for (m of fila.trabajos; track m.trabajo.id) {
+            <li class="px-6 py-4 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4 items-start">
+              <div class="space-y-1 min-w-0">
+                <p class="font-medium">{{ m.cantidad }} × {{ m.producto }}</p>
+                <p class="text-xs text-muted-foreground">
+                  <span class="font-mono">{{ m.pedidoCodigo }}</span> · {{ m.cliente }} · terminado el {{ fecha(m.fin) }}
+                </p>
+                @if (m.trabajo.observaciones) {
+                  <p class="text-xs text-muted-foreground">Tapicero: {{ m.trabajo.observaciones }}</p>
+                }
+                @if (m.revisado) {
+                  <p class="inline-flex items-center gap-1 text-xs text-emerald-300">
+                    <svg lucideBadgeCheck class="w-3.5 h-3.5" aria-hidden="true"></svg>
+                    Revisado por el gerente
+                  </p>
+                }
+              </div>
+
+              <div class="flex flex-wrap items-end gap-2">
+                <div>
+                  <label [for]="'valor-' + m.trabajo.id" class="block text-xs font-medium mb-1">Valor</label>
+                  <input
+                    [id]="'valor-' + m.trabajo.id"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    placeholder="0"
+                    [value]="valorTexto(m)"
+                    [disabled]="!editable(m)"
+                    (input)="alEscribirValor(m, $event)"
+                    class="w-36 h-10 px-3 bg-input-background border border-border rounded-lg text-sm tabular-nums disabled:opacity-60"
+                  />
+                </div>
+                <div>
+                  <label [for]="'nota-' + m.trabajo.id" class="block text-xs font-medium mb-1">Observación (opcional)</label>
+                  <input
+                    [id]="'nota-' + m.trabajo.id"
+                    [value]="nota(m)"
+                    [disabled]="!editable(m)"
+                    (input)="alEscribirNota(m, $event)"
+                    maxlength="255"
+                    class="w-56 h-10 px-3 bg-input-background border border-border rounded-lg text-sm disabled:opacity-60"
+                  />
+                </div>
+                @if (cambio(m)) {
+                  <button
+                    type="button"
+                    (click)="guardarValor(m)"
+                    [disabled]="guardandoId() !== null"
+                    class="h-10 px-4 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 disabled:opacity-50"
+                  >
+                    {{ guardandoId() === m.trabajo.id ? 'Guardando…' : 'Guardar' }}
+                  </button>
+                }
+                @if (esGerente) {
+                  @if (m.revisado) {
+                    <button
+                      type="button"
+                      (click)="revisar(m, false)"
+                      [disabled]="guardandoId() !== null"
+                      class="h-10 px-3 inline-flex items-center gap-1.5 border border-border rounded-lg text-xs hover:bg-secondary disabled:opacity-50"
+                    >
+                      <svg lucideUndo2 class="w-4 h-4" aria-hidden="true"></svg>
+                      Quitar revisado
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      (click)="revisar(m, true)"
+                      [disabled]="guardandoId() !== null"
+                      class="h-10 px-3 inline-flex items-center gap-1.5 border border-emerald-500/40 text-emerald-300 rounded-lg text-xs font-medium hover:bg-emerald-500/10 disabled:opacity-50"
+                    >
+                      <svg lucideBadgeCheck class="w-4 h-4" aria-hidden="true"></svg>
+                      Revisado
+                    </button>
+                  }
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    } @empty {
+      <div class="bg-card border border-dashed border-border rounded-lg p-10 text-center text-muted-foreground">
+        Ningún tapicero terminó productos esta semana.
+      </div>
+    }
+  }
+</div>

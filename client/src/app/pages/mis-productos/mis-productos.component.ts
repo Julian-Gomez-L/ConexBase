@@ -30,6 +30,7 @@ import { fechaCorta, fechaISO } from '@app/utils/fecha';
 /**
  * Mis Productos (Tapicero): los trabajos de tapicería asignados a quien
  * inició sesión. Puede empezarlos, dejar observaciones y marcarlos terminados.
+ * Lo terminado, con su valor, está en "Productos Terminados".
  */
 @Component({
   selector: 'app-mis-productos',

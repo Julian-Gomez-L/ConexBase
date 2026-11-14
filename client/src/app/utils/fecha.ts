@@ -32,6 +32,28 @@ export function desdeFechaISO(valor: string): Date {
   return new Date(a, m - 1, d);
 }
 
+/** Lunes (00:00) de la semana de esa fecha. Las semanas van de lunes a domingo. */
+export function lunesDe(d: Date): Date {
+  const lunes = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
+  return lunes;
+}
+
+/** Copia de la fecha corrida `dias` días (negativo = hacia atrás). */
+export function sumarDias(d: Date, dias: number): Date {
+  const copia = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  copia.setDate(copia.getDate() + dias);
+  return copia;
+}
+
+/** "Semana del 9 al 15 de noviembre de 2026" (recibe el lunes). */
+export function etiquetaSemana(lunes: Date): string {
+  const domingo = sumarDias(lunes, 6);
+  const mes = (d: Date) => d.toLocaleDateString('es-CO', { month: 'long' });
+  const desde = lunes.getMonth() === domingo.getMonth() ? `${lunes.getDate()}` : `${lunes.getDate()} de ${mes(lunes)}`;
+  return `Semana del ${desde} al ${domingo.getDate()} de ${mes(domingo)} de ${domingo.getFullYear()}`;
+}
+
 /** "19:35:12" (con segundos, para registros de auditoría) */
 export const horaConSegundos = (d: Date): string =>
   d.toLocaleTimeString('es-CO', {

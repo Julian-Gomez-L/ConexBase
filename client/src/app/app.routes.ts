@@ -126,6 +126,13 @@ export const routes: Routes = [
           import('@app/pages/fabricacion/fabricacion.component').then((m) => m.FabricacionComponent),
       },
       {
+        path: 'pagos-tapiceros',
+        canMatch: [rolesPermitidos('administrador', 'produccion')],
+        title: 'Pagos a Tapiceros · ConexBase',
+        loadComponent: () =>
+          import('@app/pages/pagos-tapiceros/pagos-tapiceros.component').then((m) => m.PagosTapicerosComponent),
+      },
+      {
         path: 'comisiones-asesores',
         canMatch: [rolesPermitidos('administrador')],
         title: 'Comisiones de Asesores · ConexBase',
@@ -151,6 +158,15 @@ export const routes: Routes = [
         title: 'Mis Productos · ConexBase',
         loadComponent: () =>
           import('@app/pages/mis-productos/mis-productos.component').then((m) => m.MisProductosComponent),
+      },
+      {
+        path: 'productos-terminados',
+        canMatch: [rolesPermitidos('tapicero')],
+        title: 'Productos Terminados · ConexBase',
+        loadComponent: () =>
+          import('@app/pages/productos-terminados/productos-terminados.component').then(
+            (m) => m.ProductosTerminadosComponent,
+          ),
       },
 
       { path: '**', redirectTo: '' },

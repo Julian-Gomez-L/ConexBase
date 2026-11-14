@@ -234,6 +234,16 @@ la suma de `cantidad` no puede pasar de las unidades del pedido
 | `fecha_fin` | DATE | Sí | | Se llena al terminar. |
 | `estado` | VARCHAR(50) | No | | Pendiente, En proceso o Finalizado. |
 | `observaciones` | VARCHAR(255) | Sí | | Notas del tapicero. |
+| `valor` | DECIMAL(12,2) | Sí | ≥ 0 | Lo que se le paga al tapicero por el trabajo. Lo ponen Producción o el Administrador en *Pagos a Tapiceros*. |
+| `observacion_valor` | VARCHAR(255) | Sí | | Nota opcional de quien puso el valor. |
+| `revisado_en` | DATETIME | Sí | | Cuándo el gerente (Administrador) lo marcó *Revisado*. NULL = sin revisar. |
+| `revisado_por` | BIGINT | Sí | FK → `usuarios` | Quién lo revisó. |
+
+Reglas (`TrabajosTapicerosService::actualizarComo`): el tapicero solo cambia
+estado, fechas y observaciones de **sus** trabajos; `valor` lo ponen
+Producción o el Administrador; solo el Administrador marca *Revisado*, y un
+trabajo revisado ya no le deja cambiar el valor a Producción. Lo que hizo cada
+tapicero se suma por semana (lunes a domingo, según `fecha_fin`).
 
 ## Fuera de la base de datos: el código de recuperación
 

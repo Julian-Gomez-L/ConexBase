@@ -23,6 +23,14 @@ class TrabajosTapiceros extends Model
         'produccion_id',
         'usuario_id',
         'cantidad',
+        'valor',
+        'observacion_valor',
+        'revisado_en',
+        'revisado_por',
+    ];
+
+    protected $casts = [
+        'revisado_en' => 'datetime:Y-m-d H:i:s',
     ];
 
     public function produccion()

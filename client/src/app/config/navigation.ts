@@ -2,6 +2,7 @@ import {
   LucideBoxes,
   LucideCalendarDays,
   LucideCheckCircle,
+  LucideCircleCheckBig,
   LucideCircleDollarSign,
   LucideFactory,
   LucideFileText,
@@ -12,6 +13,7 @@ import {
   LucideScissors,
   LucideShoppingCart,
   LucideUsers,
+  LucideWallet,
 } from '@lucide/angular';
 import { AppRole } from './roles';
 
@@ -27,6 +29,7 @@ const NAV_ADMINISTRADOR: NavItem[] = [
   { path: '/dashboard/ventas', label: 'Ventas', icon: LucideShoppingCart.icon },
   { path: '/dashboard/confirmacion', label: 'Confirmación', icon: LucideCheckCircle.icon },
   { path: '/dashboard/fabricacion', label: 'Fabricación', icon: LucideFactory.icon },
+  { path: '/dashboard/pagos-tapiceros', label: 'Pagos a Tapiceros', icon: LucideWallet.icon },
   { path: '/dashboard/pedidos-del-dia', label: 'Pedidos del Día', icon: LucideCalendarDays.icon },
   {
     path: '/dashboard/comisiones-asesores',
@@ -66,10 +69,14 @@ export const NAV_BY_ROLE: Record<AppRole, NavItem[]> = {
   ],
   produccion: [
     { path: '/dashboard/fabricacion', label: 'Fabricación', icon: LucideFactory.icon },
+    { path: '/dashboard/pagos-tapiceros', label: 'Pagos a Tapiceros', icon: LucideWallet.icon },
     { path: '/dashboard/pedidos-del-dia', label: 'Pedidos del Día', icon: LucideCalendarDays.icon },
     { path: '/dashboard/consolidado', label: 'Consolidado', icon: LucideFileText.icon },
   ],
-  tapicero: [{ path: '/dashboard/tapicero', label: 'Mis Productos', icon: LucideScissors.icon }],
+  tapicero: [
+    { path: '/dashboard/tapicero', label: 'Mis Productos', icon: LucideScissors.icon },
+    { path: '/dashboard/productos-terminados', label: 'Productos Terminados', icon: LucideCircleCheckBig.icon },
+  ],
 };
 
 /** Pantalla de inicio de cada rol (el Panel General es del administrador y del super administrador). */

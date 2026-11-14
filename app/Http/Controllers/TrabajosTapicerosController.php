@@ -47,7 +47,10 @@ class TrabajosTapicerosController extends Controller
      */
     public function update(UpdateTrabajosTapicerosRequest $request, int $id)
     {
-        return $this->ok($this->trabajos_tapicerosService->update($request->validated(), $id), 'Los trabajos de tapiceros se actualizaron correctamente.');
+        return $this->ok(
+            $this->trabajos_tapicerosService->actualizarComo($request->validated(), $id, $request->user()),
+            'Los trabajos de tapiceros se actualizaron correctamente.'
+        );
     }
 
     /**

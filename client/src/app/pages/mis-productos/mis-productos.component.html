@@ -133,25 +133,5 @@
       }
     </section>
 
-    <!-- Terminados -->
-    @if (d.terminados.length) {
-      <section class="space-y-3" aria-labelledby="terminados">
-        <h2 id="terminados" class="text-lg font-semibold">Terminados</h2>
-        <ul class="space-y-2">
-          @for (m of d.terminados; track m.trabajo.id) {
-            <li class="bg-card border border-border rounded-lg px-6 py-4 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p class="font-medium">{{ m.trabajo.descripcion }}</p>
-                <p class="text-xs text-muted-foreground">
-                  <span class="font-mono">{{ m.pedidoCodigo }}</span> · {{ m.cliente }} · del {{ fecha(m.inicio) }} al
-                  {{ fecha(m.fin) }}
-                </p>
-              </div>
-              <app-estado-badge [estado]="m.trabajo.estado" />
-            </li>
-          }
-        </ul>
-      </section>
-    }
   }
 </div>

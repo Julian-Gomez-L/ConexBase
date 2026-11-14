@@ -23,6 +23,9 @@ class UpdateTrabajosTapicerosRequest extends FormRequest
             'produccion_id' => ['sometimes', 'integer', 'exists:producciones,id'],
             'usuario_id' => ['sometimes', 'integer', 'exists:usuarios,id'],
             'cantidad' => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'valor' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:9999999999'],
+            'observacion_valor' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'revisado' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -39,6 +42,11 @@ class UpdateTrabajosTapicerosRequest extends FormRequest
             'usuario_id.exists' => 'El ID del usuario no existe en la base de datos.',
             'cantidad.integer' => 'La cantidad debe ser un número entero.',
             'cantidad.min' => 'La cantidad debe ser de al menos 1 unidad.',
+            'valor.numeric' => 'El valor debe ser un número.',
+            'valor.min' => 'El valor no puede ser negativo.',
+            'valor.max' => 'El valor es demasiado alto.',
+            'observacion_valor.max' => 'La observación no puede tener más de 255 caracteres.',
+            'revisado.boolean' => 'Revisado debe ser verdadero o falso.',
         ];
     }
 }

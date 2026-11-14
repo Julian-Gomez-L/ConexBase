@@ -1,5 +1,6 @@
 import { normalizarEstado } from '@app/components/estado-badge/estado-badge.component';
-import { desdeFechaISO } from '@app/utils/fecha';
+import { desdeFechaISO, fechaISO, sumarDias } from '@app/utils/fecha';
+import { aNumero } from '@app/utils/format';
 import { PedidoVista } from './pedido-vista.model';
 import { Produccion } from './produccion.model';
 import { TrabajoTapicero } from './trabajo-tapicero.model';
@@ -16,6 +17,11 @@ export interface MiTrabajo {
   inicio: Date | null;
   fin: Date | null;
   estado: 'pendiente' | 'en proceso' | 'finalizado';
+  /** Lo que se le paga por este trabajo; null = Producción aún no pone el valor. */
+  valor: number | null;
+  notaValor: string | null;
+  /** El gerente (Administrador) ya lo revisó. */
+  revisado: boolean;
 }
 
 export interface MisTrabajos {
@@ -58,6 +64,9 @@ export function construirMisTrabajos(
         inicio: t.fecha_inicio ? desdeFechaISO(t.fecha_inicio) : null,
         fin: t.fecha_fin ? desdeFechaISO(t.fecha_fin) : null,
         estado: e.startsWith('finaliz') ? 'finalizado' : e === 'en proceso' ? 'en proceso' : 'pendiente',
+        valor: t.valor === null || t.valor === undefined ? null : aNumero(t.valor),
+        notaValor: t.observacion_valor ?? null,
+        revisado: !!t.revisado_en,
       };
     });
 
@@ -80,5 +89,34 @@ export function construirMisTrabajos(
         (m) => m.fin && m.fin.getFullYear() === hoy.getFullYear() && m.fin.getMonth() === hoy.getMonth(),
       ).length,
     },
+  };
+}
+
+export interface SemanaDeTrabajo {
+  /** Trabajos terminados entre el lunes y el domingo (por fecha de fin). */
+  trabajos: MiTrabajo[];
+  /** Suma de los valores ya puestos. */
+  total: number;
+  /** Cuántos todavía no tienen valor. */
+  sinValor: number;
+  revisados: number;
+}
+
+/**
+ * Función PURA: los trabajos terminados en la semana que empieza en `lunes`
+ * y cuánto suman. Los que no tienen valor no suman (se cuentan aparte).
+ */
+export function trabajosDeLaSemana(terminados: MiTrabajo[], lunes: Date): SemanaDeTrabajo {
+  const desde = fechaISO(lunes);
+  const hasta = fechaISO(sumarDias(lunes, 6));
+  const trabajos = terminados.filter((m) => {
+    const dia = m.fin ? fechaISO(m.fin) : null;
+    return dia !== null && dia >= desde && dia <= hasta;
+  });
+  return {
+    trabajos,
+    total: trabajos.reduce((s, m) => s + (m.valor ?? 0), 0),
+    sinValor: trabajos.filter((m) => m.valor === null).length,
+    revisados: trabajos.filter((m) => m.revisado).length,
   };
 }
