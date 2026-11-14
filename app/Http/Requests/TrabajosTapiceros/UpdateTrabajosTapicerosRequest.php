@@ -22,6 +22,7 @@ class UpdateTrabajosTapicerosRequest extends FormRequest
             'observaciones' => ['nullable', 'string'],
             'produccion_id' => ['sometimes', 'integer', 'exists:producciones,id'],
             'usuario_id' => ['sometimes', 'integer', 'exists:usuarios,id'],
+            'cantidad' => ['sometimes', 'nullable', 'integer', 'min:1'],
         ];
     }
 
@@ -36,6 +37,8 @@ class UpdateTrabajosTapicerosRequest extends FormRequest
             'produccion_id.exists' => 'El ID de la producción no existe en la base de datos.',
             'usuario_id.integer' => 'El ID del usuario debe ser un número entero.',
             'usuario_id.exists' => 'El ID del usuario no existe en la base de datos.',
+            'cantidad.integer' => 'La cantidad debe ser un número entero.',
+            'cantidad.min' => 'La cantidad debe ser de al menos 1 unidad.',
         ];
     }
 }

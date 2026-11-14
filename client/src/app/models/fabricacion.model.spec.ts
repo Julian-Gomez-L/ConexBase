@@ -38,10 +38,11 @@ const produccion = (id: number, pedidoId: number, productoId: number, estado: st
   ...base,
 });
 
-const trabajo = (id: number, produccionId: number, estado: string): TrabajoTapicero => ({
+const trabajo = (id: number, produccionId: number, estado: string, cantidad: number | null = null, usuarioId = 4): TrabajoTapicero => ({
   id,
   produccion_id: produccionId,
-  usuario_id: 4,
+  usuario_id: usuarioId,
+  cantidad,
   descripcion: 'Tapizado',
   fecha_inicio: '2026-10-13',
   fecha_fin: null,
@@ -119,5 +120,30 @@ describe('construirTablero', () => {
       listos: 1,
       entregadosEsteMes: 1,
     });
+  });
+
+  it('un trabajo sin cantidad (anterior al reparto) cubre toda la producción', () => {
+    const [sillas, mesa] = t.enFabricacion[0].producciones;
+    expect([sillas.trabajos[0].cantidad, sillas.asignadas, sillas.porAsignar]).toEqual([2, 2, 0]);
+    expect([mesa.asignadas, mesa.porAsignar]).toEqual([0, 1]);
+  });
+});
+
+describe('reparto de una producción entre varios tapiceros', () => {
+  const vistas = [pedido(10, 'En producción', [[8, 'Cama doble', 6]])];
+  const producciones = [produccion(20, 10, 8, 'En proceso')];
+  const usuarios = [usuario(4, 4, 'Miguel'), usuario(5, 4, 'Juan')];
+
+  it('suma lo asignado y calcula cuánto falta', () => {
+    const trabajos = [trabajo(30, 20, 'En proceso', 3, 4), trabajo(31, 20, 'Pendiente', 2, 5)];
+    const [camas] = construirTablero(vistas, producciones, trabajos, usuarios, roles, []).enFabricacion[0].producciones;
+    expect(camas.trabajos.map((tr) => [tr.tapicero, tr.cantidad])).toEqual([['Juan X', 2], ['Miguel X', 3]]);
+    expect([camas.cantidad, camas.asignadas, camas.porAsignar]).toEqual([6, 5, 1]);
+  });
+
+  it('no queda nada por asignar cuando las partes completan la cantidad', () => {
+    const trabajos = [trabajo(30, 20, 'En proceso', 4, 4), trabajo(31, 20, 'Pendiente', 2, 5)];
+    const [camas] = construirTablero(vistas, producciones, trabajos, usuarios, roles, []).enFabricacion[0].producciones;
+    expect(camas.porAsignar).toBe(0);
   });
 });

@@ -17,6 +17,8 @@ export const ESTADOS_TRABAJO = { pendiente: 'Pendiente', enProceso: 'En proceso'
 export interface TrabajoVista {
   trabajo: TrabajoTapicero;
   tapicero: string;
+  /** Unidades que le tocan a este tapicero. */
+  cantidad: number;
 }
 
 export interface ProduccionVista {
@@ -26,8 +28,20 @@ export interface ProduccionVista {
   terminada: boolean;
   /** Trabajos de tapicería de esta producción (el último primero). */
   trabajos: TrabajoVista[];
-  /** true si tiene un trabajo sin terminar: no se ofrece asignar otro. */
+  /** true si tiene un trabajo sin terminar. */
   tapiceroActivo: boolean;
+  /** Unidades ya repartidas entre tapiceros. */
+  asignadas: number;
+  /** Unidades que faltan por asignar: mientras sea > 0 se ofrece asignar otro tapicero. */
+  porAsignar: number;
+}
+
+/**
+ * Función PURA: unidades que le tocan a cada trabajo. Un trabajo sin cantidad
+ * (registrado antes de poder repartir) cuenta como todas las unidades.
+ */
+export function unidadesDelTrabajo(trabajo: TrabajoTapicero, totalProduccion: number): number {
+  return trabajo.cantidad ?? totalProduccion;
 }
 
 export interface PedidoEnFabricacion {
@@ -90,19 +104,27 @@ export function construirTablero(
       .sort((a, b) => a.id - b.id)
       .map((pr): ProduccionVista => {
         const item = pedido.items.find((i) => i.productoId === pr.producto_id);
+        const cantidad = item?.cantidad ?? 1;
         const suyos = trabajos
           .filter((t) => t.produccion_id === pr.id)
           .sort((a, b) => b.id - a.id)
-          .map((t) => ({ trabajo: t, tapicero: nombre(usuariosPorId.get(t.usuario_id)) }));
+          .map((t) => ({
+            trabajo: t,
+            tapicero: nombre(usuariosPorId.get(t.usuario_id)),
+            cantidad: unidadesDelTrabajo(t, cantidad),
+          }));
+        const asignadas = suyos.reduce((s, t) => s + t.cantidad, 0);
         return {
           produccion: pr,
           producto: item?.nombre ?? `Producto #${pr.producto_id}`,
-          cantidad: item?.cantidad ?? 1,
+          cantidad,
           terminada: normalizarEstado(pr.estado).startsWith('finaliz'),
           trabajos: suyos,
           tapiceroActivo: suyos.some(
             (t) => !normalizarEstado(t.trabajo.estado).startsWith('finaliz'),
           ),
+          asignadas,
+          porAsignar: Math.max(0, cantidad - asignadas),
         };
       });
     return {

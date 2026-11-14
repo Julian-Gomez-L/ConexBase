@@ -92,6 +92,34 @@ export function resumenDelDia(
   };
 }
 
+// ── Entregas (las confirma el Administrador en Pedidos del Día) ──────────
+
+export interface EntregasDelDia {
+  /** Pedidos terminados (Finalizado) que esperan la confirmación de entrega. */
+  porEntregar: PedidoVista[];
+  /** Pedidos marcados como Entregado ese día (se puede deshacer si no se entregaron). */
+  entregados: PedidoVista[];
+}
+
+/**
+ * Función PURA: qué pedidos falta marcar como entregados y cuáles se
+ * marcaron ese día (YYYY-MM-DD, según el historial).
+ */
+export function entregasDelDia(pedidos: PedidoVista[], historial: HistorialPedido[], dia: string): EntregasDelDia {
+  const entregadoEseDia = new Set(
+    historial
+      .filter((h) => normalizarEstado(h.estado_nuevo ?? '') === 'entregado' && fechaISO(fechaMysql(h.fecha)) === dia)
+      .map((h) => h.pedido_id),
+  );
+  const masAntiguoPrimero = (a: PedidoVista, b: PedidoVista) => a.creadoEn.getTime() - b.creadoEn.getTime();
+  return {
+    porEntregar: pedidos.filter((p) => normalizarEstado(p.estado) === 'finalizado').sort(masAntiguoPrimero),
+    entregados: pedidos
+      .filter((p) => normalizarEstado(p.estado) === 'entregado' && entregadoEseDia.has(p.id))
+      .sort(masAntiguoPrimero),
+  };
+}
+
 // ── Consolidado ──────────────────────────────────────────────────────────
 
 export interface FilaEstado {

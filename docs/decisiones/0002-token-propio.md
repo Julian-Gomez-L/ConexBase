@@ -21,7 +21,7 @@ Autenticación con **token Bearer propio**:
 3. El middleware `AutenticarConToken` (alias `auth.token`) busca el hash en cada petición y revisa que el token no haya vencido y que el usuario siga activo.
 4. `POST /api/auth/logout` borra el token.
 
-Protecciones adicionales: límite de 5 intentos de login por minuto, el mismo
+Protecciones adicionales: límite de 3 intentos de login por minuto, el mismo
 mensaje de error exista o no el correo, y el mismo tiempo de respuesta en
 los dos casos.
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HistorialPedido, Usuario } from '@app/models';
 import { PedidoVista } from './pedido-vista.model';
-import { consolidadoCsv, consolidar, resumenDelDia } from './reportes.model';
+import { consolidadoCsv, consolidar, entregasDelDia, resumenDelDia } from './reportes.model';
 
 const vista = (
   id: number,
@@ -88,5 +88,40 @@ describe('consolidar', () => {
     expect(csv[0]).toBe('Código;Fecha;Cliente;Documento;Asesor;Estado;Total;Pagado;Saldo');
     expect(csv).toHaveLength(4);
     expect(csv[1]).toContain('"Ana; ""la grande"""');
+  });
+});
+
+describe('entregasDelDia', () => {
+  const pedidos = [
+    vista(1, 'Finalizado', 100, 0, '2026-10-10T09:00:00'),
+    vista(2, 'Entregado', 200, 0, '2026-10-09T09:00:00'),
+    vista(3, 'Entregado', 300, 0, '2026-10-08T09:00:00'),
+    vista(4, 'En producción', 400, 0, '2026-10-07T09:00:00'),
+  ];
+  const paso = (pedidoId: number, estado: string, fecha: string): HistorialPedido => ({
+    id: pedidoId,
+    pedido_id: pedidoId,
+    usuario_id: 1,
+    cliente_id: 1,
+    estado_anterior: 'Finalizado',
+    estado_nuevo: estado,
+    observacion: null,
+    fecha,
+    created_at: null,
+    updated_at: null,
+  });
+  const historial = [paso(2, 'Entregado', '2026-10-12 15:00:00'), paso(3, 'Entregado', '2026-10-11 10:00:00')];
+
+  it('lista los finalizados por entregar y los entregados ese día', () => {
+    const e = entregasDelDia(pedidos, historial, '2026-10-12');
+    expect(e.porEntregar.map((p) => p.id)).toEqual([1]);
+    expect(e.entregados.map((p) => p.id)).toEqual([2]);
+  });
+
+  it('un pedido que volvió a Finalizado ya no aparece como entregado', () => {
+    const devuelto = pedidos.map((p) => (p.id === 2 ? { ...p, estado: 'Finalizado' } : p));
+    const e = entregasDelDia(devuelto, historial, '2026-10-12');
+    expect(e.porEntregar.map((p) => p.id)).toEqual([2, 1]);
+    expect(e.entregados).toEqual([]);
   });
 });

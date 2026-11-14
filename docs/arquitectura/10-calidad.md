@@ -13,7 +13,7 @@ Situaciones concretas que muestran si se cumplen los
 | Trazabilidad | Se elimina un registro por error. | Borrado lógico: se puede recuperar desde la base de datos. |
 | Mantenibilidad | Un integrante nuevo agrega un campo a una tabla. | Sigue la guía [Agregar un campo](../guias/agregar-campo.md). |
 | Seguridad | Un tapicero intenta confirmar un pedido llamando a la API directamente. | La ruta responde 403: su rol no puede modificar pedidos. |
-| Seguridad | Alguien prueba contraseñas en el login. | Después de 5 intentos en un minuto, la API responde 429. |
+| Seguridad | Alguien prueba contraseñas en el login. | Después de 3 intentos en un minuto, la API responde 429. |
 
 ## Pruebas automáticas
 

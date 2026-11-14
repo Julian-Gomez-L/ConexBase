@@ -84,6 +84,94 @@
       <app-stat-card etiqueta="Cambios de estado" [valor]="r.movimientos.length" [icono]="iconoReloj" variante="alerta" />
     </div>
 
+    @if (puedeEntregar) {
+      @let e = entregas();
+      <!-- Entregas: solo el Administrador las confirma -->
+      <section class="bg-card border border-border rounded-lg overflow-hidden" aria-labelledby="titulo-entregas">
+        <div class="px-6 py-4 border-b border-border bg-secondary">
+          <h2 id="titulo-entregas" class="text-lg font-semibold">Entregas</h2>
+          <p class="text-xs text-muted-foreground mt-1">
+            Al marcar un pedido como entregado, el asesor gana su comisión. Si no se entregó, no la recibe.
+          </p>
+        </div>
+
+        @if (aviso(); as a) {
+          <p
+            class="mx-6 mt-4 px-4 py-2.5 rounded-lg text-sm"
+            [class]="a.tipo === 'ok' ? 'bg-emerald-500/10 text-emerald-300' : 'bg-red-500/10 text-red-400'"
+            role="status"
+          >
+            {{ a.texto }}
+          </p>
+        }
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 lg:divide-x divide-border">
+          <div>
+            <h3 class="px-6 pt-4 pb-2 text-sm font-semibold text-muted-foreground">
+              Por entregar · {{ e.porEntregar.length }}
+            </h3>
+            <ul class="divide-y divide-border">
+              @for (p of e.porEntregar; track p.id) {
+                <li class="px-6 py-3.5 flex items-center justify-between gap-4">
+                  <div class="min-w-0">
+                    <p class="font-medium truncate">{{ p.cliente?.nombre }}</p>
+                    <p class="text-xs text-muted-foreground">
+                      <span class="font-mono">{{ p.codigo }}</span> · {{ p.asesor?.nombre }} {{ p.asesor?.apellido }} ·
+                      {{ formatearCOP(p.total) }}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="marcarEntregado(p)"
+                    [disabled]="guardando() !== null"
+                    class="shrink-0 min-h-10 px-3 inline-flex items-center gap-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-semibold hover:opacity-90 disabled:opacity-50"
+                  >
+                    <svg lucideTruck class="w-4 h-4" aria-hidden="true"></svg>
+                    {{ guardando() === p.id ? 'Guardando…' : 'Entregado' }}
+                  </button>
+                </li>
+              } @empty {
+                <li class="px-6 py-8 text-center text-sm text-muted-foreground">No hay pedidos terminados esperando entrega.</li>
+              }
+            </ul>
+          </div>
+
+          <div class="border-t lg:border-t-0 border-border">
+            <h3 class="px-6 pt-4 pb-2 text-sm font-semibold text-muted-foreground">
+              Entregados ese día · {{ e.entregados.length }}
+            </h3>
+            <ul class="divide-y divide-border">
+              @for (p of e.entregados; track p.id) {
+                <li class="px-6 py-3.5 flex items-center justify-between gap-4">
+                  <div class="min-w-0">
+                    <p class="font-medium truncate flex items-center gap-1.5">
+                      <svg lucideCheck class="w-4 h-4 text-emerald-400 shrink-0" aria-hidden="true"></svg>
+                      {{ p.cliente?.nombre }}
+                    </p>
+                    <p class="text-xs text-muted-foreground">
+                      <span class="font-mono">{{ p.codigo }}</span> · {{ p.asesor?.nombre }} {{ p.asesor?.apellido }} ·
+                      {{ formatearCOP(p.total) }}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="marcarNoEntregado(p)"
+                    [disabled]="guardando() !== null"
+                    class="shrink-0 min-h-10 px-3 inline-flex items-center gap-1.5 border border-border rounded-lg text-xs hover:bg-secondary disabled:opacity-50"
+                  >
+                    <svg lucideUndo2 class="w-4 h-4" aria-hidden="true"></svg>
+                    {{ guardando() === p.id ? 'Guardando…' : 'No se entregó' }}
+                  </button>
+                </li>
+              } @empty {
+                <li class="px-6 py-8 text-center text-sm text-muted-foreground">Ese día no se marcaron entregas.</li>
+              }
+            </ul>
+          </div>
+        </div>
+      </section>
+    }
+
     <!-- Pedidos creados -->
     <section class="bg-card border border-border rounded-lg overflow-hidden">
       <div class="px-6 py-4 border-b border-border bg-secondary">

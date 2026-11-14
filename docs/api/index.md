@@ -59,7 +59,7 @@ curl http://localhost:8000/api/pedidos \
 
 | Ruta | Descripción |
 |---|---|
-| `POST /api/auth/login` | Inicia sesión. Máximo 5 intentos por minuto por correo e IP. |
+| `POST /api/auth/login` | Inicia sesión. Máximo 3 intentos por minuto por correo e IP. |
 | `GET /api/auth/me` | Datos del usuario dueño del token. |
 | `POST /api/auth/logout` | Cierra la sesión (borra el token). |
 
@@ -199,6 +199,6 @@ Un rol sin permiso recibe **403**. Para cambiar esta tabla, sigue la guía
 | 409 | `RECUPERACION_NO_DISPONIBLE` | Se intentó recuperar el acceso, pero todavía hay un Super Administrador activo. |
 | 409 | `SIN_CODIGO_RECUPERACION` | No hay un código de recuperación guardado (nunca se generó o ya se usó). |
 | 422 | `CODIGO_RECUPERACION_INVALIDO` | El código de recuperación no coincide. Es 422 y no 401 para que el frontend no cierre la sesión. |
-| 429 | `TOO_MANY_REQUESTS` | Más de 5 intentos de login en un minuto, o más de 3 recuperaciones en una hora. El mensaje dice cuántos minutos esperar. |
+| 429 | `TOO_MANY_REQUESTS` | Más de 3 intentos de login en un minuto, o más de 3 recuperaciones en una hora. El mensaje dice cuántos minutos esperar. |
 
 Dónde se definen: `app/Exceptions/` y `bootstrap/app.php`.

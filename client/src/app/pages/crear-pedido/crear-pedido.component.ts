@@ -29,7 +29,7 @@ import { AppError, Cliente, estaActivo, nombreProducto, Pedido, Producto } from 
 import { codigoPedido } from '@app/models/pedido-vista.model';
 import { ClientesService, ProductosService } from '@app/services/api';
 import { CrearPedidoService, LineaPedido } from '@app/services/crear-pedido.service';
-import { aNumero, formatearCOP } from '@app/utils/format';
+import { aNumero, formatearCOP, formatearMiles, leerMiles } from '@app/utils/format';
 
 /** Línea del carrito con lo necesario para mostrarla. */
 interface LineaVista extends LineaPedido {
@@ -123,6 +123,16 @@ export class CrearPedidoComponent implements OnInit {
     comprobante: [''],
   });
   private readonly montoAbono = signal(0);
+  /** El monto con puntos de miles ("1.500.000") para mostrarlo en el campo. */
+  protected readonly montoTexto = computed(() => formatearMiles(this.montoAbono()));
+
+  /** El campo es de texto para poder mostrar los puntos; el formulario guarda el número. */
+  protected alEscribirMonto(evento: Event): void {
+    const campo = evento.target as HTMLInputElement;
+    const valor = leerMiles(campo.value);
+    this.formAbono.controls.monto.setValue(valor);
+    campo.value = formatearMiles(valor);
+  }
 
   // ── Resumen ────────────────────────────────────────────────────────────
   protected readonly total = computed(() => CrearPedidoService.total(this.lineas()));

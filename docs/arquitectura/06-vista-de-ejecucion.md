@@ -13,7 +13,7 @@ stateDiagram-v2
     Pendiente --> Rechazado: Confirmador lo rechaza (con motivo)
     Confirmado --> EnProduccion: Producción inicia la fabricación
     EnProduccion --> Finalizado: Producción, con todas las producciones terminadas
-    Finalizado --> Entregado: Producción lo entrega
+    Finalizado --> Entregado: el Administrador confirma la entrega
     Pendiente --> Cancelado
     Entregado --> [*]
     Rechazado --> [*]
@@ -28,7 +28,7 @@ stateDiagram-v2
 | Confirmado / Rechazado | Confirmador o Administrador | Confirmación |
 | En producción | Producción o Administrador | Fabricación → *Iniciar producción* |
 | Finalizado | Producción o Administrador | Fabricación → *Marcar finalizado* (solo si todas sus producciones están terminadas) |
-| Entregado | Producción o Administrador | Fabricación → *Marcar entregado* |
+| Entregado | Solo Administrador (la API responde 403 a los demás) | Pedidos del Día → *Entregas* → *Entregado*. Si no se entregó, *No se entregó* lo devuelve a Finalizado. |
 | Cancelado | Todavía no hay botón para cancelar un pedido | — |
 
 **Cada cambio de estado** crea una fila en `historial_pedidos` con el estado
@@ -174,23 +174,24 @@ sequenceDiagram
     P->>API: POST /producciones (una por producto, estado Pendiente)
     P->>API: cambiar estado → En producción (+ historial)
 
-    P->>API: POST /trabajos-tapiceros (asigna un tapicero a una producción)
+    P->>API: POST /trabajos-tapiceros (asigna a un tapicero una cantidad de la producción; se repite hasta repartirla toda)
     T->>API: PUT /trabajos-tapiceros/{id} estado En proceso
     T->>API: PUT /trabajos-tapiceros/{id} estado Finalizado (+ observaciones)
 
     P->>API: PUT /producciones/{id} estado Finalizada
     Note over P: Cuando TODAS las producciones están Finalizadas
     P->>API: cambiar estado → Finalizado (+ historial)
-    P->>API: cambiar estado → Entregado (+ historial)
+    Note over P: En Pedidos del Día, el Administrador confirma la entrega
+    P->>API: (Administrador) cambiar estado → Entregado (+ historial)
 ```
 
 Hay tres niveles de estado distintos, cada uno en su tabla:
 
 | Tabla | Estados | Quién los cambia |
 |---|---|---|
-| `pedidos` | Pendiente, Confirmado, En producción, Finalizado, Entregado, Rechazado, Cancelado | Confirmador y Producción |
+| `pedidos` | Pendiente, Confirmado, En producción, Finalizado, Entregado, Rechazado, Cancelado | Confirmador, Producción y Administrador (solo él marca Entregado) |
 | `producciones` (una por producto del pedido) | Pendiente, En proceso, Finalizada | Producción |
-| `trabajos_tapiceros` (uno por tapicero asignado) | Pendiente, En proceso, Finalizado | Tapicero |
+| `trabajos_tapiceros` (uno por tapicero asignado, cada uno con su `cantidad`) | Pendiente, En proceso, Finalizado | Tapicero |
 
 ## Comisiones
 

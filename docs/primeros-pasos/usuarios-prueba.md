@@ -56,7 +56,8 @@ cambiando de usuario:
 3. **Confirmador**: en *Confirmación* confírmalo. Crea otro y recházalo con un motivo.
 4. **Producción**: en *Fabricación* inicia la producción y asigna el producto al tapicero.
 5. **Tapicero**: en *Mis Productos* empieza el trabajo y termínalo.
-6. **Producción**: marca la producción como *Finalizada*, luego el pedido como *Finalizado* y por último *Entregado*.
+6. **Producción**: marca la producción como *Finalizada*, y luego el pedido como *Finalizado*.
+7. **Administrador**: en *Pedidos del Día* → *Entregas*, marca el pedido como *Entregado*. Desde ese momento el asesor ve la comisión en *Mis Comisiones* y en *Comisiones de Asesores*.
 7. **Vendedor**: en *Mis Comisiones* aparece la comisión de ese pedido.
 8. **Administrador**: revisa *Pedidos del Día* y *Consolidado*. En *Usuarios y Roles* comprueba que solo puede mirar.
 9. **Super Administrador**: en *Usuarios y Roles → Seguridad* genera el código de recuperación.

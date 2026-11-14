@@ -126,7 +126,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Máximo 5 intentos de login por minuto por correo + IP (protege contra fuerza bruta)
         RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)->by(Str::lower((string) $request->input('correo')) . '|' . $request->ip());
+            return Limit::perMinute(3)->by(Str::lower((string) $request->input('correo')) . '|' . $request->ip());
         });
 
         // Recuperación de administrador: máximo 3 intentos por hora por IP

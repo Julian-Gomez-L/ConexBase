@@ -133,9 +133,12 @@
                 }
                 @for (tr of pr.trabajos; track tr.trabajo.id) {
                   <p class="text-xs">
-                    Tapicero: {{ tr.tapicero }} ·
+                    Tapicero: {{ tr.tapicero }} · {{ tr.cantidad }} und ·
                     <span [class]="colorProduccion(tr.trabajo.estado === 'Finalizado' ? 'Finalizada' : tr.trabajo.estado)">{{ tr.trabajo.estado }}</span>
                   </p>
+                }
+                @if (pr.trabajos.length > 0 && pr.porAsignar > 0 && !pr.terminada) {
+                  <p class="text-xs text-amber-300">Faltan {{ pr.porAsignar }} de {{ pr.cantidad }} por asignar a un tapicero.</p>
                 }
 
                 @if (avance(); as e) {
@@ -185,6 +188,19 @@
                           <option [value]="u.id" [selected]="u.id === e.tapiceroId">{{ u.nombre }} {{ u.apellido }}</option>
                         }
                       </select>
+                      <label class="block text-xs font-medium" [for]="'cant-' + pr.produccion.id">
+                        Cantidad (quedan {{ e.maximo }} de {{ pr.cantidad }})
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        [max]="e.maximo"
+                        step="1"
+                        [id]="'cant-' + pr.produccion.id"
+                        [value]="e.cantidad"
+                        (input)="alCambiar('cantidad', $event)"
+                        class="w-full h-10 px-2 bg-input-background border border-border rounded-lg text-sm"
+                      />
                       <label class="block text-xs font-medium" [for]="'desc-' + pr.produccion.id">Trabajo a realizar</label>
                       <input
                         [id]="'desc-' + pr.produccion.id"
@@ -216,14 +232,14 @@
                     >
                       Registrar avance
                     </button>
-                    @if (!pr.tapiceroActivo && !pr.terminada) {
+                    @if (pr.porAsignar > 0 && !pr.terminada) {
                       <button
                         type="button"
                         (click)="abrirAsignacion(pr)"
                         class="min-h-9 px-3 inline-flex items-center gap-1.5 border border-border rounded-lg text-xs hover:bg-secondary"
                       >
                         <svg lucideUserPlus class="w-3.5 h-3.5" aria-hidden="true"></svg>
-                        Asignar tapicero
+                        {{ pr.trabajos.length > 0 ? 'Asignar otro tapicero' : 'Asignar tapicero' }}
                       </button>
                     }
                   </div>
@@ -276,19 +292,14 @@
                 Saldo pendiente por cobrar: {{ formatearCOP(p.pedido.saldo) }}
               </p>
             }
-            <button
-              type="button"
-              (click)="entregar(p)"
-              [disabled]="guardando() !== null"
-              class="w-full min-h-11 flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 disabled:opacity-50"
-            >
-              <svg lucideTruck class="w-4 h-4" aria-hidden="true"></svg>
-              {{ guardando() === 'pedido-' + p.pedido.id ? 'Guardando…' : 'Marcar como entregado' }}
-            </button>
+            <p class="flex items-center gap-2 text-xs text-muted-foreground">
+              <svg lucideTruck class="w-4 h-4 shrink-0" aria-hidden="true"></svg>
+              El administrador confirma la entrega en Pedidos del Día.
+            </p>
           </article>
         } @empty {
           <p class="border border-dashed border-border rounded-lg p-6 text-center text-sm text-muted-foreground">
-            Ningún pedido terminado por ahora.<br />Al finalizar uno, aquí podrás marcarlo como entregado.
+            Ningún pedido terminado por ahora.<br />El administrador confirma las entregas en Pedidos del Día.
           </p>
         }
 

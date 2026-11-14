@@ -53,7 +53,7 @@ export function construirMisTrabajos(
         pedidoCodigo: pedido?.codigo ?? '—',
         cliente: pedido?.cliente?.nombre ?? '—',
         producto: item?.nombre ?? (produccion ? `Producto #${produccion.producto_id}` : '—'),
-        cantidad: item?.cantidad ?? 1,
+        cantidad: t.cantidad ?? item?.cantidad ?? 1,
         asignadoPor: encargado ? `${encargado.nombre} ${encargado.apellido}` : '—',
         inicio: t.fecha_inicio ? desdeFechaISO(t.fecha_inicio) : null,
         fin: t.fecha_fin ? desdeFechaISO(t.fecha_fin) : null,

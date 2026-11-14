@@ -21,6 +21,7 @@ class StoreTrabajosTapicerosRequest extends FormRequest
             'observaciones' => ['nullable', 'string'],
             'produccion_id' => ['required', 'integer', 'exists:producciones,id'],
             'usuario_id' => ['required', 'integer', 'exists:usuarios,id'],
+            'cantidad' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
@@ -45,6 +46,8 @@ class StoreTrabajosTapicerosRequest extends FormRequest
             'produccion_id.required' => 'El ID de la producción es obligatorio.',
             'produccion_id.integer' => 'El ID de la producción debe ser un número entero.',
             'produccion_id.exists' => 'El ID de la producción no existe en la base de datos.',
+            'cantidad.integer' => 'La cantidad debe ser un número entero.',
+            'cantidad.min' => 'La cantidad debe ser de al menos 1 unidad.',
         ];
     }
 }

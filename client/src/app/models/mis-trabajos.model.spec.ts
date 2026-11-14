@@ -11,6 +11,7 @@ const trabajo = (id: number, produccionId: number, usuarioId: number, estado: st
   id,
   produccion_id: produccionId,
   usuario_id: usuarioId,
+  cantidad: null,
   descripcion: `Trabajo ${id}`,
   fecha_inicio: inicio,
   fecha_fin: fin,

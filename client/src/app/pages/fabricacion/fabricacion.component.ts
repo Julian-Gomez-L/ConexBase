@@ -46,12 +46,22 @@ import { formatearCOP } from '@app/utils/format';
 /** Formulario abierto sobre una producción. */
 type Edicion =
   | { tipo: 'avance'; produccionId: number; estado: string; observaciones: string }
-  | { tipo: 'tapicero'; produccionId: number; tapiceroId: number | null; descripcion: string };
+  | {
+      tipo: 'tapicero';
+      produccionId: number;
+      tapiceroId: number | null;
+      cantidad: number;
+      /** Unidades que faltan por asignar (tope del campo cantidad). */
+      maximo: number;
+      producto: string;
+      descripcion: string;
+    };
 
 /**
  * Fabricación (Encargado de Producción y Administrador).
  * Confirmado → (iniciar) En producción → (todas las producciones terminadas)
- * Finalizado → (entregar) Entregado. Cada paso queda en el historial.
+ * Finalizado. La entrega (Entregado) la confirma el Administrador en Pedidos
+ * del Día. Cada paso queda en el historial.
  */
 @Component({
   selector: 'app-fabricacion',
@@ -159,14 +169,6 @@ export class FabricacionComponent implements OnInit {
     );
   }
 
-  protected entregar(p: PedidoEnFabricacion): void {
-    this.ejecutar(
-      `pedido-${p.pedido.id}`,
-      this.cambioEstado.cambiar(p.pedido, 'Entregado', 'Pedido entregado al cliente'),
-      `${p.pedido.codigo} quedó entregado.`,
-    );
-  }
-
   // ── Producciones ───────────────────────────────────────────────────────
   protected abrirAvance(pr: ProduccionVista): void {
     this.edicion.set({
@@ -183,7 +185,10 @@ export class FabricacionComponent implements OnInit {
       tipo: 'tapicero',
       produccionId: pr.produccion.id,
       tapiceroId: tapiceros.length === 1 ? tapiceros[0].id : null,
-      descripcion: `Tapizado de ${pr.cantidad} × ${pr.producto}`,
+      cantidad: pr.porAsignar,
+      maximo: pr.porAsignar,
+      producto: pr.producto,
+      descripcion: `Tapizado de ${pr.porAsignar} × ${pr.producto}`,
     });
   }
 
@@ -197,6 +202,15 @@ export class FabricacionComponent implements OnInit {
     if (!e) return;
     if (campo === 'tapiceroId') {
       this.edicion.set({ ...e, tapiceroId: valor ? Number(valor) : null } as Edicion);
+    } else if (campo === 'cantidad' && e.tipo === 'tapicero') {
+      const cantidad = Math.trunc(Number(valor));
+      // Si la descripción es la sugerida, se actualiza con la nueva cantidad
+      const sugerida = `Tapizado de ${e.cantidad} × ${e.producto}`;
+      this.edicion.set({
+        ...e,
+        cantidad,
+        descripcion: e.descripcion === sugerida ? `Tapizado de ${cantidad} × ${e.producto}` : e.descripcion,
+      });
     } else {
       this.edicion.set({ ...e, [campo]: valor } as Edicion);
     }
@@ -224,18 +238,25 @@ export class FabricacionComponent implements OnInit {
       this.aviso.set({ tipo: 'error', texto: 'Elige el tapicero y describe el trabajo.' });
       return;
     }
+    if (!Number.isInteger(e.cantidad) || e.cantidad < 1 || e.cantidad > e.maximo) {
+      this.aviso.set({ tipo: 'error', texto: `La cantidad debe estar entre 1 y ${e.maximo}.` });
+      return;
+    }
     this.ejecutar(
       `produccion-${e.produccionId}`,
       this.trabajosApi.crear({
         produccion_id: e.produccionId,
         usuario_id: e.tapiceroId,
+        cantidad: e.cantidad,
         descripcion: e.descripcion.trim(),
         fecha_inicio: fechaISO(),
         fecha_fin: null,
         estado: ESTADOS_TRABAJO.pendiente,
         observaciones: null,
       }),
-      'Trabajo asignado al tapicero.',
+      e.cantidad < e.maximo
+        ? `Trabajo asignado. Quedan ${e.maximo - e.cantidad} por asignar.`
+        : 'Trabajo asignado al tapicero.',
     );
   }
 

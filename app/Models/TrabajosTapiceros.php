@@ -22,6 +22,7 @@ class TrabajosTapiceros extends Model
         'descripcion',
         'produccion_id',
         'usuario_id',
+        'cantidad',
     ];
 
     public function produccion()

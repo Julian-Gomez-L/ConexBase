@@ -14,7 +14,7 @@ Implementada a mano, sin paquetes externos ([ADR-0002](../decisiones/0002-token-
 | Vigencia | 8 horas (`AuthService::HORAS_VIGENCIA`). Los tokens vencidos del usuario se borran en su siguiente login. | `TokenAccesoRepository` |
 | Cada petición | El middleware `auth.token` busca el hash, revisa que no haya vencido y que el usuario siga **activo**. | `AutenticarConToken` |
 | Cierre de sesión | `POST /api/auth/logout` borra el token. | `AuthService::logout()` |
-| Fuerza bruta | Máximo 5 intentos de login por minuto por correo e IP (error 429). | `AppServiceProvider::boot()` |
+| Fuerza bruta | Máximo 3 intentos de login por minuto por correo e IP (error 429). | `AppServiceProvider::boot()` |
 | Intentos fallidos | Cada login fallido se guarda en `intentos_login` con el motivo, la IP, el navegador, la fecha y la hora. El Administrador los ve en *Usuarios y Roles → Seguridad*. | `IntentosLoginService::registrarFallido()` |
 | Recuperación de Super Administrador | Si no queda ningún Super Administrador activo, un código de un solo uso, guardado cifrado fuera de MySQL, permite crear uno desde el login. 3 intentos por hora. | `RecuperacionAdminService` ([ADR-0007](../decisiones/0007-codigo-recuperacion-admin.md)) |
 | Correos registrados | El mensaje de error es el mismo exista o no el correo, y se tarda lo mismo en responder. | `AuthService::HASH_RELLENO` |

@@ -4,6 +4,8 @@ import { RegistroBase } from './api.model';
 export interface TrabajoTapicero extends RegistroBase {
   produccion_id: number;
   usuario_id: number;
+  /** Unidades que le tocan a este tapicero. null = todas (trabajos anteriores al reparto). */
+  cantidad: number | null;
   descripcion: string;
   fecha_inicio: string;
   fecha_fin: string | null;

@@ -111,7 +111,7 @@ escrita nunca se guarda.**
 | `navegador` | VARCHAR(255) | Sí | | *User-Agent* del navegador. |
 | `fecha` | DATETIME | No | Índice | Fecha y hora del intento (hora de Colombia). |
 
-Los intentos bloqueados por el límite de 5 por minuto (error 429) no llegan
+Los intentos bloqueados por el límite de 3 por minuto (error 429) no llegan
 a registrarse.
 
 ### Catálogo
@@ -219,12 +219,16 @@ Fabricación de un producto de un pedido. Se crea una por cada producto al inici
 
 #### `trabajos_tapiceros`
 
-Trabajo asignado a un tapicero sobre una producción.
+Trabajo asignado a un tapicero sobre una producción. Una producción de varias
+unidades (ej. 6 camas) se puede repartir entre varios tapiceros (ej. 3 + 2 + 1);
+la suma de `cantidad` no puede pasar de las unidades del pedido
+(`TrabajosTapicerosService`).
 
 | Campo | Tipo | Nulo | Restricción | Descripción |
 |---|---|---|---|---|
 | `produccion_id` | BIGINT | No | FK → `producciones` | |
 | `usuario_id` | BIGINT | No | FK → `usuarios` | Tapicero asignado. |
+| `cantidad` | INT UNSIGNED | Sí | ≥ 1 | Unidades que le tocan a este tapicero. NULL = todas (trabajos anteriores al reparto). |
 | `descripcion` | TEXT | No | | Qué hay que hacer. |
 | `fecha_inicio` | DATE | No | | Fecha de asignación. |
 | `fecha_fin` | DATE | Sí | | Se llena al terminar. |
@@ -248,7 +252,7 @@ ya se ejecutaron), `cache` y `cache_locks`. Estas dos últimas solo se usan si
 
 | Tabla | Para qué sirve en ConexBase |
 |---|---|
-| `cache` | Guarda datos temporales. Hoy, solo el contador del límite de 5 intentos de login por minuto: una fila por correo e IP, con un número y su vencimiento. No guarda quién ni a qué hora; para eso está `intentos_login`. |
+| `cache` | Guarda datos temporales. Hoy, solo el contador del límite de 3 intentos de login por minuto: una fila por correo e IP, con un número y su vencimiento. No guarda quién ni a qué hora; para eso está `intentos_login`. |
 | `cache_locks` | "Candados" para que dos peticiones no hagan lo mismo al mismo tiempo. ConexBase todavía no los usa, así que está vacía. |
 
 Su contenido se puede borrar en cualquier momento sin perder información

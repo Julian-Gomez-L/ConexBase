@@ -14,7 +14,7 @@ flowchart LR
     P[Pendiente] -->|Confirmador| C[Confirmado]
     C -->|Producción| EP[En producción]
     EP -->|Producción| F[Finalizado]
-    F -->|Producción| E[Entregado]
+    F -->|Administrador| E[Entregado]
     P -.->|Confirmador, con motivo| R[Rechazado]
     P -.-> X[Cancelado]
 ```

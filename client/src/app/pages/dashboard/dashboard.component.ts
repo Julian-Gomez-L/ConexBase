@@ -16,6 +16,7 @@ import {
 } from '@lucide/angular';
 import { finalize } from 'rxjs';
 import { AppError } from '@app/models';
+import { esActivo } from '@app/models/reportes.model';
 import { abreviarCOP, formatearCOP } from '@app/utils/format';
 import {
   EstadoBadgeComponent,
@@ -43,7 +44,8 @@ export class DashboardComponent implements OnInit {
 
   protected readonly stats = computed(() => {
     const lista = this.pedidos();
-    const activos = lista.filter((p) => normalizarEstado(p.estado) !== 'cancelado');
+    // Ingresos: sin pedidos rechazados ni cancelados
+    const activos = lista.filter(esActivo);
     return {
       total: lista.length,
       enProduccion: lista.filter((p) => normalizarEstado(p.estado).includes('produccion')).length,

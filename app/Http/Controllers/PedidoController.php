@@ -37,7 +37,10 @@ class PedidoController extends Controller
 
     public function update(UpdatePedidoRequest $request, int $id)
     {
-        return $this->ok($this->pedidosService->update($request->validated(), $id), 'El pedido se actualizó correctamente.');
+        return $this->ok(
+            $this->pedidosService->actualizarComo($request->validated(), $id, $request->user()),
+            'El pedido se actualizó correctamente.'
+        );
     }
 
     public function destroy($id)
